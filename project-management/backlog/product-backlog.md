@@ -12,7 +12,7 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
-| [US-022](user-stories/US-022-pwa-install-phase.md) | PWA Install (Post-MVP Phase) | 🟢 Low | 5 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
+| [US-022](user-stories/US-022-pwa-install-phase.md) | PWA Install (Post-MVP Phase) | 🟢 Low | 5 | ✅ | Backlog | 2026-03-21 | 2026-03-21 |
 | [US-021](user-stories/US-021-disconnect-purge-logging.md) | Disconnect, Purge, and Logging Policy | 🟠 High | 2 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-020](user-stories/US-020-test-pyramid-ci.md) | Test Pyramid and CI | 🟠 High | 5 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-019](user-stories/US-019-api-error-retry-ux.md) | Google API Error Handling and Retry UX | 🟠 High | 3 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |

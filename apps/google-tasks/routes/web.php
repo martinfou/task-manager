@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\GoogleOAuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PwaController;
 use App\Http\Controllers\TasksController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,14 @@ Route::get('/health', function (): JsonResponse {
         'app' => config('app.name'),
     ]);
 })->name('health');
+
+Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');
+
+Route::get('/sw.js', function () {
+    return response()->file(public_path('sw.js'), [
+        'Content-Type' => 'application/javascript; charset=UTF-8',
+    ]);
+})->name('pwa.sw');
 
 Route::get('/auth/google', [GoogleOAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleOAuthController::class, 'callback'])->name('google.callback');

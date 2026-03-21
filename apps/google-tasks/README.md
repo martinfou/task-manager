@@ -113,6 +113,11 @@ Google Tasks is the **source of truth**. This app refreshes OAuth access tokens 
 
 See [docs/TESTING.md](docs/TESTING.md) for the pyramid, coverage stance, and CI.
 
+## PWA install (US-022)
+
+- **Install**: Web app manifest at `/manifest.webmanifest`, icons in `public/icons/`, `theme-color` in `app.blade.php`. Install prompts depend on browser heuristics (engagement, HTTPS).
+- **Service worker**: Registers only in **production** builds; **cache-first** for `/build/` assets only — no offline Tasks or API caching. Details: [docs/PWA.md](docs/PWA.md).
+
 ## Data retention and logging (US-021)
 
 - **Disconnect**: Profile includes **Disconnect Google** when a Google Tasks connection exists. It removes OAuth fields from the user, clears the cached access token, and deletes **semantic index** rows (`task_embeddings`) for that user. Google Tasks data in Google is unchanged.

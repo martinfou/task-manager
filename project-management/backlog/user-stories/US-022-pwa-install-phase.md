@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟢 Low  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -37,3 +37,4 @@ As a mobile user, I want to install the app to my home screen, so that it feels 
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `PwaController` + `/manifest.webmanifest`, `public/sw.js` + route, icons, `app.blade.php` meta/link, prod-only SW registration, [docs/PWA.md](../../../apps/google-tasks/docs/PWA.md)
