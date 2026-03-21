@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Google Tasks app — discovery questionnaire</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e7edf4;
+      --muted: #8b9aab;
+      --accent: #3d8bfd;
+      --accent-dim: #2563c4;
+      --ok: #34d399;
+      --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 16px;
+    }
+    .wrap {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 42em;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+    }
+    button:hover {
+      border-color: var(--accent-dim);
+      background: #243044;
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover {
+      filter: brightness(1.08);
+    }
+    button.danger {
+      border-color: #7f1d1d;
+      color: #fecaca;
+    }
+    .status {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      min-height: 1.25em;
+    }
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+    section {
+      margin-bottom: 2.5rem;
+    }
+    section h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      color: #c5d0dc;
+    }
+    .q {
+      margin-bottom: 1.35rem;
+    }
+    .q label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.35rem;
+      font-size: 0.92rem;
+    }
+    .q .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 4.5rem;
+      padding: 0.6rem 0.75rem;
+      font: inherit;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #121a24;
+      color: var(--text);
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Google Tasks replacement — discovery</h1>
+      <p class="lede">
+        Answer in your own time. Responses stay in <strong>this browser</strong> (localStorage).
+        Use <strong>Export JSON</strong> to back up or share your answers. No server; nothing is uploaded.
+      </p>
+      <div class="toolbar" role="toolbar" aria-label="Save and export">
+        <button type="button" class="primary" id="btn-save">Save now</button>
+        <button type="button" id="btn-export">Export JSON</button>
+        <label style="display:inline-flex;align-items:center;gap:0.35rem;cursor:pointer;font-size:0.9rem;color:var(--muted);">
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+          <button type="button" id="btn-import">Import JSON…</button>
+        </label>
+        <button type="button" class="danger" id="btn-clear">Clear all</button>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </header>
+
+    <form id="discovery-form" autocomplete="on">
+      <!-- Sections filled by script for maintainability -->
+      <div id="sections"></div>
+    </form>
+
+    <footer>
+      <p>Static page — <code>docs/google-tasks-discovery/index.html</code>. Open locally or serve from any static host.</p>
+    </footer>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "googleTasksDiscovery_v1";
+    const sections = [
+      {
+        title: "1. Product vision and positioning",
+        questions: [
+          { id: "v1_one_liner", label: "One-liner: In one sentence, what should this app be for you day to day?" },
+          { id: "v1_world_class", label: "“World class” for you means — rank your top 3 (e.g. speed, clarity, power-user, beauty)." },
+          { id: "v1_references", label: "Apps you want to feel like (even for one aspect): Notion, Linear, Things, TickTick, other?" },
+          { id: "v1_non_goals", label: "Non-goals: What should v1 explicitly NOT try to be?" }
+        ]
+      },
+      {
+        title: "2. Audience and accounts",
+        questions: [
+          { id: "a_solo_team", label: "Solo only, or multi-user / future SaaS?" },
+          { id: "a_google_model", label: "Google account model: one Google user per app user, or shared workspace / service account?" },
+          { id: "a_sharing", label: "Share lists with non-Google users, or Google-only?" }
+        ]
+      },
+      {
+        title: "3. Google Tasks API",
+        questions: [
+          { id: "g_source", label: "Source of truth: Google Tasks stays canonical; this app is a client? (confirm or adjust)" },
+          { id: "g_lists", label: "Lists: Google lists only, or also local-only lists in your DB?" },
+          { id: "g_sync", label: "Sync: OK with polling + optimistic UI? Any max delay you care about?" },
+          { id: "g_offline", label: "Offline required (queued mutations), or online-only for v1?" },
+          { id: "g_quotas", label: "Rate limits: OK with batching/backoff? Any SLA for “appears in Google within X seconds”?" }
+        ]
+      },
+      {
+        title: "4. Features (prioritize)",
+        questions: [
+          { id: "f_views", label: "Views: Today / Upcoming / Inbox / filters / Kanban — what are must-haves?" },
+          { id: "f_subtasks", label: "Subtasks / hierarchy: depth limits or rules?" },
+          { id: "f_tags", label: "Tags/labels: Google has no native tags — encode in title, description, or metadata in your DB only?" },
+          { id: "f_dates", label: "Due dates & times, time zones, recurring tasks — use fully, simplify, or hide in v1?" },
+          { id: "f_search", label: "Search: full-text, filters, saved searches?" },
+          { id: "f_priority", label: "Priority/urgency: in DB only, or encoded into Google?" },
+          { id: "f_attachments", label: "Attachments / Drive links / URLs in notes — in scope?" },
+          { id: "f_bulk", label: "Bulk actions: multi-select, move, complete — essentials?" }
+        ]
+      },
+      {
+        title: "5. UX and UI",
+        questions: [
+          { id: "ux_layout", label: "Layout: single pane vs split, command palette, keyboard-first?" },
+          { id: "ux_theme", label: "Dark mode, themes, density (compact vs comfortable)?" },
+          { id: "ux_mobile", label: "Mobile: responsive only, or PWA (install, offline)?" },
+          { id: "ux_a11y", label: "Accessibility target (e.g. keyboard + screen reader)?" }
+        ]
+      },
+      {
+        title: "6. Laravel + Vue",
+        questions: [
+          { id: "t_hosting", label: "Where will Laravel run (VPS, Forge, Railway, Fly.io, other)?" },
+          { id: "t_vue", label: "Vue: SPA (API-only Laravel) vs Inertia + Vue — preference?" },
+          { id: "t_oauth", label: "OAuth: OK with Google login for app + separate consent for Tasks API, or want one combined flow?" },
+          { id: "t_tokens", label: "Token storage: encrypted refresh tokens in DB — any compliance (EU-only, no cloud, etc.)?" }
+        ]
+      },
+      {
+        title: "7. Security and privacy",
+        questions: [
+          { id: "s_db", label: "Data in your DB: minimal (tokens only) vs cache tasks — how much Google data on server?" },
+          { id: "s_logs", label: "Logging: should task titles ever appear in server logs?" },
+          { id: "s_delete", label: "On disconnect Google: purge all cached data?" }
+        ]
+      },
+      {
+        title: "8. Observability and quality",
+        questions: [
+          { id: "o_errors", label: "When Google API fails: what should users see? Retry UX?" },
+          { id: "o_tests", label: "Testing bar: unit, E2E (Playwright/Cypress), API contract?" }
+        ]
+      },
+      {
+        title: "9. Delivery",
+        questions: [
+          { id: "d_timeline", label: "Timeline: MVP in weeks or months? Hard deadline?" },
+          { id: "d_mvp", label: "MVP: list the 5 non-negotiable behaviors to switch from tasks.google.com." },
+          { id: "d_i18n", label: "Languages: English-only or i18n later?" }
+        ]
+      },
+      {
+        title: "10. Anything else",
+        questions: [
+          { id: "x_free", label: "Free-form: risks, integrations, billing, or ideas not covered above." }
+        ]
+      }
+    ];
+
+    const sectionsEl = document.getElementById("sections");
+    const statusEl = document.getElementById("status");
+
+    function render() {
+      sectionsEl.innerHTML = sections
+        .map(
+          (sec) => `
+        <section aria-labelledby="h-${slug(sec.title)}">
+          <h2 id="h-${slug(sec.title)}">${escapeHtml(sec.title)}</h2>
+          ${sec.questions
+            .map(
+              (q) => `
+          <div class="q">
+            <label for="${q.id}">${escapeHtml(q.label)}</label>
+            <textarea id="${q.id}" name="${q.id}" rows="3" spellcheck="true"></textarea>
+          </div>`
+            )
+            .join("")}
+        </section>`
+        )
+        .join("");
+    }
+
+    function slug(s) {
+      return s.replace(/\s+/g, "-").replace(/[^a-z0-9-]/gi, "").toLowerCase();
+    }
+
+    function escapeHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function collect() {
+      const data = {
+        version: 1,
+        updatedAt: new Date().toISOString(),
+        answers: {}
+      };
+      sections.forEach((sec) => {
+        sec.questions.forEach((q) => {
+          const el = document.getElementById(q.id);
+          data.answers[q.id] = el ? el.value.trim() : "";
+        });
+      });
+      return data;
+    }
+
+    function apply(data) {
+      if (!data || !data.answers) return;
+      Object.entries(data.answers).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val != null ? String(val) : "";
+      });
+    }
+
+    function save() {
+      try {
+        const payload = collect();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        statusEl.textContent = "Saved — " + new Date().toLocaleString();
+        statusEl.className = "status ok";
+      } catch (e) {
+        statusEl.textContent = "Could not save: " + e.message;
+        statusEl.className = "status warn";
+      }
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) apply(JSON.parse(raw));
+      } catch (e) {
+        statusEl.textContent = "Could not load saved data.";
+        statusEl.className = "status warn";
+      }
+    }
+
+    let debounce;
+    function onInput() {
+      clearTimeout(debounce);
+      debounce = setTimeout(save, 600);
+    }
+
+    function exportJson() {
+      const payload = collect();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "google-tasks-discovery-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      statusEl.textContent = "Exported JSON.";
+      statusEl.className = "status ok";
+    }
+
+    function importJson(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          apply(data);
+          save();
+          statusEl.textContent = "Imported and saved.";
+          statusEl.className = "status ok";
+        } catch (e) {
+          statusEl.textContent = "Invalid JSON file.";
+          statusEl.className = "status warn";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAll() {
+      if (!confirm("Clear all answers in this browser?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      sections.forEach((sec) => {
+        sec.questions.forEach((q) => {
+          const el = document.getElementById(q.id);
+          if (el) el.value = "";
+        });
+      });
+      statusEl.textContent = "Cleared.";
+      statusEl.className = "status warn";
+    }
+
+    render();
+    load();
+
+    document.getElementById("btn-save").addEventListener("click", save);
+    document.getElementById("btn-export").addEventListener("click", exportJson);
+    document.getElementById("btn-clear").addEventListener("click", clearAll);
+    document.getElementById("btn-import").addEventListener("click", () => document.getElementById("import-file").click());
+    document.getElementById("import-file").addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      if (f) importJson(f);
+      e.target.value = "";
+    });
+
+    sectionsEl.addEventListener("input", onInput);
+  </script>
+</body>
+</html>
