@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ⏳ In Progress  
 **Priority**: 🔴 Critical  
 **Story Points**: 8  
 **Created**: 2026-03-21  

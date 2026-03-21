@@ -4,7 +4,7 @@ This is the main product backlog tracking all user stories and defects.
 
 **Last Updated**: 2026-03-21
 
-**Active Sprint**: None — next planned: [Sprint 2: Google Tasks MVP — Foundation](../sprints/sprint-02-google-tasks-mvp-foundation.md) (start when ready). [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
+**Active Sprint**: [Sprint 2: Google Tasks MVP — Foundation](../sprints/sprint-02-google-tasks-mvp-foundation.md) — in progress (since 2026-03-21). [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
 **Product discovery (Google Tasks client)**: [responses-submitted-2026-03-21.json](../../docs/google-tasks-discovery/responses-submitted-2026-03-21.json)
 
@@ -24,11 +24,11 @@ This is the main product backlog tracking all user stories and defects.
 | [US-013](user-stories/US-013-full-text-search.md) | Full-Text Search Across Tasks | 🟠 High | 3 | ⭕ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
 | [US-012](user-stories/US-012-filters-kanban.md) | Filters and Kanban View | 🟠 High | 8 | ⭕ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
 | [US-011](user-stories/US-011-i18n-en-fr.md) | Internationalization (English and French) | 🟠 High | 3 | ⭕ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
-| [US-010](user-stories/US-010-theme-dark-density-responsive.md) | Dark Theme, Density, Responsive MVP | 🟠 High | 3 | ⭕ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
-| [US-009](user-stories/US-009-views-today-inbox-lists.md) | Views — Today, Inbox, Multi-List Navigation | 🔴 Critical | 5 | ⭕ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
-| [US-008](user-stories/US-008-google-tasks-sync-engine.md) | Google Tasks Sync Engine | 🔴 Critical | 8 | ⭕ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
-| [US-007](user-stories/US-007-google-oauth-combined-flow.md) | Google OAuth Combined Flow and Token Storage | 🔴 Critical | 5 | ⭕ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
-| [US-006](user-stories/US-006-laravel-inertia-scaffold-deploy.md) | Laravel Inertia Vue Scaffold and Deployment | 🔴 Critical | 5 | ⭕ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
+| [US-010](user-stories/US-010-theme-dark-density-responsive.md) | Dark Theme, Density, Responsive MVP | 🟠 High | 3 | ⏳ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
+| [US-009](user-stories/US-009-views-today-inbox-lists.md) | Views — Today, Inbox, Multi-List Navigation | 🔴 Critical | 5 | ⏳ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
+| [US-008](user-stories/US-008-google-tasks-sync-engine.md) | Google Tasks Sync Engine | 🔴 Critical | 8 | ⏳ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
+| [US-007](user-stories/US-007-google-oauth-combined-flow.md) | Google OAuth Combined Flow and Token Storage | 🔴 Critical | 5 | ⏳ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
+| [US-006](user-stories/US-006-laravel-inertia-scaffold-deploy.md) | Laravel Inertia Vue Scaffold and Deployment | 🔴 Critical | 5 | ⏳ | [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) | 2026-03-21 | 2026-03-21 |
 | [US-005](user-stories/US-005-test-mcp-integration.md) | Test MCP Integration | 🟢 Low | 1 | ⭕ | Backlog | 2026-03-08 | 2026-03-08 |
 | [US-004](user-stories/US-004-root-release-notes.md) | Root-Level Release Notes | 🟠 High | 2 | ✅ | [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) | 2026-03-06 | 2026-03-21 |
 | [US-003](user-stories/US-003-root-docs-folder.md) | Root-Level Docs Folder | 🟡 Medium | 1 | ✅ | [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) | 2026-03-06 | 2026-03-21 |
@@ -50,6 +50,7 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Description | Owner | Due Sprint | Status |
 |----|-------------|-------|------------|--------|
+| [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) | Google Cloud OAuth + Tasks API checklist in `docs/` | Developer | Sprint 2 | ⭕ |
 
 ---
 
@@ -80,8 +81,8 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 23  
 **By Status**:
-- ⭕ To Do: 18
-- ⏳ In Progress: 0
+- ⭕ To Do: 13
+- ⏳ In Progress: 5
 - ✅ Done: 5
 
 **By Priority**:

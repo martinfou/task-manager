@@ -249,17 +249,23 @@ compatible_with: [product-backlog]
 
 - No new user stories or defects raised during this review.
 - **Carry-over / next**: [US-005](../backlog/user-stories/US-005-test-mcp-integration.md) remains in the product backlog (⭕ To Do) for a future sprint (e.g. Sprint 2).
-- **Definition of Done (sprint level)**: Sprint review notes complete; sprint retrospective still to run per [definition-of-done.md](../criteria/definition-of-done.md) sprint checklist.
+- **Definition of Done (sprint level)**: Sprint review notes complete; sprint retrospective completed 2026-03-21 per [definition-of-done.md](../criteria/definition-of-done.md) sprint checklist.
 
 **Sprint Retrospective Notes**:
-- **What went well?**
-  - (To be filled at retrospective)
-  
-- **What could be improved?**
-  - (To be filled at retrospective)
-  
-- **Retrospective improvements for next sprint**
-  - (To be filled at retrospective)
+
+**Retrospective date**: 2026-03-21 (solo / async)
+
+**What went well?**
+- All Sprint 1 committed scope delivered (9 story points): agent configs, Git + commit template, demo defect, `docs/`, `RELEASE_NOTES.md`.
+- `project-management` lint and link checks pass; backlog structure is automation-friendly.
+- Clear entry point via [INDEX.md](../INDEX.md) for AI-assisted PM work.
+
+**What could be improved?**
+- Retrospective was queued after sprint review; **next time** run retro immediately before the next sprint planning session.
+- Initial repository import mixed unrelated trees with Sprint 1 deliverables — future sprints should prefer **feature branches per US** ([ADR-002](../architecture-decision-records/ADR-002-branching-strategy.md)) for the Google Tasks app work.
+
+**Retrospective improvements for next sprint**
+- [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) — Add a Google Cloud OAuth + Tasks API setup checklist in `docs/` before first OAuth deploy (owner: developer; due Sprint 2).
 
 ---
 
