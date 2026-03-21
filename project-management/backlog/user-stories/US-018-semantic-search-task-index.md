@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟡 Medium  
 **Story Points**: 8  
 **Created**: 2026-03-21  
@@ -26,10 +26,10 @@ As a user, I want to find tasks by meaning (“that thing about invoices”), no
 
 ## Acceptance Criteria
 
-- [ ] Architecture doc: embedding provider (local vs API), data stored, delete on user disconnect.
-- [ ] Search UI mode or unified search with “semantic” quality; measure latency targets.
-- [ ] Reindex on sync or periodic job; handle API changes.
-- [ ] English + French query handling as feasible for chosen model.
+- [x] Architecture doc: embedding provider (local vs API), data stored, delete on user disconnect.
+- [x] Search UI mode or unified search with “semantic” quality; measure latency targets.
+- [x] Reindex on sync or periodic job; handle API changes.
+- [x] English + French query handling as feasible for chosen model.
 
 ## Business Value
 
@@ -42,3 +42,4 @@ Differentiates from basic Google UI; matches discovery request for semantic sear
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `task_embeddings` + OpenAI-compatible `EmbeddingClient`, `TaskEmbeddingIndexer`, `TaskSemanticSearcher`, `GET /tasks/data/search?mode=semantic`, `POST /tasks/data/search/reindex`, `google-tasks:reindex-embeddings`, UI mode + build-index CTA; [docs/SEMANTIC_SEARCH.md](../../../apps/google-tasks/docs/SEMANTIC_SEARCH.md)

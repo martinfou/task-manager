@@ -78,6 +78,12 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 - **API**: Moves use `POST /tasks/data/{taskList}/tasks/{task}/move` with `{ destinationTasklist }` (Tasks API `tasks.move`). Complete/delete use the existing `PATCH`/`DELETE` routes. Calls run **one task at a time**; if some fail, a modal lists the partial errors.
 - **Mobile**: Use the **checkbox column** only — there is no touch multi-select gesture; range selection is desktop-only.
 
+## Semantic search (US-018)
+
+- **Optional**: set `SEMANTIC_SEARCH_ENABLED=true` and `OPENAI_API_KEY` (see `.env.example`). Embeddings are stored in `task_embeddings` (per-user, cascades on account delete).
+- **Modes**: keyword (default, same as US-013) vs **semantic** (cosine similarity over indexed vectors). Use **Build semantic index** in the UI or `POST /tasks/data/search/reindex` / `php artisan google-tasks:reindex-embeddings`.
+- **Details**: [docs/SEMANTIC_SEARCH.md](docs/SEMANTIC_SEARCH.md).
+
 ## Search (US-013)
 
 - **Endpoint**: `GET /tasks/data/search?q=` (min 2, max 200 characters). Requires Google Tasks connection (`google.tasks` middleware).

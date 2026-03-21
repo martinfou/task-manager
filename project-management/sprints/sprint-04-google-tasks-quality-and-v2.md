@@ -61,7 +61,7 @@ compatible_with: [product-backlog]
 
 | ID | Title | Points | Status |
 |----|-------|--------|--------|
-| [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md) | Semantic search index | 8 | ⭕ |
+| [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md) | Semantic search index | 8 | ✅ |
 | [US-019](../backlog/user-stories/US-019-api-error-retry-ux.md) | API error + retry UX | 3 | ✅ |
 | [US-020](../backlog/user-stories/US-020-test-pyramid-ci.md) | Test pyramid + CI | 5 | ✅ |
 | [US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) | Disconnect purge + logging | 2 | ⭕ |
@@ -83,6 +83,7 @@ compatible_with: [product-backlog]
 **Sprint Burndown**:
 - 2026-03-21: +3 story points ([US-019](../backlog/user-stories/US-019-api-error-retry-ux.md)); **15** points remaining (US-018, US-020, US-021)
 - 2026-03-21: +5 story points ([US-020](../backlog/user-stories/US-020-test-pyramid-ci.md)); **10** points remaining (US-018, US-021)
+- 2026-03-21: +8 story points ([US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)); **2** points remaining (US-021)
 
 **Sprint Review Notes**: (fill at review on 2026-04-04)
 

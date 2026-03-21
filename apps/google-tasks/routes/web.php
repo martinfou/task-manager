@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('google.tasks')->prefix('tasks/data')->group(function () {
         Route::get('/task-lists', [TasksController::class, 'taskLists'])->name('tasks.data.task-lists');
         Route::get('/search', [TasksController::class, 'search'])->name('tasks.data.search');
+        Route::post('/search/reindex', [TasksController::class, 'reindexSearchEmbeddings'])->name('tasks.data.search.reindex');
         Route::get('/views/today', [TasksController::class, 'todayView'])->name('tasks.data.views.today');
         Route::get('/views/inbox', [TasksController::class, 'inboxView'])->name('tasks.data.views.inbox');
         Route::get('/{taskList}/tasks', [TasksController::class, 'tasks'])->name('tasks.data.tasks');

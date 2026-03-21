@@ -8,6 +8,7 @@
 | **JS unit** | Vitest (`npm run test:unit`) | Pure utilities under `resources/js/utils/` (filters, API error helpers) |
 | **Lint** | Laravel Pint (`composer lint`), ESLint (`npm run lint`) | PHP style, Vue/JS correctness (`route` global, no-undef errors) |
 | **E2E smoke** | Playwright (`npm run test:e2e`) | `/health` JSON, `/login` email form — **no real Google OAuth** |
+| **Semantic index** | Manual or `php artisan google-tasks:reindex-embeddings` | Requires `OPENAI_API_KEY`; not exercised in default CI (no API key in GitHub Actions). See [SEMANTIC_SEARCH.md](SEMANTIC_SEARCH.md). |
 
 Full Google OAuth and Tasks API flows are covered with **HTTP fakes** in PHPUnit (see `tests/Feature/`). Playwright does not drive OAuth; it only checks that public routes render for regression detection.
 

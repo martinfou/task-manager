@@ -42,6 +42,7 @@ const props = defineProps({
     connected: { type: Boolean, default: false },
     pollIntervalMs: { type: Number, default: 5000 },
     maxBackoffMs: { type: Number, default: 120000 },
+    semanticSearchAvailable: { type: Boolean, default: false },
 });
 
 /** @type {import('vue').Ref<'today'|'inbox'|'list'>} */
@@ -63,6 +64,10 @@ const searchResults = ref([]);
 const searchLoading = ref(false);
 const searchError = ref('');
 const searchTruncated = ref(false);
+/** @type {import('vue').Ref<'keyword'|'semantic'>} */
+const searchMode = ref('keyword');
+const searchIndexEmpty = ref(false);
+const searchReindexLoading = ref(false);
 const showKeyboardHelp = ref(false);
 const searchInputRef = ref(null);
 const newTaskTitleRef = ref(null);
@@ -525,6 +530,36 @@ async function onListDropdownChange() {
     }
 }
 
+async function executeSearchQuery() {
+    const trimmed = searchQuery.value.trim();
+    if (trimmed.length < 2) {
+        return;
+    }
+    searchLoading.value = true;
+    searchError.value = '';
+    searchIndexEmpty.value = false;
+    try {
+        const { data } = await axios.get(route('tasks.data.search'), {
+            params: { q: trimmed, mode: searchMode.value },
+        });
+        searchResults.value = data.items ?? [];
+        searchTruncated.value = Boolean(data.truncated);
+        searchIndexEmpty.value = Boolean(data.index_empty);
+    } catch (e) {
+        searchError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.searchError',
+        );
+        searchResults.value = [];
+        searchTruncated.value = false;
+        searchIndexEmpty.value = false;
+    } finally {
+        searchLoading.value = false;
+    }
+}
+
 watch(searchQuery, (q) => {
     clearTimeout(searchDebounce);
     const trimmed = q.trim();
@@ -532,32 +567,42 @@ watch(searchQuery, (q) => {
         searchResults.value = [];
         searchTruncated.value = false;
         searchError.value = '';
+        searchIndexEmpty.value = false;
         searchLoading.value = false;
         return;
     }
     searchLoading.value = true;
     searchError.value = '';
-    searchDebounce = setTimeout(async () => {
-        try {
-            const { data } = await axios.get(route('tasks.data.search'), {
-                params: { q: trimmed },
-            });
-            searchResults.value = data.items ?? [];
-            searchTruncated.value = Boolean(data.truncated);
-        } catch (e) {
-            searchError.value = messageFromAxiosError(
-                e,
-                t,
-                te,
-                'tasks.searchError',
-            );
-            searchResults.value = [];
-            searchTruncated.value = false;
-        } finally {
-            searchLoading.value = false;
-        }
+    searchDebounce = setTimeout(() => {
+        void executeSearchQuery();
     }, 300);
 });
+
+watch(searchMode, () => {
+    if (searchQuery.value.trim().length >= 2) {
+        void executeSearchQuery();
+    }
+});
+
+async function reindexSemanticIndex() {
+    searchReindexLoading.value = true;
+    searchError.value = '';
+    try {
+        await axios.post(route('tasks.data.search.reindex'));
+        if (searchQuery.value.trim().length >= 2) {
+            await executeSearchQuery();
+        }
+    } catch (e) {
+        searchError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.searchError',
+        );
+    } finally {
+        searchReindexLoading.value = false;
+    }
+}
 
 async function openSearchResult(row) {
     clearSelection();
@@ -566,6 +611,7 @@ async function openSearchResult(row) {
     searchResults.value = [];
     searchTruncated.value = false;
     searchError.value = '';
+    searchIndexEmpty.value = false;
 
     if (!taskLists.value.find((l) => l.id === row.taskListId)) {
         await fetchTaskLists();
@@ -1018,6 +1064,25 @@ watch(focusedTaskIndex, async (idx) => {
                     <label class="sr-only" for="task-search">{{
                         t('tasks.searchLabel')
                     }}</label>
+                    <div
+                        v-if="semanticSearchAvailable"
+                        class="mb-2 flex flex-wrap items-center gap-2"
+                    >
+                        <span class="text-xs text-gray-500 dark:text-slate-400">{{
+                            t('tasks.searchModeLabel')
+                        }}</span>
+                        <select
+                            v-model="searchMode"
+                            class="rounded-md border-gray-300 bg-white text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                        >
+                            <option value="keyword">
+                                {{ t('tasks.searchModeKeyword') }}
+                            </option>
+                            <option value="semantic">
+                                {{ t('tasks.searchModeSemantic') }}
+                            </option>
+                        </select>
+                    </div>
                     <input
                         id="task-search"
                         ref="searchInputRef"
@@ -1039,6 +1104,24 @@ watch(focusedTaskIndex, async (idx) => {
                     >
                         {{ searchError }}
                     </p>
+                    <div
+                        v-if="searchIndexEmpty && searchMode === 'semantic'"
+                        class="mt-2 rounded-md border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-100"
+                    >
+                        <p>{{ t('tasks.searchIndexEmpty') }}</p>
+                        <SecondaryButton
+                            type="button"
+                            class="mt-2"
+                            :disabled="searchReindexLoading"
+                            @click="reindexSemanticIndex"
+                        >
+                            {{
+                                searchReindexLoading
+                                    ? t('tasks.searchReindexLoading')
+                                    : t('tasks.searchBuildIndex')
+                            }}
+                        </SecondaryButton>
+                    </div>
                     <p
                         v-if="searchTruncated && searchResults.length > 0"
                         class="mt-1 text-xs text-amber-700 dark:text-amber-300"
@@ -1081,6 +1164,7 @@ watch(focusedTaskIndex, async (idx) => {
                             searchQuery.trim().length >= 2 &&
                             !searchLoading &&
                             !searchError &&
+                            !searchIndexEmpty &&
                             searchResults.length === 0
                         "
                         class="mt-1 text-xs text-gray-500 dark:text-slate-400"

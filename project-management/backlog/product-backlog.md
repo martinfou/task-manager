@@ -16,7 +16,7 @@ This is the main product backlog tracking all user stories and defects.
 | [US-021](user-stories/US-021-disconnect-purge-logging.md) | Disconnect, Purge, and Logging Policy | 🟠 High | 2 | ⭕ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-020](user-stories/US-020-test-pyramid-ci.md) | Test Pyramid and CI | 🟠 High | 5 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-019](user-stories/US-019-api-error-retry-ux.md) | Google API Error Handling and Retry UX | 🟠 High | 3 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
-| [US-018](user-stories/US-018-semantic-search-task-index.md) | Semantic Search over Tasks (Indexed) | 🟡 Medium | 8 | ⭕ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
+| [US-018](user-stories/US-018-semantic-search-task-index.md) | Semantic Search over Tasks (Indexed) | 🟡 Medium | 8 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-017](user-stories/US-017-bulk-actions.md) | Bulk Actions on Tasks | 🟠 High | 5 | ✅ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
 | [US-016](user-stories/US-016-links-attachments-tasks.md) | Links and Attachments in Tasks | 🟡 Medium | 3 | ✅ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
 | [US-015](user-stories/US-015-priority-encoded-in-google.md) | Priority Encoded into Google Tasks | 🟡 Medium | 3 | ✅ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
@@ -82,9 +82,9 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 23  
 **By Status**:
-- ⭕ To Do: 4
+- ⭕ To Do: 3
 - ⏳ In Progress: 0
-- ✅ Done: 19
+- ✅ Done: 20
 
 **By Priority**:
 - 🔴 Critical: 5

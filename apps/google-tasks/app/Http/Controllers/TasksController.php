@@ -10,6 +10,9 @@ use App\Services\Google\GoogleTasksRateLimitedException;
 use App\Services\Google\TaskPriorityCodec;
 use App\Services\Google\TaskSearcher;
 use App\Services\Google\TaskViewAggregator;
+use App\Services\Semantic\EmbeddingClient;
+use App\Services\Semantic\TaskEmbeddingIndexer;
+use App\Services\Semantic\TaskSemanticSearcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +31,7 @@ class TasksController extends Controller
             'connected' => $request->user()?->hasGoogleTasksConnection() ?? false,
             'pollIntervalMs' => config('google-tasks.poll_interval_ms'),
             'maxBackoffMs' => config('google-tasks.max_backoff_ms'),
+            'semanticSearchAvailable' => app(EmbeddingClient::class)->isConfigured(),
         ]);
     }
 
@@ -44,14 +48,74 @@ class TasksController extends Controller
     {
         $validated = $request->validate([
             'q' => ['required', 'string', 'min:2', 'max:200'],
+            'mode' => ['sometimes', 'string', 'in:keyword,semantic'],
         ]);
 
-        return $this->run(function () use ($request, $searcher, $validated) {
+        $mode = $validated['mode'] ?? 'keyword';
+        $semanticAvailable = app(EmbeddingClient::class)->isConfigured();
+
+        return $this->run(function () use ($request, $searcher, $validated, $mode, $semanticAvailable) {
+            if ($mode === 'semantic') {
+                if (! $semanticAvailable) {
+                    return response()->json([
+                        'message' => 'Semantic search is not configured. Set SEMANTIC_SEARCH_ENABLED and OPENAI_API_KEY.',
+                        'code' => 'semantic_unavailable',
+                    ], 422);
+                }
+
+                try {
+                    $semantic = app(TaskSemanticSearcher::class);
+                    $result = $semantic->search($request->user(), $validated['q']);
+                } catch (\RuntimeException $e) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                        'code' => 'embedding_failed',
+                    ], 502);
+                }
+
+                $result['items'] = $this->decodeSearchRows($result['items'] ?? []);
+                $result['semantic_available'] = true;
+                $result['mode'] = 'semantic';
+
+                return response()->json($result);
+            }
+
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $result = $searcher->search($client, $validated['q']);
             $result['items'] = $this->decodeSearchRows($result['items'] ?? []);
+            $result['semantic_available'] = $semanticAvailable;
+            $result['mode'] = 'keyword';
 
             return response()->json($result);
+        });
+    }
+
+    public function reindexSearchEmbeddings(Request $request, TaskEmbeddingIndexer $indexer): JsonResponse
+    {
+        if (! app(EmbeddingClient::class)->isConfigured()) {
+            return response()->json([
+                'message' => 'Semantic search is not configured.',
+                'code' => 'semantic_unavailable',
+            ], 422);
+        }
+
+        return $this->run(function () use ($request, $indexer) {
+            set_time_limit(300);
+            $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
+
+            try {
+                $count = $indexer->reindexUser($request->user(), $client);
+            } catch (\RuntimeException $e) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'code' => 'embedding_failed',
+                ], 502);
+            }
+
+            return response()->json([
+                'ok' => true,
+                'indexed' => $count,
+            ]);
         });
     }
 
