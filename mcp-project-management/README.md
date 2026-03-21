@@ -94,3 +94,15 @@ python -m mcp_project_management.server
 ```
 
 Uses stdio transport by default (for MCP clients).
+
+## Testing (US-005)
+
+From `mcp-project-management/` with a virtualenv:
+
+```bash
+uv venv && . .venv/bin/activate   # or: python -m venv .venv && source .venv/bin/activate
+uv pip install -e ".[dev]"       # or: pip install -e ".[dev]"
+pytest tests/ -v
+```
+
+Tests use a **temporary** `PROJECT_ROOT` so they do not modify your real `project-management/` tree. CI: [`.github/workflows/mcp-project-management-ci.yml`](../.github/workflows/mcp-project-management-ci.yml).

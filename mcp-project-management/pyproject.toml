@@ -12,6 +12,11 @@ dependencies = [
     "fastmcp>=3.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
 [project.scripts]
 mcp-project-management = "mcp_project_management.server:main"
 
@@ -20,3 +25,7 @@ packages = ["src/mcp_project_management"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/mcp_project_management"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
