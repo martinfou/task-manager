@@ -29,7 +29,7 @@ As a maintainer, I want repeatable tests for the MCP server’s Python tools, so
 - [x] Automated tests exercise `create_user_story` in a **temporary** `PROJECT_ROOT` (no writes to the real repo unless explicitly configured).
 - [x] Tests confirm the MCP server module imports without starting stdio transport.
 - [x] `validate_backlog` tool invocation returns successfully for a bootstrapped backlog tree.
-- [x] Documentation: how to run tests (`uv` / `pip install -e ".[dev]"` + `pytest`).
+- [x] Documentation: how to run tests (`pip install -e ".[dev]"` + `python -m pytest`).
 
 ## Business Value
 

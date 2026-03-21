@@ -97,12 +97,14 @@ Uses stdio transport by default (for MCP clients).
 
 ## Testing (US-005)
 
-From `mcp-project-management/` with a virtualenv:
+From `mcp-project-management/`, install dev deps into a virtualenv, then run tests via **`python -m pytest`** (avoids “command not found: pytest” when the script is not on your `PATH`):
 
 ```bash
-uv venv && . .venv/bin/activate   # or: python -m venv .venv && source .venv/bin/activate
-uv pip install -e ".[dev]"       # or: pip install -e ".[dev]"
-pytest tests/ -v
+uv venv && . .venv/bin/activate   # or: python3 -m venv .venv && source .venv/bin/activate
+uv pip install -e ".[dev]"       # or: python3 -m pip install -e ".[dev]"
+python -m pytest tests/ -v     # or: python3 -m pytest tests/ -v
 ```
+
+If you use `uv` and prefer not to activate the venv: `uv run --extra dev python -m pytest tests/ -v` (from `mcp-project-management/`).
 
 Tests use a **temporary** `PROJECT_ROOT` so they do not modify your real `project-management/` tree. CI: [`.github/workflows/mcp-project-management-ci.yml`](../.github/workflows/mcp-project-management-ci.yml).
