@@ -32,3 +32,16 @@ Register **exact** URIs in Google Cloud Console (OAuth client):
 - Production: `https://your-domain/auth/google/callback`.
 
 See also [RI-001](../../../project-management/backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) (checklist to be expanded).
+
+## Semantic search (operations)
+
+When `SEMANTIC_SEARCH_ENABLED=true` and `OPENAI_API_KEY` (or compatible endpoint) are set, users can build a **semantic index** and search by meaning. See [SEMANTIC_SEARCH.md](SEMANTIC_SEARCH.md) for architecture; [DATA_RETENTION.md](DATA_RETENTION.md) for disconnect and index deletion.
+
+| Concern | Guidance |
+|---------|----------|
+| **First index / rebuild** | UI: **Build semantic index** on Tasks, or `POST /tasks/data/search/reindex` (authenticated + Google connected), or `php artisan google-tasks:reindex-embeddings [user_id]`. Large accounts can take **minutes** and many Google API + embedding calls. |
+| **Cost** | Each (re)index batches tasks through the embeddings API; each **semantic query** adds one embedding call. Monitor provider usage; tune `SEMANTIC_INDEX_BATCH_SIZE` if needed. |
+| **Reliability** | If Google returns 429/5xx, indexing may partially fail — check application logs. OAuth refresh issues appear as `google_oauth_token_refresh_failed` / `google_oauth_token_response_invalid` (see `GoogleOAuthTokenService`) — **no** tokens in log payloads. |
+| **After deploy** | No extra migration beyond `task_embeddings` migration; ensure env vars are set in production. |
+
+Tracked as [RI-003](../../../project-management/backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md).

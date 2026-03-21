@@ -13,9 +13,9 @@ compatible_with: [product-backlog]
 **Duration**: 2026-03-21 — 2026-04-04 (2 weeks)  
 **Team Velocity**: **28** points delivered in [Sprint 3](sprint-03-google-tasks-productivity.md); Sprint 4 commits **18** points (US-018–US-021). **−10 pts vs last sprint** — room for spikes on embeddings and indexing.  
 **Sprint Planning Date**: 2026-03-21 (after Sprint 3 review + retrospective)  
-**Sprint Review Date**: 2026-04-04  
-**Sprint Retrospective Date**: 2026-04-04  
-**Sprint status**: **Scope delivered** (2026-03-21) — all committed stories [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)–[US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) ✅; formal review/retro still scheduled 2026-04-04.
+**Sprint Review Date**: 2026-03-21 (held when scope complete)  
+**Sprint Retrospective Date**: 2026-03-21  
+**Sprint status**: **Closed** — committed scope [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)–[US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) ✅; sprint review + retrospective completed 2026-03-21.
 
 ## Sprint planning record (2026-03-21)
 
@@ -74,7 +74,7 @@ compatible_with: [product-backlog]
 
 | ID | Title | Notes |
 |----|-------|--------|
-| [US-022](../backlog/user-stories/US-022-pwa-install-phase.md) | PWA install | Next phase per discovery |
+| [US-022](../backlog/user-stories/US-022-pwa-install-phase.md) | PWA install | ✅ Done from backlog after Sprint 4 (2026-03-21) |
 
 ---
 
@@ -86,9 +86,43 @@ compatible_with: [product-backlog]
 - 2026-03-21: +8 story points ([US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)); **2** points remaining (US-021)
 - 2026-03-21: +2 story points ([US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md)); **0** points remaining — sprint committed scope complete
 
-**Sprint Review Notes**: (fill at review on 2026-04-04)
+**Sprint Review Notes** (2026-03-21):
 
-**Sprint Retrospective Notes**: (fill at retrospective on 2026-04-04)
+- **Committed scope**: [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)–[US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) — **18 / 18** story points delivered.
+- **Goal**: Semantic search MVP, structured API error UX, test pyramid + CI, disconnect/purge + logging — all shipped with docs (`SEMANTIC_SEARCH.md`, `DATA_RETENTION.md`, `docs/TESTING.md`, CI workflow).
+- **Follow-up outside sprint commitment**: [US-022](../backlog/user-stories/US-022-pwa-install-phase.md) (PWA) completed from backlog the same calendar window; tracked in backlog, not Sprint 4 committed points.
+
+**Sprint Retrospective Notes** (2026-03-21):
+
+### What went well
+
+- **Ordering paid off**: US-019 → US-020 → US-018 → US-021 matched the plan (API reliability and tests before heavy indexing, privacy last).
+- **18 points** delivered with clear documentation for semantic search, retention, and testing — aligns with discovery “quality bar.”
+- **CI + PHPUnit + Vitest/Playwright** (US-020) gives repeatable gates before semantic work merged.
+- **Disconnect + purge** (US-021) closes the loop on embeddings and OAuth cache; complements US-018.
+
+### What could be improved
+
+- **Semantic search at scale**: Full in-memory cosine over all user vectors is fine for MVP; very large indices will need a follow-up story (ANN, caps, or background reindex).
+- **Sprint calendar vs velocity**: Committed scope finished before the notional sprint end date — **review/retro** should run when scope is done, not only on the calendar line (see process follow-up below).
+- **Ops clarity**: Operators benefit from a single **deploy/runbook** section for embeddings — captured as [RI-003](../backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md).
+
+### Retrospective improvements
+
+| ID | Description | Owner | Due Sprint | Status |
+|----|-------------|-------|------------|--------|
+| [RI-003](../backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md) | Semantic search operations section in `apps/google-tasks/docs/DEPLOY.md` | Developer | Sprint 4 retro | ✅ Done |
+
+**Tracking**: [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) were completed in Sprint 3; no open RIs from Sprint 3 carried into Sprint 4.
+
+### Process changes to document
+
+- [x] [sprint-review-process.md](../processes/sprint-review-process.md) — added **Early completion** bullet (hold review when scope is done, not only on calendar end date).
+
+### Follow-up
+
+- [x] [RI-003](../backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md) implemented (DEPLOY.md section).
+- [ ] Next sprint planning: choose next backlog priority (e.g. [US-005](../backlog/user-stories/US-005-test-mcp-integration.md) or new theme).
 
 ---
 

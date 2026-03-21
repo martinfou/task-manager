@@ -241,7 +241,7 @@ compatible_with: [product-backlog]
 ### Follow-up
 
 - [x] Sprint 4 planning completed (2026-03-21); active sprint = Sprint 4.
-- [ ] Review Sprint 4 retrospective improvements at end of Sprint 4.
+- [x] Sprint 4 retrospective completed (2026-03-21); [RI-003](../backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md) done.
 
 ---
 

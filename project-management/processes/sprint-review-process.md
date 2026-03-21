@@ -12,6 +12,7 @@
 - **Duration**: 1–2 hours (adjust for team size and deliverables)
 - **Participants**: Sprint team, Product Owner, stakeholders (optional)
 - **Prerequisite**: Sprint work completed; items ready to demo
+- **Early completion**: If all committed sprint backlog items are **Done** before the calendar sprint end date, hold the sprint review **when the scope is complete** (do not wait only for the original end date). Then run the retrospective and update the sprint document dates accordingly.
 
 ---
 
@@ -84,4 +85,4 @@
 
 ---
 
-**Last Updated**: 2026-03-07
+**Last Updated**: 2026-03-21

@@ -4,7 +4,7 @@ This is the main product backlog tracking all user stories and defects.
 
 **Last Updated**: 2026-03-21
 
-**Active Sprint**: [Sprint 4: Google Tasks — Quality, Semantic Search, and Privacy](../sprints/sprint-04-google-tasks-quality-and-v2.md) — **scope delivered** (US-018–US-021 ✅; see sprint file for review/retro). [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21 (US-011–US-017; [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅). [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) completed 2026-03-21. [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
+**Active Sprint**: **None** — [Sprint 4: Google Tasks — Quality, Semantic Search, and Privacy](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21 (US-018–US-021; review + retrospective). [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21 (US-011–US-017; [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅). [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) completed 2026-03-21. [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
 **Product discovery (Google Tasks client)**: [responses-submitted-2026-03-21.json](../../docs/google-tasks-discovery/responses-submitted-2026-03-21.json)
 
@@ -50,6 +50,7 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Description | Owner | Due Sprint | Status |
 |----|-------------|-------|------------|--------|
+| [RI-003](retrospective-improvements/RI-003-semantic-search-ops-runbook.md) | Semantic search operations runbook in `apps/google-tasks/docs/DEPLOY.md` | Developer | Sprint 4 retro | ✅ |
 | [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) | Google Cloud OAuth + Tasks API checklist in `docs/` | Developer | Sprint 3 | ✅ |
 | [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) | CI workflow for `apps/google-tasks` (Composer, Vite, tests) | Developer | Sprint 3 | ✅ |
 
@@ -82,9 +83,9 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 23  
 **By Status**:
-- ⭕ To Do: 3
+- ⭕ To Do: 1
 - ⏳ In Progress: 0
-- ✅ Done: 20
+- ✅ Done: 22
 
 **By Priority**:
 - 🔴 Critical: 5
