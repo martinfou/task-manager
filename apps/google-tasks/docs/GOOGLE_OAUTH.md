@@ -43,4 +43,4 @@ Sign-out uses the existing Breeze **logout** route and clears the session. Full 
 ## Related
 
 - [DEPLOY.md](DEPLOY.md) — hosting and env
-- [RI-001](../../../project-management/backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) — checklist (expand over time)
+- [Google Cloud OAuth checklist](../../../docs/google-tasks-discovery/google-cloud-oauth-checklist.md) — Console checklist (APIs, consent, redirect URIs, test users)

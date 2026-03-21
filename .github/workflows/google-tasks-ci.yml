@@ -1,0 +1,66 @@
+# RI-002 — validate apps/google-tasks on push/PR (Composer, Vite, PHPUnit)
+
+name: Google Tasks app CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/google-tasks/**'
+      - '.github/workflows/google-tasks-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/google-tasks/**'
+      - '.github/workflows/google-tasks-ci.yml'
+
+defaults:
+  run:
+    working-directory: apps/google-tasks
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite, ctype, json, tokenizer, xml
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: apps/google-tasks/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('apps/google-tasks/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/google-tasks/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Prepare Laravel env
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Build frontend (Vite)
+        run: npm run build
+
+      - name: Run PHPUnit
+        run: php artisan test

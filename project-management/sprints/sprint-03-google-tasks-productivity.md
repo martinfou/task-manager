@@ -15,7 +15,7 @@ compatible_with: [product-backlog]
 **Sprint Planning Date**: 2026-03-21 (after Sprint 2 review + retrospective)  
 **Sprint Review Date**: 2026-04-04  
 **Sprint Retrospective Date**: 2026-04-04  
-**Sprint status**: In progress — [US-011](../backlog/user-stories/US-011-i18n-en-fr.md) ✅, [US-013](../backlog/user-stories/US-013-full-text-search.md) ✅, [US-014](../backlog/user-stories/US-014-keyboard-shortcuts.md) ✅, [US-015](../backlog/user-stories/US-015-priority-encoded-in-google.md) ✅, [US-016](../backlog/user-stories/US-016-links-attachments-tasks.md) ✅, [US-017](../backlog/user-stories/US-017-bulk-actions.md) ✅; next [US-012](../backlog/user-stories/US-012-filters-kanban.md) ⭕.
+**Sprint status**: Committed scope delivered — [US-011](../backlog/user-stories/US-011-i18n-en-fr.md) ✅, [US-012](../backlog/user-stories/US-012-filters-kanban.md) ✅, [US-013](../backlog/user-stories/US-013-full-text-search.md) ✅, [US-014](../backlog/user-stories/US-014-keyboard-shortcuts.md) ✅, [US-015](../backlog/user-stories/US-015-priority-encoded-in-google.md) ✅, [US-016](../backlog/user-stories/US-016-links-attachments-tasks.md) ✅, [US-017](../backlog/user-stories/US-017-bulk-actions.md) ✅ (**28 / 28** story points); carry [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) if not yet done.
 
 ## Sprint planning record (2026-03-21)
 
@@ -28,7 +28,7 @@ compatible_with: [product-backlog]
 | Capacity | Solo dev; velocity 26; committed 28 pts — sequence below de-risks slip |
 | Branching | Per [ADR-002](../architecture-decision-records/ADR-002-branching-strategy.md): first branch for US-011: `feature/US-011-i18n-en-fr` |
 
-**Related improvements** (parallel, same sprint): [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md), [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md).
+**Related improvements** (parallel, same sprint): [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) ✅, [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅.
 
 ### Committed implementation order
 
@@ -84,16 +84,16 @@ compatible_with: [product-backlog]
 
 **Backlog**: [US-012](../backlog/user-stories/US-012-filters-kanban.md)
 
-**Status**: ⭕ To Do
+**Status**: ✅ Done
 
 **Tasks**:
 
 | Task ID | Task Description | Document Reference | Status |
 |---------|------------------|---------------------|--------|
-| T-028 | Filter panel / query bar (list, due range, completion state) | US-012 | ⭕ |
-| T-029 | Kanban columns definition documented; board UI | US-012 | ⭕ |
-| T-030 | Drag/move flow mapped to API; document unsupported cases | US-012 | ⭕ |
-| T-031 | Virtualization or pagination for large lists | US-012 | ⭕ |
+| T-028 | Filter panel / query bar (list, due range, completion state) | US-012 | ✅ |
+| T-029 | Kanban columns definition documented; board UI | US-012 | ✅ |
+| T-030 | Drag/move flow mapped to API; document unsupported cases | US-012 | ✅ |
+| T-031 | Virtualization or pagination for large lists | US-012 | ✅ |
 
 ---
 
@@ -186,6 +186,7 @@ compatible_with: [product-backlog]
 - 2026-03-21: 12 story points completed ([US-011](../backlog/user-stories/US-011-i18n-en-fr.md), [US-013](../backlog/user-stories/US-013-full-text-search.md), [US-014](../backlog/user-stories/US-014-keyboard-shortcuts.md), [US-015](../backlog/user-stories/US-015-priority-encoded-in-google.md)); **16** points remaining in sprint scope (US-012, US-016–US-017)
 - 2026-03-21: +3 story points ([US-016](../backlog/user-stories/US-016-links-attachments-tasks.md)); **13** points remaining (US-012, US-017)
 - 2026-03-21: +5 story points ([US-017](../backlog/user-stories/US-017-bulk-actions.md)); **8** points remaining ([US-012](../backlog/user-stories/US-012-filters-kanban.md) only)
+- 2026-03-21: +8 story points ([US-012](../backlog/user-stories/US-012-filters-kanban.md)); **Sprint 3 committed backlog: 28 / 28** story points
 
 **Sprint Review Notes**: (fill at review on 2026-04-04)
 

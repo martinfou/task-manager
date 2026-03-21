@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a power user, I want filters and a board view, so that I can triage work like
 
 ## Acceptance Criteria
 
-- [ ] Filter panel or query bar with clear, testable filter combinations.
-- [ ] Kanban: columns definition documented; drag-and-drop updates tasks via API where supported (or explain limitations).
-- [ ] Performance: large lists handled without unusable lag (virtualization or pagination if needed).
+- [x] Filter panel or query bar with clear, testable filter combinations.
+- [x] Kanban: columns definition documented; drag-and-drop updates tasks via API where supported (or explain limitations).
+- [x] Performance: large lists handled without unusable lag (virtualization or pagination if needed).
 
 ## Technical Requirements
 
@@ -41,3 +41,4 @@ As a power user, I want filters and a board view, so that I can triage work like
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: client-side filters (status, due, priority, list on Today); list/board toggle; P1–P4 Kanban with DnD → `updatePriority`; `taskFilters.js`; scrollable columns; README + in-app help

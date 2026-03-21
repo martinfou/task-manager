@@ -73,6 +73,7 @@
         "helpBullet2": "Inbox is the default Google list: we use the list titled “My Tasks” when it exists; otherwise the first list Google returns. Every task still lives in a real Google list.",
         "helpBullet3": "New tasks from Today or Inbox are created in that default list.",
         "helpBulletBulk": "Bulk: use the first checkbox on each row, or Ctrl/Cmd+click to toggle and Shift+click for a range. On narrow screens, use the checkboxes — there is no touch multi-select gesture.",
+        "helpBulletFilters": "Filters and board view apply on top of the current navigation (Today / Inbox / list). Board columns are P1–P4 by priority; drag a card to another column to change priority (same as the list dropdown).",
         "errors": {
             "rateLimited": "Google rate limited (429). Polling slowed; try again shortly.",
             "loadFailed": "Failed to load tasks.",
@@ -134,6 +135,28 @@
         "bulkMoveCancel": "Cancel",
         "bulkMoveSubmit": "Move",
         "bulkResultTitle": "Some actions failed",
-        "bulkResultClose": "Close"
+        "bulkResultClose": "Close",
+        "viewList": "List",
+        "viewBoard": "Board",
+        "viewModeGroup": "View mode",
+        "filterCompletion": "Status",
+        "filterCompletionAll": "All",
+        "filterCompletionActive": "Incomplete",
+        "filterCompletionDone": "Completed",
+        "filterDue": "Due",
+        "filterDueAny": "Any",
+        "filterDueOverdue": "Overdue",
+        "filterDueToday": "Due today",
+        "filterDueHas": "Has due date",
+        "filterDueNo": "No due date",
+        "filterPriority": "Priority",
+        "filterPriorityAll": "Any",
+        "filterList": "List",
+        "filterListAll": "All lists",
+        "resetFilters": "Reset filters",
+        "noFilterMatch": "No tasks match the current filters.",
+        "kanbanRegion": "Priority board",
+        "kanbanEmptyColumn": "Drop tasks here",
+        "kanbanHint": "Columns are P1–P4 (decoded from task titles). Drag a card to another column to change priority."
     }
 }

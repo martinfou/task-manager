@@ -12,7 +12,7 @@
 | **Description** | Add a CI workflow (e.g. GitHub Actions) that runs `composer install`, `npm ci`, `npm run build`, and `php artisan test` in `apps/google-tasks` |
 | **Owner** | Developer |
 | **Due Sprint** | Sprint 3 |
-| **Status** | ⭕ To Do |
+| **Status** | ✅ Done |
 | **Source Retro** | Sprint 2 — 2026-03-21 |
 
 ---
@@ -23,7 +23,7 @@
 
 **Why**: Catches broken Vite manifests, missing deps, and test regressions before merge; supports solo + AI velocity safely.
 
-**How**: `.github/workflows/` job with `working-directory: apps/google-tasks`; PHP and Node versions aligned with `composer.json` / `package.json` engines.
+**How**: `.github/workflows/google-tasks-ci.yml` — `working-directory: apps/google-tasks`; PHP **8.3** and Node **20**; `composer install`, `npm ci`, `npm run build`, `php artisan test`.
 
 ---
 
@@ -34,3 +34,7 @@
 ---
 
 **Last Updated**: 2026-03-21
+
+## History
+
+- 2026-03-21 — Added `.github/workflows/google-tasks-ci.yml` (paths-filtered to `apps/google-tasks/**`).

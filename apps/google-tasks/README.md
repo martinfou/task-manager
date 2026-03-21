@@ -65,6 +65,13 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 - **UI**: Tasks page includes a priority selector in the create form and per-task priority dropdown. Updates write through encoding (no raw title editing required).
 - **Implementation**: `app/Services/Google/TaskPriorityCodec.php` with wiring in `TasksController` and `TaskSearcher`.
 
+## Filters and Kanban (US-012)
+
+- **Filters** (client-side on the loaded task set): **status** (all / incomplete / completed), **due** (any / overdue / due today / has due / no due), **priority** (any / P1–P4), and on **Today** only a **Google list** filter. Filters combine with the current navigation (Today, Inbox, or a single list). Preferences persist in **localStorage** (`gt-task-filters`, `gt-task-view-mode`).
+- **List vs board**: **List** is the existing row layout; **Board** shows four **priority** columns (P1–P4), aligned with `TaskPriorityCodec`. Drag-and-drop between columns calls the same **PATCH** priority update as the per-task dropdown (no new server routes).
+- **Performance**: Board columns use **scrollable** areas (`max-height` ~70vh) so large lists stay usable without embedding a virtual-list library. If every task is in one column, scroll that column.
+- **Limits**: Google Tasks has no native “status columns” or tags; Kanban is **priority-only**. Moving between lists is not a drag target on the board (use bulk **Move to list** from list view).
+
 ## Bulk actions (US-017)
 
 - **Desktop**: Each task row has a **selection** checkbox (first column) plus the existing **complete** checkbox. **Ctrl/Cmd+click** a row to toggle its selection without clearing others; **Shift+click** selects from the last anchor to that row. The bulk bar (**Clear**, **Select all**, **Complete**, **Move to list…**, **Delete…**) appears when at least one task is selected.

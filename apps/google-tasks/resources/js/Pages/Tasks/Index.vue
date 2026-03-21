@@ -4,6 +4,7 @@ import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TaskNotesRichText from '@/Components/TaskNotesRichText.vue';
+import TasksKanbanBoard from '@/Components/TasksKanbanBoard.vue';
 import TasksKeyboardShortcutsHelp from '@/Components/TasksKeyboardShortcutsHelp.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -22,6 +23,13 @@ import {
     watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
+import {
+    filterTasks,
+    groupTasksByPriority,
+} from '@/utils/taskFilters';
+
+const VIEW_MODE_KEY = 'gt-task-view-mode';
+const FILTER_STATE_KEY = 'gt-task-filters';
 
 const { t, locale } = useI18n();
 const { formatDateTime } = useLocaleDate();
@@ -68,6 +76,34 @@ const showBulkResultModal = ref(false);
 const bulkFailureLines = ref([]);
 let pollTimer = null;
 let searchDebounce = null;
+
+/** @type {import('vue').Ref<'list'|'board'>} */
+const viewMode = ref('list');
+const filterCompletion = ref('all');
+const filterDue = ref('any');
+const filterPriority = ref('all');
+/** Empty string means all lists (Today view only). */
+const filterListId = ref('');
+
+const filterState = computed(() => ({
+    completion: filterCompletion.value,
+    due: filterDue.value,
+    priority: filterPriority.value,
+    listId:
+        navMode.value === 'today' && filterListId.value
+            ? filterListId.value
+            : null,
+}));
+
+const filteredTasks = computed(() => filterTasks(tasks.value, filterState.value));
+
+const kanbanBuckets = computed(() =>
+    groupTasksByPriority(filteredTasks.value),
+);
+
+const tasksForShortcuts = computed(() =>
+    viewMode.value === 'list' ? filteredTasks.value : [],
+);
 
 const selectedListTitle = computed(() => {
     const list = taskLists.value.find((l) => l.id === selectedListId.value);
@@ -184,7 +220,7 @@ function onTaskRowClick(task, taskIndex, e) {
             taskIndex < anchor ? [taskIndex, anchor] : [anchor, taskIndex];
         const next = { ...selectedKeys.value };
         for (let i = lo; i <= hi; i++) {
-            const t = tasks.value[i];
+            const t = filteredTasks.value[i];
             if (t && !t._optimistic) {
                 next[taskKey(t)] = true;
             }
@@ -216,7 +252,7 @@ function onSelectionCheckboxClick(task, taskIndex) {
 
 function bulkSelectAll() {
     const next = { ...selectedKeys.value };
-    for (const t of tasks.value) {
+    for (const t of filteredTasks.value) {
         if (!t._optimistic) {
             next[taskKey(t)] = true;
         }
@@ -549,6 +585,7 @@ async function openSearchResult(row) {
 }
 
 onMounted(() => {
+    loadPersistedTaskUi();
     if (!props.connected) {
         return;
     }
@@ -762,10 +799,119 @@ function navButtonClass(active) {
         : 'text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-800';
 }
 
+function viewModeToggleClass(active) {
+    return active
+        ? 'bg-white text-gray-900 shadow dark:bg-slate-700 dark:text-slate-100'
+        : 'text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200';
+}
+
+function loadPersistedTaskUi() {
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+    try {
+        const vm = localStorage.getItem(VIEW_MODE_KEY);
+        if (vm === 'list' || vm === 'board') {
+            viewMode.value = vm;
+        }
+        const raw = localStorage.getItem(FILTER_STATE_KEY);
+        if (raw) {
+            const o = JSON.parse(raw);
+            if (
+                o.completion === 'all' ||
+                o.completion === 'needsAction' ||
+                o.completion === 'completed'
+            ) {
+                filterCompletion.value = o.completion;
+            }
+            if (
+                o.due === 'any' ||
+                o.due === 'overdue' ||
+                o.due === 'today' ||
+                o.due === 'hasDue' ||
+                o.due === 'noDue'
+            ) {
+                filterDue.value = o.due;
+            }
+            if (
+                o.priority === 'all' ||
+                o.priority === 'p1' ||
+                o.priority === 'p2' ||
+                o.priority === 'p3' ||
+                o.priority === 'p4'
+            ) {
+                filterPriority.value = o.priority;
+            }
+            if (o.listId === null || o.listId === '') {
+                filterListId.value = '';
+            } else if (typeof o.listId === 'string') {
+                filterListId.value = o.listId;
+            }
+        }
+    } catch {
+        /* ignore */
+    }
+}
+
+function persistTaskUi() {
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+    localStorage.setItem(VIEW_MODE_KEY, viewMode.value);
+    localStorage.setItem(
+        FILTER_STATE_KEY,
+        JSON.stringify({
+            completion: filterCompletion.value,
+            due: filterDue.value,
+            priority: filterPriority.value,
+            listId: filterListId.value,
+        }),
+    );
+}
+
+function resetFilters() {
+    filterCompletion.value = 'all';
+    filterDue.value = 'any';
+    filterPriority.value = 'all';
+    filterListId.value = '';
+}
+
+function onKanbanDropPriority({ taskId, listId, newPriority }) {
+    const task = tasks.value.find(
+        (t) => t.id === taskId && listIdForTask(t) === listId,
+    );
+    if (!task || task._optimistic) {
+        return;
+    }
+    const cur = (task.priority ?? 'p3').toLowerCase();
+    if (cur === newPriority) {
+        return;
+    }
+    updatePriority(task, newPriority);
+}
+
+function onKanbanTaskClick(task, e) {
+    const idx = filteredTasks.value.findIndex(
+        (x) => taskKey(x) === taskKey(task),
+    );
+    if (idx >= 0) {
+        onTaskRowClick(task, idx, e);
+    }
+}
+
+function onKanbanSelectionClick(task) {
+    const idx = filteredTasks.value.findIndex(
+        (x) => taskKey(x) === taskKey(task),
+    );
+    if (idx >= 0) {
+        onSelectionCheckboxClick(task, idx);
+    }
+}
+
 useTasksKeyboardShortcuts({
     connected: toRef(props, 'connected'),
     showHelp: showKeyboardHelp,
-    tasks,
+    tasks: tasksForShortcuts,
     focusedTaskIndex,
     onOpenHelp: () => {
         showKeyboardHelp.value = true;
@@ -795,13 +941,23 @@ watch(selectedListId, () => {
 watch(tasks, pruneSelectionFromTasks);
 
 watch(
-    () => tasks.value.length,
+    () => filteredTasks.value.length,
     () => {
-        if (focusedTaskIndex.value >= tasks.value.length) {
+        if (focusedTaskIndex.value >= filteredTasks.value.length) {
             focusedTaskIndex.value =
-                tasks.value.length > 0 ? tasks.value.length - 1 : -1;
+                filteredTasks.value.length > 0
+                    ? filteredTasks.value.length - 1
+                    : -1;
         }
     },
+);
+
+watch(
+    [viewMode, filterCompletion, filterDue, filterPriority, filterListId],
+    () => {
+        persistTaskUi();
+    },
+    { deep: true },
 );
 
 watch(focusedTaskIndex, async (idx) => {
@@ -1006,6 +1162,9 @@ watch(focusedTaskIndex, async (idx) => {
                                 <li>
                                     {{ t('tasks.helpBulletBulk') }}
                                 </li>
+                                <li>
+                                    {{ t('tasks.helpBulletFilters') }}
+                                </li>
                             </ul>
                         </details>
 
@@ -1174,6 +1333,143 @@ watch(focusedTaskIndex, async (idx) => {
                                 }}</span>
                             </div>
                             <div
+                                class="flex flex-wrap items-end gap-3 border-b border-gray-100 px-4 py-3 dark:border-slate-800"
+                            >
+                                <div
+                                    class="inline-flex gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-slate-800"
+                                    role="group"
+                                    :aria-label="t('tasks.viewModeGroup')"
+                                >
+                                    <button
+                                        type="button"
+                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                                        :class="viewModeToggleClass(viewMode === 'list')"
+                                        @click="viewMode = 'list'"
+                                    >
+                                        {{ t('tasks.viewList') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                                        :class="viewModeToggleClass(viewMode === 'board')"
+                                        @click="viewMode = 'board'"
+                                    >
+                                        {{ t('tasks.viewBoard') }}
+                                    </button>
+                                </div>
+                                <div class="min-w-[8rem]">
+                                    <InputLabel
+                                        for="filter-completion"
+                                        :value="t('tasks.filterCompletion')"
+                                    />
+                                    <select
+                                        id="filter-completion"
+                                        v-model="filterCompletion"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                                    >
+                                        <option value="all">
+                                            {{ t('tasks.filterCompletionAll') }}
+                                        </option>
+                                        <option value="needsAction">
+                                            {{
+                                                t('tasks.filterCompletionActive')
+                                            }}
+                                        </option>
+                                        <option value="completed">
+                                            {{
+                                                t('tasks.filterCompletionDone')
+                                            }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="min-w-[8rem]">
+                                    <InputLabel
+                                        for="filter-due"
+                                        :value="t('tasks.filterDue')"
+                                    />
+                                    <select
+                                        id="filter-due"
+                                        v-model="filterDue"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                                    >
+                                        <option value="any">
+                                            {{ t('tasks.filterDueAny') }}
+                                        </option>
+                                        <option value="overdue">
+                                            {{ t('tasks.filterDueOverdue') }}
+                                        </option>
+                                        <option value="today">
+                                            {{ t('tasks.filterDueToday') }}
+                                        </option>
+                                        <option value="hasDue">
+                                            {{ t('tasks.filterDueHas') }}
+                                        </option>
+                                        <option value="noDue">
+                                            {{ t('tasks.filterDueNo') }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="min-w-[8rem]">
+                                    <InputLabel
+                                        for="filter-prio"
+                                        :value="t('tasks.filterPriority')"
+                                    />
+                                    <select
+                                        id="filter-prio"
+                                        v-model="filterPriority"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                                    >
+                                        <option value="all">
+                                            {{ t('tasks.filterPriorityAll') }}
+                                        </option>
+                                        <option value="p1">
+                                            {{ t('tasks.priorityP1') }}
+                                        </option>
+                                        <option value="p2">
+                                            {{ t('tasks.priorityP2') }}
+                                        </option>
+                                        <option value="p3">
+                                            {{ t('tasks.priorityP3') }}
+                                        </option>
+                                        <option value="p4">
+                                            {{ t('tasks.priorityP4') }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div
+                                    v-if="navMode === 'today'"
+                                    class="min-w-[10rem]"
+                                >
+                                    <InputLabel
+                                        for="filter-list"
+                                        :value="t('tasks.filterList')"
+                                    />
+                                    <select
+                                        id="filter-list"
+                                        v-model="filterListId"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                                    >
+                                        <option value="">
+                                            {{ t('tasks.filterListAll') }}
+                                        </option>
+                                        <option
+                                            v-for="list in taskLists"
+                                            :key="`flt-${list.id}`"
+                                            :value="list.id"
+                                        >
+                                            {{ list.title }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <SecondaryButton
+                                    type="button"
+                                    class="mt-6"
+                                    @click="resetFilters"
+                                >
+                                    {{ t('tasks.resetFilters') }}
+                                </SecondaryButton>
+                            </div>
+                            <div
                                 v-if="selectedCount > 0"
                                 class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-indigo-50/90 px-4 py-2.5 text-sm dark:border-slate-800 dark:bg-indigo-950/40"
                             >
@@ -1223,12 +1519,13 @@ watch(focusedTaskIndex, async (idx) => {
                                 </button>
                             </div>
                             <ul
+                                v-if="viewMode === 'list'"
                                 class="divide-y divide-gray-100 dark:divide-slate-800"
                                 role="list"
                                 aria-label="Tasks"
                             >
                                 <li
-                                    v-for="(task, taskIndex) in tasks"
+                                    v-for="(task, taskIndex) in filteredTasks"
                                     :key="`${taskKey(task)}`"
                                     :data-task-id="task.id"
                                     role="listitem"
@@ -1397,7 +1694,48 @@ watch(focusedTaskIndex, async (idx) => {
                                 >
                                     {{ t('tasks.emptyList') }}
                                 </li>
+                                <li
+                                    v-else-if="
+                                        tasks.length > 0 &&
+                                        filteredTasks.length === 0
+                                    "
+                                    class="px-6 py-10 text-center text-sm text-gray-500 dark:text-slate-400"
+                                >
+                                    {{ t('tasks.noFilterMatch') }}
+                                </li>
                             </ul>
+                            <div
+                                v-else
+                                class="border-t border-gray-100 px-3 py-3 dark:border-slate-800"
+                            >
+                                <p
+                                    v-if="
+                                        tasks.length > 0 &&
+                                        filteredTasks.length === 0
+                                    "
+                                    class="px-3 py-10 text-center text-sm text-gray-500 dark:text-slate-400"
+                                >
+                                    {{ t('tasks.noFilterMatch') }}
+                                </p>
+                                <template v-else>
+                                    <p
+                                        class="mb-3 text-xs text-gray-500 dark:text-slate-400"
+                                    >
+                                        {{ t('tasks.kanbanHint') }}
+                                    </p>
+                                    <TasksKanbanBoard
+                                        :buckets="kanbanBuckets"
+                                        :nav-mode="navMode"
+                                        :is-task-selected="isTaskSelected"
+                                        :task-key="taskKey"
+                                        :list-id-for-task="listIdForTask"
+                                        @drop-priority="onKanbanDropPriority"
+                                        @task-click="onKanbanTaskClick"
+                                        @selection-click="onKanbanSelectionClick"
+                                        @toggle-complete="toggleComplete"
+                                    />
+                                </template>
+                            </div>
                         </div>
 
                         <p class="text-center text-sm text-gray-500 dark:text-slate-400">

@@ -73,6 +73,7 @@
         "helpBullet2": "La boîte de réception est la liste Google par défaut : nous utilisons la liste intitulée « My Tasks » si elle existe ; sinon la première liste renvoyée par Google. Chaque tâche appartient toujours à une vraie liste Google.",
         "helpBullet3": "Les nouvelles tâches créées depuis Aujourd’hui ou la boîte de réception le sont dans cette liste par défaut.",
         "helpBulletBulk": "Actions groupées : utilisez la première case à cocher sur chaque ligne, ou Ctrl/Cmd+clic pour basculer et Maj+clic pour une plage. Sur petit écran, utilisez les cases — pas de multi-sélection tactile.",
+        "helpBulletFilters": "Filtres et tableau : ils s’appliquent à la vue actuelle (Aujourd’hui / Boîte / liste). Les colonnes sont P1–P4 selon la priorité ; glissez une carte vers une autre colonne pour changer la priorité.",
         "errors": {
             "rateLimited": "Google limite le débit (429). Le rafraîchissement est ralenti ; réessayez bientôt.",
             "loadFailed": "Impossible de charger les tâches.",
@@ -134,6 +135,28 @@
         "bulkMoveCancel": "Annuler",
         "bulkMoveSubmit": "Déplacer",
         "bulkResultTitle": "Certaines actions ont échoué",
-        "bulkResultClose": "Fermer"
+        "bulkResultClose": "Fermer",
+        "viewList": "Liste",
+        "viewBoard": "Tableau",
+        "viewModeGroup": "Mode d’affichage",
+        "filterCompletion": "État",
+        "filterCompletionAll": "Tous",
+        "filterCompletionActive": "Non terminées",
+        "filterCompletionDone": "Terminées",
+        "filterDue": "Échéance",
+        "filterDueAny": "Toutes",
+        "filterDueOverdue": "En retard",
+        "filterDueToday": "Pour aujourd’hui",
+        "filterDueHas": "Avec date",
+        "filterDueNo": "Sans date",
+        "filterPriority": "Priorité",
+        "filterPriorityAll": "Toutes",
+        "filterList": "Liste",
+        "filterListAll": "Toutes les listes",
+        "resetFilters": "Réinitialiser les filtres",
+        "noFilterMatch": "Aucune tâche ne correspond aux filtres.",
+        "kanbanRegion": "Tableau par priorité",
+        "kanbanEmptyColumn": "Déposer des tâches ici",
+        "kanbanHint": "Colonnes P1–P4 (priorité décodée du titre). Glissez une carte pour changer la priorité."
     }
 }
