@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a user cleaning up or replanning, I want to act on many tasks at once, so tha
 
 ## Acceptance Criteria
 
-- [ ] Multi-select with shift/ctrl patterns on desktop; mobile selection pattern documented.
-- [ ] At least: complete, delete, move to list (if API supports).
-- [ ] Confirmation for destructive actions; partial failure reporting.
+- [x] Multi-select with shift/ctrl patterns on desktop; mobile selection pattern documented.
+- [x] At least: complete, delete, move to list (if API supports).
+- [x] Confirmation for destructive actions; partial failure reporting.
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a user cleaning up or replanning, I want to act on many tasks at once, so tha
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: selection column + Ctrl/Cmd+click and Shift+click; bulk bar (complete, move, delete); `POST .../move` + `TasksController::moveTask`; delete confirm + partial-failure modal; README mobile note; `TasksSyncTest::test_move_task_proxies_to_google_api`

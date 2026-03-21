@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 3  
 **Created**: 2026-03-21  
@@ -26,10 +26,10 @@ As a bilingual user, I want to use the interface in English or French, so that t
 
 ## Acceptance Criteria
 
-- [ ] Vue/i18n (or Laravel localization for server-rendered strings) with consistent key structure.
-- [ ] Language switcher; preference stored (user profile or browser + server).
-- [ ] Date/time formatting respects active locale where applicable.
-- [ ] Document translation contribution process in README (minimal).
+- [x] Vue/i18n (or Laravel localization for server-rendered strings) with consistent key structure.
+- [x] Language switcher; preference stored (user profile or browser + server).
+- [x] Date/time formatting respects active locale where applicable.
+- [x] Document translation contribution process in README (minimal).
 
 ## Dependencies
 
@@ -38,3 +38,4 @@ As a bilingual user, I want to use the interface in English or French, so that t
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: vue-i18n + `en`/`fr` JSON, `SetLocale` + `POST /locale` (cookie + `users.locale`), `LocaleSwitcher`, README section; tests in `LocaleTest.php`

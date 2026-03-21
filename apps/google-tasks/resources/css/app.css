@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .density-stack {
+        @apply space-y-6;
+    }
+
+    html[data-density='compact'] .density-stack {
+        @apply space-y-4;
+    }
+
+    .density-task-row {
+        @apply py-3;
+    }
+
+    html[data-density='compact'] .density-task-row {
+        @apply py-2;
+    }
+
+    .density-card-padding {
+        @apply p-6;
+    }
+
+    html[data-density='compact'] .density-card-padding {
+        @apply p-4;
+    }
+}

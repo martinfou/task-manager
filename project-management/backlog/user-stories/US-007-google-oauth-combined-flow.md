@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done  
 **Priority**: 🔴 Critical  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -26,10 +26,10 @@ As a solo user with one Google account per app user, I want to sign in once and 
 
 ## Acceptance Criteria
 
-- [ ] Laravel Socialite (or equivalent) configured for Google; combined scopes include Tasks read/write as required by the API.
-- [ ] User record stores encrypted refresh token (and access token expiry if used); no plaintext secrets in DB or logs.
-- [ ] Sign-out clears session; **disconnect** behavior covered in [US-021](US-021-disconnect-purge-logging.md) for full purge.
-- [ ] Document OAuth client setup in Google Cloud Console (redirect URIs for local + production).
+- [x] Laravel Socialite (or equivalent) configured for Google; combined scopes include Tasks read/write as required by the API.
+- [x] User record stores encrypted refresh token (and access token expiry if used); no plaintext secrets in DB or logs.
+- [x] Sign-out clears session; **disconnect** behavior covered in [US-021](US-021-disconnect-purge-logging.md) for full purge.
+- [x] Document OAuth client setup in Google Cloud Console (redirect URIs for local + production).
 
 ## Business Value
 
@@ -47,3 +47,4 @@ Core prerequisite for any Tasks data; matches “one combined flow” from disco
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented Socialite Google (`openid`, `profile`, `email`, Tasks scope); encrypted `google_refresh_token` + `google_token_expires_at`; `/auth/google` + callback; `docs/GOOGLE_OAUTH.md`; status ✅ Done

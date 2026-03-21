@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟡 Medium  
 **Story Points**: 3  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a user, I want to attach links to tasks, so that I can jump to related docs o
 
 ## Acceptance Criteria
 
-- [ ] Detect URLs in notes; render as links; open in new tab.
-- [ ] Document what “attachment” means given API constraints (no binary upload if unsupported).
-- [ ] Optional: paste handler for quick link add.
+- [x] Detect URLs in notes; render as links; open in new tab.
+- [x] Document what “attachment” means given API constraints (no binary upload if unsupported).
+- [x] Optional: paste handler for quick link add.
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a user, I want to attach links to tasks, so that I can jump to related docs o
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `TaskNotesRichText` + `linkifyNotes` (http/https only); optional notes field on create with URL paste append; `app/Services/Google/README.md` documents API limits; `TasksSyncTest` covers store with notes

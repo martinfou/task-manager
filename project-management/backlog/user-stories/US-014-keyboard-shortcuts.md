@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟡 Medium  
 **Story Points**: 3  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a desktop user, I want to drive the app from the keyboard, so that I can work
 
 ## Acceptance Criteria
 
-- [ ] Shortcut set covers: new task, complete, move focus, open search, go to Today/Inbox (minimum agreed set).
-- [ ] `?` or Ctrl+/ opens shortcut help.
-- [ ] No conflicts with browser defaults where avoidable; document overrides.
+- [x] Shortcut set covers: new task, complete, move focus, open search, go to Today/Inbox (minimum agreed set).
+- [x] `?` or Ctrl+/ opens shortcut help.
+- [x] No conflicts with browser defaults where avoidable; document overrides.
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a desktop user, I want to drive the app from the keyboard, so that I can work
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `useTasksKeyboardShortcuts`, `TasksKeyboardShortcutsHelp`, typing-context guard, g-chord navigation, README + i18n

@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done  
 **Priority**: 🔴 Critical  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -26,11 +26,11 @@ As a user with many lists, I want to switch lists and jump to Today/Inbox quickl
 
 ## Acceptance Criteria
 
-- [ ] Sidebar or equivalent: all Google task lists; clear active list.
-- [ ] **Today**: tasks due today (and overdue policy stated — e.g. include overdue in Today).
-- [ ] **Inbox**: defined consistently (e.g. default list or tasks without list assignment per API reality — document behavior).
-- [ ] Mobile: usable navigation (drawer or bottom nav) per “easy on mobile” discovery.
-- [ ] Empty states for each view.
+- [x] Sidebar or equivalent: all Google task lists; clear active list.
+- [x] **Today**: tasks due today (and overdue policy stated — e.g. include overdue in Today).
+- [x] **Inbox**: defined consistently (e.g. default list or tasks without list assignment per API reality — document behavior).
+- [x] Mobile: usable navigation (drawer or bottom nav) per “easy on mobile” discovery.
+- [x] Empty states for each view.
 
 ## Business Value
 
@@ -47,3 +47,4 @@ Directly matches the one-liner: “easy way to navigate my multiple tasks lists.
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented `TaskViewAggregator` + `/tasks/data/views/today|inbox`; Tasks shell with desktop sidebar, mobile bottom nav + list drawer; in-app help copy; empty states; status ✅ Done

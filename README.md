@@ -8,6 +8,7 @@ Repository for the task-manager workspace: a **project-management workflow** (ba
 |------|---------|
 | `project-management/` | Single source of truth for backlog (US-/DEF-/TD-), sprints, processes, templates, scripts, and [INDEX.md](project-management/INDEX.md) for AI entry. |
 | `docs/` | General project documentation (architecture, guides) — **not** the PM workflow. See [docs/README.md](docs/README.md). |
+| `apps/google-tasks/` | Laravel + Inertia + Vue Google Tasks client ([README](apps/google-tasks/README.md)). |
 | `agency-agents/` | Agent role markdown files for orchestration tools. |
 | `mcp-project-management/` | MCP server exposing PM tools and resources. |
 | `RELEASE_NOTES.md` | Dated release entries for users and developers. |

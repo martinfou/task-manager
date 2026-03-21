@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done  
 **Priority**: 🔴 Critical  
 **Story Points**: 8  
 **Created**: 2026-03-21  
@@ -26,11 +26,11 @@ As a user, I want edits to feel instant while still matching Google Tasks within
 
 ## Acceptance Criteria
 
-- [ ] Service layer wraps Tasks API (lists, tasks, insert/patch/delete, move as needed).
-- [ ] Polling strategy defined (interval + backoff on 429); no offline queue required for v1 (online-only).
-- [ ] Optimistic updates in UI with rollback/reconcile on API error.
-- [ ] Subtasks, due dates, and recurrence: parity with **supported** API fields only.
-- [ ] Performance note in README: expected latency vs Google; **5 second** target as design goal, not a hard SLA if API throttles.
+- [x] Service layer wraps Tasks API (lists, tasks, insert/patch/delete, move as needed).
+- [x] Polling strategy defined (interval + backoff on 429); no offline queue required for v1 (online-only).
+- [x] Optimistic updates in UI with rollback/reconcile on API error.
+- [x] Subtasks, due dates, and recurrence: parity with **supported** API fields only.
+- [x] Performance note in README: expected latency vs Google; **5 second** target as design goal, not a hard SLA if API throttles.
 
 ## Business Value
 
@@ -48,3 +48,4 @@ Core product differentiator versus raw tasks.google.com — reliable sync is man
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented `GoogleTasksClient` + token refresh cache; `/tasks` + `/tasks/data/*` JSON API; `Tasks/Index.vue` polling + optimistic CRUD; README performance note; status ✅ Done

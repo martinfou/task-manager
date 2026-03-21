@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟡 Medium  
 **Story Points**: 3  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a user, I want priorities stored in Google so that other clients or future to
 
 ## Acceptance Criteria
 
-- [ ] Documented encoding scheme; reversible parse from API payloads.
-- [ ] UI to set priority without raw title editing (writes through encoding).
-- [ ] Migration path for existing tasks without priority (default level).
+- [x] Documented encoding scheme; reversible parse from API payloads.
+- [x] UI to set priority without raw title editing (writes through encoding).
+- [x] Migration path for existing tasks without priority (default level).
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a user, I want priorities stored in Google so that other clients or future to
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented `[P1]`–`[P4]` title encoding with `TaskPriorityCodec`, Tasks UI priority selectors (create + per-task), default decode fallback `p3` for unencoded tasks, tests updated, and README documentation added

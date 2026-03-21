@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done  
 **Priority**: 🔴 Critical  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -26,12 +26,12 @@ As a solo developer, I want a production-ready Laravel + Inertia + Vue skeleton 
 
 ## Acceptance Criteria
 
-- [ ] Laravel (current stable LTS or latest stable per team choice) with Vue 3 + Inertia; Vite build for frontend assets.
-- [ ] Repository layout separates concerns (e.g. `app/` services for Google API, `resources/js/` for Vue pages).
-- [ ] `.env.example` documents required keys (app URL, Google OAuth placeholders, database).
-- [ ] Deployment notes: **Fly.io** and **DreamHost** — one primary target documented step-by-step; alternate summarized.
-- [ ] Health check route (e.g. `/up` or `/health`) for load balancers.
-- [ ] Basic error page styling consistent with future app shell (no blank Laravel default only).
+- [x] Laravel (current stable LTS or latest stable per team choice) with Vue 3 + Inertia; Vite build for frontend assets.
+- [x] Repository layout separates concerns (e.g. `app/` services for Google API, `resources/js/` for Vue pages).
+- [x] `.env.example` documents required keys (app URL, Google OAuth placeholders, database).
+- [x] Deployment notes: **Fly.io** and **DreamHost** — one primary target documented step-by-step; alternate summarized.
+- [x] Health check route (e.g. `/up` or `/health`) for load balancers.
+- [x] Basic error page styling consistent with future app shell (no blank Laravel default only).
 
 ## Business Value
 
@@ -53,3 +53,4 @@ Unblocks all feature work and reduces deployment risk for a fast MVP (“in days
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented `apps/google-tasks/` Laravel 13 + Breeze (Vue/Inertia); deploy docs; `/health`; dark error shell; status ✅ Done

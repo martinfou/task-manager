@@ -11,7 +11,7 @@
 | **ID** | RI-001 |
 | **Description** | Publish a Google Cloud OAuth + Tasks API setup checklist in `docs/` before first OAuth deploy |
 | **Owner** | Developer |
-| **Due Sprint** | Sprint 2 |
+| **Due Sprint** | Sprint 3 (carried from Sprint 2 — checklist not yet published) |
 | **Status** | ⭕ To Do |
 | **Source Retro** | Sprint 1 — 2026-03-21 |
 
@@ -30,3 +30,4 @@
 ## History
 
 - 2026-03-21 - Created from Sprint 1 retrospective
+- 2026-03-21 - Due sprint extended to Sprint 2 delivery window; still open — carried to Sprint 3 per Sprint 2 retrospective
