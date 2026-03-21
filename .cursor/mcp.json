@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "project-management": {
+      "command": "/home/martinfou/dev/src/task-manager/mcp-project-management/.venv/bin/python",
+      "args": ["-m", "mcp_project_management.server"],
+      "cwd": "/home/martinfou/dev/src/task-manager"
+    }
+  }
+}
