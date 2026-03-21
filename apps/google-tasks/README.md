@@ -96,7 +96,16 @@ Google Tasks is the **source of truth**. This app refreshes OAuth access tokens 
 
 - **Polling**: the Tasks page refetches task lists and tasks on an interval from `GOOGLE_TASKS_POLL_INTERVAL_MS` (default **5000** ms). On HTTP **429** from Google, the UI increases delay up to `GOOGLE_TASKS_MAX_BACKOFF_MS` (default **120000** ms).
 - **~5 seconds** “feels synced” after edits is a **design goal**, not an SLA: Google quotas, network latency, and the poll interval dominate.
-- **Tests / CI**: feature tests render Inertia pages via Vite; run **`npm run build`** in `apps/google-tasks` so `public/build/manifest.json` includes new pages before `php artisan test`.
+- **Tests / CI**: feature tests render Inertia pages via Vite; run **`npm run build`** in `apps/google-tasks` so `public/build/manifest.json` includes new pages before `php artisan test`. Full pyramid and commands: [docs/TESTING.md](docs/TESTING.md).
+
+## Testing (US-020)
+
+- **PHP**: `php artisan test` (feature tests use `Http::fake` for Google — no live API).
+- **JavaScript**: `npm run test:unit` (Vitest) for `resources/js/utils/`.
+- **Lint**: `composer lint` (Pint), `npm run lint` (ESLint).
+- **E2E smoke**: `npm run test:e2e` (Playwright) — `/health` + `/login` email form; **no OAuth** in the browser.
+
+See [docs/TESTING.md](docs/TESTING.md) for the pyramid, coverage stance, and CI.
 
 ## Deploy
 

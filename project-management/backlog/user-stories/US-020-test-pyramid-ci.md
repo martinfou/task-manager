@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 5  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a maintainer, I want automated tests and CI, so that refactors do not break T
 
 ## Acceptance Criteria
 
-- [ ] CI workflow runs unit/feature tests + frontend tests + lint.
-- [ ] At least one E2E smoke: login stub or OAuth mock strategy documented.
-- [ ] Coverage targets documented (pragmatic, not vanity %).
+- [x] CI workflow runs unit/feature tests + frontend tests + lint.
+- [x] At least one E2E smoke: login stub or OAuth mock strategy documented.
+- [x] Coverage targets documented (pragmatic, not vanity %).
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a maintainer, I want automated tests and CI, so that refactors do not break T
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: Vitest (`resources/js/utils/*.test.js`), ESLint + `route` global, `composer lint` (Pint), Playwright `e2e/smoke.spec.ts` (health + login, no OAuth), `docs/TESTING.md`, CI workflow extended

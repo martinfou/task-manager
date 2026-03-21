@@ -1,4 +1,4 @@
-# RI-002 — validate apps/google-tasks on push/PR (Composer, Vite, PHPUnit)
+# RI-002 / US-020 — validate apps/google-tasks on push/PR (lint, PHPUnit, Vitest, Vite, Playwright)
 
 name: Google Tasks app CI
 
@@ -20,7 +20,7 @@ defaults:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -59,8 +59,25 @@ jobs:
           if [ ! -f .env ]; then cp .env.example .env; fi
           php artisan key:generate --force
 
+      - name: Lint PHP (Pint)
+        run: composer lint
+
+      - name: Lint frontend (ESLint)
+        run: npm run lint
+
+      - name: Unit tests (Vitest)
+        run: npm run test:unit
+
+      - name: PHPUnit
+        run: php artisan test
+
       - name: Build frontend (Vite)
         run: npm run build
 
-      - name: Run PHPUnit
-        run: php artisan test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E smoke (Playwright)
+        run: npm run test:e2e
+        env:
+          CI: true

@@ -19,12 +19,6 @@ export function parseDueDate(dueRaw) {
     return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function startOfTodayLocal() {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-}
-
 function calendarDayStart(d) {
     const x = new Date(d);
     x.setHours(0, 0, 0, 0);

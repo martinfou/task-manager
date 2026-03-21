@@ -14,7 +14,7 @@ This is the main product backlog tracking all user stories and defects.
 |----|-------|----------|--------|--------|--------|---------|---------|
 | [US-022](user-stories/US-022-pwa-install-phase.md) | PWA Install (Post-MVP Phase) | 🟢 Low | 5 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
 | [US-021](user-stories/US-021-disconnect-purge-logging.md) | Disconnect, Purge, and Logging Policy | 🟠 High | 2 | ⭕ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
-| [US-020](user-stories/US-020-test-pyramid-ci.md) | Test Pyramid and CI | 🟠 High | 5 | ⭕ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
+| [US-020](user-stories/US-020-test-pyramid-ci.md) | Test Pyramid and CI | 🟠 High | 5 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-019](user-stories/US-019-api-error-retry-ux.md) | Google API Error Handling and Retry UX | 🟠 High | 3 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-018](user-stories/US-018-semantic-search-task-index.md) | Semantic Search over Tasks (Indexed) | 🟡 Medium | 8 | ⭕ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-017](user-stories/US-017-bulk-actions.md) | Bulk Actions on Tasks | 🟠 High | 5 | ✅ | [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) | 2026-03-21 | 2026-03-21 |
@@ -82,9 +82,9 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 23  
 **By Status**:
-- ⭕ To Do: 5
+- ⭕ To Do: 4
 - ⏳ In Progress: 0
-- ✅ Done: 18
+- ✅ Done: 19
 
 **By Priority**:
 - 🔴 Critical: 5

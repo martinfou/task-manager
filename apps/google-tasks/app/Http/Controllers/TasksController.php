@@ -228,7 +228,7 @@ class TasksController extends Controller
     }
 
     /**
-     * @param  \Closure(): (\Illuminate\Http\JsonResponse)  $callback
+     * @param  \Closure(): (JsonResponse)  $callback
      */
     private function run(\Closure $callback): JsonResponse
     {
