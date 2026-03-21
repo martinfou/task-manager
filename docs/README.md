@@ -18,3 +18,4 @@ This folder holds **general project documentation**: architecture overviews, API
 - [Project management workflow](../project-management/README.md) — backlog, sprints, and AI-assisted processes.
 - [Repository README](../README.md) — top-level repository layout.
 - [Google Tasks app discovery questionnaire](google-tasks-discovery/index.html) — static form; answers saved in-browser (localStorage) with JSON export.
+- [Google Tasks discovery folder](google-tasks-discovery/README.md) — submitted JSON snapshot and pointers to backlog US-006+.
