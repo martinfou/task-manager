@@ -1,0 +1,43 @@
+# Project Management CI
+# Runs validation, lint, link check, and terminology checks on every push/PR.
+
+name: Project Management CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'project-management/**'
+      - 'RELEASE_NOTES.md'
+      - '.github/workflows/project-management.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'project-management/**'
+      - 'RELEASE_NOTES.md'
+      - '.github/workflows/project-management.yml'
+
+jobs:
+  validate:
+    name: Validate & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run backlog validation
+        run: ./project-management/scripts/validate-backlog.sh project-management/backlog
+
+      - name: Run link check
+        run: ./project-management/scripts/check-links.sh project-management .
+
+      - name: Run lint (terminology, newline at EOF)
+        run: ./project-management/scripts/lint-project-management.sh
+
+      - name: Run script tests
+        run: ./project-management/scripts/test-scripts.sh
+
+      - name: Run backlog integrity check
+        run: ./project-management/scripts/validate-backlog-integrity.sh project-management/backlog
+
+      - name: Validate Mermaid diagrams
+        run: ./project-management/scripts/validate-mermaid.sh project-management || true

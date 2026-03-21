@@ -1,0 +1,37 @@
+# task-manager — AI instructions
+
+## Project management workflow (read first)
+
+- **Entry point**: `project-management/INDEX.md` — which process to run, which files to attach for each task, pre-commit flow (doc-code consistency → technical debt scan → human approval → DoD → commit), and links to scripts.
+- **Backlog**: `project-management/backlog/product-backlog.md` — tracks user stories (`US-XXX`), defects (`DEF-XXX`), technical debt (`TD-XXX`).
+- **Item files**: `project-management/backlog/user-stories/`, `backlog/defects/`, `backlog/technical-debt/` — one Markdown file per item with ID prefix.
+- **Sprints**: `project-management/sprints/sprint-XX-*.md` — goals, stories, tasks, burndown.
+- **Processes**: `project-management/processes/` — backlog management, sprint planning/review/retrospective, release notes, documentation-code consistency, technical debt identification, escalation.
+- **Templates & criteria**: `project-management/templates/`, `project-management/criteria/` — definition of ready, definition of done, story/defect templates.
+- **Automation**: `project-management/scripts/` — validate-backlog, lint-project-management, generate-release-notes-draft, etc.
+- **MCP**: `mcp-project-management/` — optional MCP server exposing PM tools and `pm://` resources.
+
+## Repository layout
+
+- `project-management/` — workflow source of truth (not general product docs).
+- `docs/` — project-level documentation (architecture, APIs, guides) separate from the PM workflow.
+- `agency-agents/` — agent role definitions.
+- `RELEASE_NOTES.md` (repo root) — user-facing change log per `project-management/processes/release-notes-process.md`.
+
+## Git branching (summary)
+
+Feature branches: `feature/US-XXX-short-description` from `main`; merge via PR. See `project-management/architecture-decision-records/ADR-002-branching-strategy.md`.
+
+## Git commit message generation (preset)
+
+Follow `project-management/processes/git-commit-guide.md` for every commit.
+
+**Subject (first line)** — must start with `US-XXX:` or `DEF-XXX:` (backlog id), then a short business-focused description (≤72 characters total on the line), imperative mood, no trailing period.
+
+**Body** — (1) One short paragraph: business/user impact and why the change matters. (2) A line `Technical changes for developers:` followed by bullet points listing concrete changes (files, components, behavior).
+
+**Footer** — optional `Refs US-XXX` or `Refs DEF-XXX` for traceability.
+
+**Small change shortcut** — one-line body allowed per git-commit-guide “Alternative: One-Line Format” when appropriate.
+
+Repository commit template (optional for humans): `git config commit.template project-management/templates/git-commit-template.txt`
