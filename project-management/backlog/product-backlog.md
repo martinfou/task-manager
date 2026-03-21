@@ -4,7 +4,7 @@ This is the main product backlog tracking all user stories and defects.
 
 **Last Updated**: 2026-03-21
 
-**Active Sprint**: [Sprint 3: Google Tasks — Productivity](../sprints/sprint-03-google-tasks-productivity.md) — **committed scope complete** (US-011–US-017 + **US-012**); [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅. [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) completed 2026-03-21. [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
+**Active Sprint**: [Sprint 4: Google Tasks — Quality, Semantic Search, and Privacy](../sprints/sprint-04-google-tasks-quality-and-v2.md) — **in progress** (US-018–US-021). [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21 (US-011–US-017; [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅). [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) completed 2026-03-21. [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
 **Product discovery (Google Tasks client)**: [responses-submitted-2026-03-21.json](../../docs/google-tasks-discovery/responses-submitted-2026-03-21.json)
 
@@ -82,9 +82,9 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 23  
 **By Status**:
-- ⭕ To Do: 5
+- ⭕ To Do: 6
 - ⏳ In Progress: 0
-- ✅ Done: 18
+- ✅ Done: 17
 
 **By Priority**:
 - 🔴 Critical: 5

@@ -11,11 +11,11 @@ compatible_with: [product-backlog]
 **Sprint Goal**: Add i18n (EN/FR), filters + Kanban, search, keyboard shortcuts, priority encoding in Google, links in tasks, and bulk actions — matching TickTick-style power without leaving Google Tasks as source of truth.
 
 **Duration**: 2026-03-21 — 2026-04-04 (2 weeks)  
-**Team Velocity**: 26 points delivered in [Sprint 2](sprint-02-google-tasks-mvp-foundation.md); Sprint 3 commits **28** points (US-011–US-017). **+2 pts vs last sprint** — if capacity tight, drop scope from the bottom: Kanban polish in US-012 last.  
+**Team Velocity**: 26 points delivered in [Sprint 2](sprint-02-google-tasks-mvp-foundation.md); Sprint 3 delivered **28** points (US-011–US-017). **+2 pts vs last sprint** — if capacity tight, drop scope from the bottom: Kanban polish in US-012 last.  
 **Sprint Planning Date**: 2026-03-21 (after Sprint 2 review + retrospective)  
-**Sprint Review Date**: 2026-04-04  
-**Sprint Retrospective Date**: 2026-04-04  
-**Sprint status**: Committed scope delivered — [US-011](../backlog/user-stories/US-011-i18n-en-fr.md) ✅, [US-012](../backlog/user-stories/US-012-filters-kanban.md) ✅, [US-013](../backlog/user-stories/US-013-full-text-search.md) ✅, [US-014](../backlog/user-stories/US-014-keyboard-shortcuts.md) ✅, [US-015](../backlog/user-stories/US-015-priority-encoded-in-google.md) ✅, [US-016](../backlog/user-stories/US-016-links-attachments-tasks.md) ✅, [US-017](../backlog/user-stories/US-017-bulk-actions.md) ✅ (**28 / 28** story points); carry [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) if not yet done.
+**Sprint Review Date**: 2026-03-21 (held early — committed scope completed same day)  
+**Sprint Retrospective Date**: 2026-03-21  
+**Sprint status**: **Closed** — committed scope delivered (**28 / 28** story points); [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅. [US-011](../backlog/user-stories/US-011-i18n-en-fr.md) ✅, [US-012](../backlog/user-stories/US-012-filters-kanban.md) ✅, [US-013](../backlog/user-stories/US-013-full-text-search.md) ✅, [US-014](../backlog/user-stories/US-014-keyboard-shortcuts.md) ✅, [US-015](../backlog/user-stories/US-015-priority-encoded-in-google.md) ✅, [US-016](../backlog/user-stories/US-016-links-attachments-tasks.md) ✅, [US-017](../backlog/user-stories/US-017-bulk-actions.md) ✅. Next: [Sprint 4](sprint-04-google-tasks-quality-and-v2.md).
 
 ## Sprint planning record (2026-03-21)
 
@@ -188,9 +188,60 @@ compatible_with: [product-backlog]
 - 2026-03-21: +5 story points ([US-017](../backlog/user-stories/US-017-bulk-actions.md)); **8** points remaining ([US-012](../backlog/user-stories/US-012-filters-kanban.md) only)
 - 2026-03-21: +8 story points ([US-012](../backlog/user-stories/US-012-filters-kanban.md)); **Sprint 3 committed backlog: 28 / 28** story points
 
-**Sprint Review Notes**: (fill at review on 2026-04-04)
+**Sprint Review Notes** (2026-03-21):
 
-**Sprint Retrospective Notes**: (fill at retrospective on 2026-04-04)
+**Demonstrated**
+
+- **US-011** — EN/FR UI, locale switcher, locale-aware dates; verified against story acceptance criteria in code and docs.
+- **US-012** — List/Board toggle, client-side filters (status, due, priority, list on Today), P1–P4 Kanban with drag-and-drop priority updates; preferences persisted locally.
+- **US-013** — Full-text search across synced task titles/notes with snippets; scope documented (client-side index over loaded data).
+- **US-014** — Desktop shortcuts and `?` help overlay; README/doc notes on browser conflicts.
+- **US-015** — Priority encoded in Google-visible title; codec and UI without raw title editing.
+- **US-016** — Linkified notes, optional paste-to-add link behavior; attachment limits documented.
+- **US-017** — Multi-select, bulk complete/delete/move, move API route; confirmations and partial-failure handling.
+- **RI-001 / RI-002** — OAuth checklist in `docs/`; GitHub Actions workflow for `apps/google-tasks` (Composer, Vite build, PHPUnit).
+
+**Acceptance criteria**
+
+- Reviewed each completed story file; criteria treated as met where implementation and tests exist (`php artisan test` green for `apps/google-tasks`).
+
+**Feedback / decisions**
+
+- No new backlog items from this session. Follow-up quality and privacy work is already captured in **[Sprint 4](sprint-04-google-tasks-quality-and-v2.md)** (US-018–US-021).
+
+---
+
+**Sprint Retrospective Notes** (2026-03-21):
+
+### What went well
+
+- Sprint goal stayed coherent: i18n first, then search, shortcuts, priority, links, bulk, Kanban last — de-risked integration.
+- **28 points** delivered with **RI-001** and **RI-002** completed in parallel (checklist + CI).
+- Automated tests (`apps/google-tasks`) give fast feedback on regressions for auth, tasks, search, and views.
+- Backlog and sprint docs stayed traceable to branches and commits (`US-XXX` prefixes).
+
+### What could be improved
+
+- **Semantic + privacy** and **API failure UX** are not done yet; they need dedicated scope (Sprint 4 **US-018**, **US-019**, **US-021**).
+- **Test pyramid** beyond PHPUnit (browser/E2E, contract tests) is planned for **US-020** — current CI is build + unit/feature tests only.
+- Large **Index.vue** surface: future refactors should split by view mode without changing behavior (watch bundle size).
+
+### Retrospective improvements
+
+| ID | Description | Owner | Due Sprint | Status |
+|----|-------------|-------|------------|--------|
+| — | No new RI items; follow-ups mapped to existing Sprint 4 stories (US-018–US-021) | — | — | — |
+
+**Tracking**: [RI-001](../backlog/retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) and [RI-002](../backlog/retrospective-improvements/RI-002-ci-workflow-google-tasks.md) closed this sprint.
+
+### Process changes to document
+
+- None — [Sprint 4](sprint-04-google-tasks-quality-and-v2.md) planning recorded in sprint file and [product backlog](../backlog/product-backlog.md).
+
+### Follow-up
+
+- [x] Sprint 4 planning completed (2026-03-21); active sprint = Sprint 4.
+- [ ] Review Sprint 4 retrospective improvements at end of Sprint 4.
 
 ---
 
