@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\Google\GoogleTasksConnectionPurgeService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'hasGoogleTasksConnection' => $request->user()->hasGoogleTasksConnection(),
         ]);
     }
 
@@ -51,6 +53,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        app(GoogleTasksConnectionPurgeService::class)->forgetCachedToken($user);
+
         Auth::logout();
 
         $user->delete();
@@ -59,5 +63,26 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Disconnect Google (Tasks) — clears tokens, cached access token, and semantic index rows.
+     */
+    public function disconnectGoogle(Request $request, GoogleTasksConnectionPurgeService $purge): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+        if (! $user->hasGoogleTasksConnection()) {
+            return Redirect::route('profile.edit')->withErrors([
+                'google' => __('profile.google_not_connected'),
+            ]);
+        }
+
+        $purge->disconnect($user);
+
+        return Redirect::route('profile.edit')->with('status', 'google-disconnected');
     }
 }

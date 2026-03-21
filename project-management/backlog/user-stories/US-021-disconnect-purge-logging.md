@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 2  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a privacy-conscious user, I want my data removed when I disconnect, and predi
 
 ## Acceptance Criteria
 
-- [ ] Disconnect flow removes OAuth tokens and semantic index rows if [US-018](US-018-semantic-search-task-index.md) exists.
-- [ ] Documented data retention; GDPR-friendly baseline for solo deploy.
-- [ ] Logging policy in README: what is logged in dev vs prod; avoid raw titles in prod if chosen.
+- [x] Disconnect flow removes OAuth tokens and semantic index rows if [US-018](US-018-semantic-search-task-index.md) exists.
+- [x] Documented data retention; GDPR-friendly baseline for solo deploy.
+- [x] Logging policy in README: what is logged in dev vs prod; avoid raw titles in prod if chosen.
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a privacy-conscious user, I want my data removed when I disconnect, and predi
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `GoogleTasksConnectionPurgeService`, Profile **Disconnect Google** (`POST /profile/google/disconnect`), `docs/DATA_RETENTION.md`, README logging/retention section, feature tests

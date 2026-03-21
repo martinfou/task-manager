@@ -15,7 +15,7 @@ compatible_with: [product-backlog]
 **Sprint Planning Date**: 2026-03-21 (after Sprint 3 review + retrospective)  
 **Sprint Review Date**: 2026-04-04  
 **Sprint Retrospective Date**: 2026-04-04  
-**Sprint status**: **Active** — committed scope [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)–[US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) (**18 / 18** story points planned).
+**Sprint status**: **Scope delivered** (2026-03-21) — all committed stories [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)–[US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) ✅; formal review/retro still scheduled 2026-04-04.
 
 ## Sprint planning record (2026-03-21)
 
@@ -64,7 +64,7 @@ compatible_with: [product-backlog]
 | [US-018](../backlog/user-stories/US-018-semantic-search-task-index.md) | Semantic search index | 8 | ✅ |
 | [US-019](../backlog/user-stories/US-019-api-error-retry-ux.md) | API error + retry UX | 3 | ✅ |
 | [US-020](../backlog/user-stories/US-020-test-pyramid-ci.md) | Test pyramid + CI | 5 | ✅ |
-| [US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) | Disconnect purge + logging | 2 | ⭕ |
+| [US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md) | Disconnect purge + logging | 2 | ✅ |
 
 **Total Story Points**: 18
 
@@ -84,6 +84,7 @@ compatible_with: [product-backlog]
 - 2026-03-21: +3 story points ([US-019](../backlog/user-stories/US-019-api-error-retry-ux.md)); **15** points remaining (US-018, US-020, US-021)
 - 2026-03-21: +5 story points ([US-020](../backlog/user-stories/US-020-test-pyramid-ci.md)); **10** points remaining (US-018, US-021)
 - 2026-03-21: +8 story points ([US-018](../backlog/user-stories/US-018-semantic-search-task-index.md)); **2** points remaining (US-021)
+- 2026-03-21: +2 story points ([US-021](../backlog/user-stories/US-021-disconnect-purge-logging.md)); **0** points remaining — sprint committed scope complete
 
 **Sprint Review Notes**: (fill at review on 2026-04-04)
 

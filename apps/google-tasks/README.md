@@ -113,6 +113,12 @@ Google Tasks is the **source of truth**. This app refreshes OAuth access tokens 
 
 See [docs/TESTING.md](docs/TESTING.md) for the pyramid, coverage stance, and CI.
 
+## Data retention and logging (US-021)
+
+- **Disconnect**: Profile includes **Disconnect Google** when a Google Tasks connection exists. It removes OAuth fields from the user, clears the cached access token, and deletes **semantic index** rows (`task_embeddings`) for that user. Google Tasks data in Google is unchanged.
+- **Account delete**: User row deletion cascades to `task_embeddings`; cached access token is cleared before logout/delete.
+- **Logs**: Prefer structured fields (`user_id`, status codes) over raw task text in production. Details: [docs/DATA_RETENTION.md](docs/DATA_RETENTION.md).
+
 ## Deploy
 
 See [docs/DEPLOY.md](docs/DEPLOY.md). OAuth setup: [docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md).

@@ -14,7 +14,7 @@
 
 - Indexed text is **server-side only** (not sent to the browser except as search results).
 - On **account deletion**, `task_embeddings` rows are removed via **foreign key cascade** on `user_id`.
-- **Disconnect** (clearing Google tokens without deleting the user) should delete embeddings — implement in [US-021](../../../project-management/backlog/user-stories/US-021-disconnect-purge-logging.md) when disconnect UI exists.
+- **Disconnect** (Profile → **Disconnect Google**): clears OAuth fields, forgets the cached access token, and **deletes all `task_embeddings` rows** for the user. See [US-021](../../../project-management/backlog/user-stories/US-021-disconnect-purge-logging.md) and [DATA_RETENTION.md](DATA_RETENTION.md).
 
 ## Configuration
 

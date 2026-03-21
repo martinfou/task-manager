@@ -175,5 +175,17 @@
         "kanbanRegion": "Tableau par priorité",
         "kanbanEmptyColumn": "Déposer des tâches ici",
         "kanbanHint": "Colonnes P1–P4 (priorité décodée du titre). Glissez une carte pour changer la priorité."
+    },
+    "profile": {
+        "disconnectGoogleTitle": "Connexion Google Tasks",
+        "disconnectGoogleDescription": "Déconnecter supprime les jetons Google stockés, vide le jeton d’accès mis en cache et supprime les lignes d’index de recherche sémantique sur ce serveur. Votre compte Google et vos tâches ne sont pas modifiés.",
+        "disconnectGoogleButton": "Déconnecter Google",
+        "disconnectGoogleConfirmTitle": "Déconnecter Google ?",
+        "disconnectGoogleConfirmBody": "Saisissez le mot de passe de votre compte pour confirmer. Les jetons OAuth et les données d’index sémantique seront supprimés de cette application.",
+        "disconnectGooglePasswordLabel": "Mot de passe",
+        "disconnectGooglePasswordPlaceholder": "Mot de passe",
+        "disconnectGoogleCancel": "Annuler",
+        "disconnectGoogleConfirm": "Déconnecter",
+        "disconnectGoogleSuccess": "Google a été déconnecté et les données d’index locales supprimées."
     }
 }

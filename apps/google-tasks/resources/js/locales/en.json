@@ -175,5 +175,17 @@
         "kanbanRegion": "Priority board",
         "kanbanEmptyColumn": "Drop tasks here",
         "kanbanHint": "Columns are P1–P4 (decoded from task titles). Drag a card to another column to change priority."
+    },
+    "profile": {
+        "disconnectGoogleTitle": "Google Tasks connection",
+        "disconnectGoogleDescription": "Disconnect to remove stored Google tokens, clear the cached access token, and delete your semantic search index rows on this server. Your Google account and tasks are unchanged.",
+        "disconnectGoogleButton": "Disconnect Google",
+        "disconnectGoogleConfirmTitle": "Disconnect Google?",
+        "disconnectGoogleConfirmBody": "Enter your account password to confirm. This removes OAuth tokens and semantic index data from this app.",
+        "disconnectGooglePasswordLabel": "Password",
+        "disconnectGooglePasswordPlaceholder": "Password",
+        "disconnectGoogleCancel": "Cancel",
+        "disconnectGoogleConfirm": "Disconnect",
+        "disconnectGoogleSuccess": "Google has been disconnected and local index data removed."
     }
 }
