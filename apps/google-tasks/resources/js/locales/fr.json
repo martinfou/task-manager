@@ -74,13 +74,24 @@
         "helpBullet3": "Les nouvelles tâches créées depuis Aujourd’hui ou la boîte de réception le sont dans cette liste par défaut.",
         "helpBulletBulk": "Actions groupées : utilisez la première case à cocher sur chaque ligne, ou Ctrl/Cmd+clic pour basculer et Maj+clic pour une plage. Sur petit écran, utilisez les cases — pas de multi-sélection tactile.",
         "helpBulletFilters": "Filtres et tableau : ils s’appliquent à la vue actuelle (Aujourd’hui / Boîte / liste). Les colonnes sont P1–P4 selon la priorité ; glissez une carte vers une autre colonne pour changer la priorité.",
+        "retry": "Réessayer",
         "errors": {
             "rateLimited": "Google limite le débit (429). Le rafraîchissement est ralenti ; réessayez bientôt.",
             "loadFailed": "Impossible de charger les tâches.",
             "chooseDest": "Choisissez une destination (les listes doivent être chargées) et saisissez un titre.",
             "createFailed": "Impossible de créer la tâche.",
             "updateFailed": "Impossible de mettre à jour la tâche.",
-            "deleteFailed": "Impossible de supprimer la tâche."
+            "deleteFailed": "Impossible de supprimer la tâche.",
+            "codes": {
+                "auth_expired": "Accès Google expiré. Reconnectez Google dans le profil.",
+                "rate_limit": "Google limite le débit. Réessayez dans un instant.",
+                "server_error": "Google Tasks est temporairement indisponible. Réessayez plus tard.",
+                "network": "Impossible de joindre Google. Vérifiez la connexion.",
+                "bad_request": "Cette action n’a pas pu être effectuée.",
+                "not_found": "Tâche ou liste introuvable.",
+                "forbidden": "Google a refusé cette requête.",
+                "generic": "Une erreur s’est produite avec Google Tasks."
+            }
         },
         "activeList": "Liste active",
         "pollLine": "Rafraîchissement : {current} ms · cible {target} ms",

@@ -30,6 +30,7 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 - **Filters and Kanban** — Client-side filters (status, due, priority, Google list on Today); **List** / **Board** toggle with P1–P4 columns; drag cards between columns to change priority (`PATCH` via existing priority encoding); scrollable columns; preferences in `localStorage`. [US-012](project-management/backlog/user-stories/US-012-filters-kanban.md)
 - **Google Cloud OAuth checklist (RI-001)** — Added [docs/google-tasks-discovery/google-cloud-oauth-checklist.md](docs/google-tasks-discovery/google-cloud-oauth-checklist.md) (Tasks API, consent, scopes, redirect URIs, test users) and linked it from root `docs/README.md`, discovery README, and `apps/google-tasks/docs/GOOGLE_OAUTH.md`.
 - **CI for `apps/google-tasks` (RI-002)** — GitHub Actions workflow [`.github/workflows/google-tasks-ci.yml`](.github/workflows/google-tasks-ci.yml) runs `composer install`, `npm ci`, `npm run build`, and `php artisan test` when `apps/google-tasks/**` changes.
+- **Google API error handling and retry UX (US-019)** — JSON errors include stable `code` (`auth_expired`, `rate_limit`, `server_error`, `network`, etc.) plus human `message`; `retry_after` on 429; `Log::warning` without token/response bodies; Tasks UI maps codes to EN/FR copy, bounded automatic retry for idempotent reads, and a **Retry** action on load failures. [US-019](project-management/backlog/user-stories/US-019-api-error-retry-ux.md)
 
 ### Defect Fixes
 

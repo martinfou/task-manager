@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Services\Google\GoogleOAuthTokenService;
 use App\Services\Google\GoogleTasksApiException;
 use App\Services\Google\GoogleTasksClient;
+use App\Services\Google\GoogleTasksErrorCode;
 use App\Services\Google\GoogleTasksRateLimitedException;
 use App\Services\Google\TaskPriorityCodec;
 use App\Services\Google\TaskSearcher;
 use App\Services\Google\TaskViewAggregator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -233,15 +235,28 @@ class TasksController extends Controller
         try {
             return $callback();
         } catch (GoogleTasksRateLimitedException $e) {
+            Log::warning('google_tasks_rate_limited', [
+                'user_id' => auth()->id(),
+                'retry_after' => $e->retryAfterSeconds,
+            ]);
+
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => GoogleTasksErrorCode::RateLimited->userMessage(),
+                'code' => GoogleTasksErrorCode::RateLimited->value,
                 'retry_after' => $e->retryAfterSeconds,
             ], 429);
         } catch (GoogleTasksApiException $e) {
             $status = $e->status >= 400 && $e->status < 600 ? $e->status : 500;
 
+            Log::warning('google_tasks_api_error', [
+                'user_id' => auth()->id(),
+                'status' => $e->status,
+                'code' => $e->errorCode,
+            ]);
+
             return response()->json([
                 'message' => $e->getMessage(),
+                'code' => $e->errorCode,
             ], $status);
         }
     }

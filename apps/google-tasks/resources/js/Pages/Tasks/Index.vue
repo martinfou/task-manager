@@ -27,11 +27,15 @@ import {
     filterTasks,
     groupTasksByPriority,
 } from '@/utils/taskFilters';
+import {
+    messageFromAxiosError,
+    withReadRetry,
+} from '@/utils/googleTaskError';
 
 const VIEW_MODE_KEY = 'gt-task-view-mode';
 const FILTER_STATE_KEY = 'gt-task-filters';
 
-const { t, locale } = useI18n();
+const { t, te, locale } = useI18n();
 const { formatDateTime } = useLocaleDate();
 
 const props = defineProps({
@@ -283,10 +287,12 @@ async function runBulkComplete() {
         } catch (e) {
             bulkFailureLines.value.push({
                 title: task.title,
-                message:
-                    e.response?.data?.message ??
-                    e.message ??
-                    t('tasks.errors.updateFailed'),
+                message: messageFromAxiosError(
+                    e,
+                    t,
+                    te,
+                    'tasks.errors.updateFailed',
+                ),
             });
         }
     }
@@ -318,10 +324,12 @@ async function executeBulkDelete() {
         } catch (e) {
             bulkFailureLines.value.push({
                 title: task.title,
-                message:
-                    e.response?.data?.message ??
-                    e.message ??
-                    t('tasks.errors.deleteFailed'),
+                message: messageFromAxiosError(
+                    e,
+                    t,
+                    te,
+                    'tasks.errors.deleteFailed',
+                ),
             });
         }
     }
@@ -366,10 +374,12 @@ async function executeBulkMove() {
         } catch (e) {
             bulkFailureLines.value.push({
                 title: task.title,
-                message:
-                    e.response?.data?.message ??
-                    e.message ??
-                    t('tasks.errors.updateFailed'),
+                message: messageFromAxiosError(
+                    e,
+                    t,
+                    te,
+                    'tasks.errors.updateFailed',
+                ),
             });
         }
     }
@@ -429,14 +439,16 @@ async function fetchInbox() {
 async function pollOnce() {
     loadError.value = '';
     try {
-        await fetchTaskLists();
-        if (navMode.value === 'today') {
-            await fetchToday();
-        } else if (navMode.value === 'inbox') {
-            await fetchInbox();
-        } else {
-            await fetchTasksForList();
-        }
+        await withReadRetry(async () => {
+            await fetchTaskLists();
+            if (navMode.value === 'today') {
+                await fetchToday();
+            } else if (navMode.value === 'inbox') {
+                await fetchInbox();
+            } else {
+                await fetchTasksForList();
+            }
+        });
         pollBackoffMs.value = props.pollIntervalMs;
     } catch (e) {
         if (e.response?.status === 429) {
@@ -444,14 +456,14 @@ async function pollOnce() {
                 props.maxBackoffMs,
                 Math.max(props.pollIntervalMs, pollBackoffMs.value * 2),
             );
-            loadError.value = t('tasks.errors.rateLimited');
-        } else {
-            loadError.value =
-                e.response?.data?.message ??
-                e.message ??
-                t('tasks.errors.loadFailed');
         }
+        loadError.value = messageFromAxiosError(e, t, te);
     }
+}
+
+async function retryLoad() {
+    loadError.value = '';
+    await pollOnce();
 }
 
 async function pollLoop() {
@@ -470,18 +482,17 @@ async function setNav(mode) {
     }
     loadError.value = '';
     try {
-        if (mode === 'today') {
-            await fetchToday();
-        } else if (mode === 'inbox') {
-            await fetchInbox();
-        } else {
-            await fetchTasksForList();
-        }
+        await withReadRetry(async () => {
+            if (mode === 'today') {
+                await fetchToday();
+            } else if (mode === 'inbox') {
+                await fetchInbox();
+            } else {
+                await fetchTasksForList();
+            }
+        });
     } catch (e) {
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.loadFailed');
+        loadError.value = messageFromAxiosError(e, t, te);
     }
 }
 
@@ -494,12 +505,11 @@ async function selectList(list) {
     }
     loadError.value = '';
     try {
-        await fetchTasksForList();
+        await withReadRetry(async () => {
+            await fetchTasksForList();
+        });
     } catch (e) {
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.loadFailed');
+        loadError.value = messageFromAxiosError(e, t, te);
     }
 }
 
@@ -507,12 +517,11 @@ async function onListDropdownChange() {
     navMode.value = 'list';
     loadError.value = '';
     try {
-        await fetchTasksForList();
+        await withReadRetry(async () => {
+            await fetchTasksForList();
+        });
     } catch (e) {
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.loadFailed');
+        loadError.value = messageFromAxiosError(e, t, te);
     }
 }
 
@@ -536,10 +545,12 @@ watch(searchQuery, (q) => {
             searchResults.value = data.items ?? [];
             searchTruncated.value = Boolean(data.truncated);
         } catch (e) {
-            searchError.value =
-                e.response?.data?.message ??
-                e.message ??
-                t('tasks.searchError');
+            searchError.value = messageFromAxiosError(
+                e,
+                t,
+                te,
+                'tasks.searchError',
+            );
             searchResults.value = [];
             searchTruncated.value = false;
         } finally {
@@ -568,7 +579,9 @@ async function openSearchResult(row) {
     showListDrawer.value = false;
     loadError.value = '';
     try {
-        await fetchTasksForList();
+        await withReadRetry(async () => {
+            await fetchTasksForList();
+        });
         await nextTick();
         for (const el of document.querySelectorAll('[data-task-id]')) {
             if (el.getAttribute('data-task-id') === row.task.id) {
@@ -577,10 +590,7 @@ async function openSearchResult(row) {
             }
         }
     } catch (e) {
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.loadFailed');
+        loadError.value = messageFromAxiosError(e, t, te);
     }
 }
 
@@ -677,10 +687,12 @@ async function submitNewTask() {
         void pollOnce();
     } catch (e) {
         tasks.value = tasks.value.filter((t) => t.id !== tempId);
-        formError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.createFailed');
+        formError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.createFailed',
+        );
     }
 }
 
@@ -711,10 +723,12 @@ async function updatePriority(task, priority) {
         tasks.value = tasks.value.map((current) =>
             current.id === task.id ? previousTask : current,
         );
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.updateFailed');
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.updateFailed',
+        );
     }
 }
 
@@ -759,10 +773,12 @@ async function toggleComplete(task) {
         tasks.value = tasks.value.map((t) =>
             t.id === task.id ? prev : t,
         );
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.updateFailed');
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.updateFailed',
+        );
     }
 }
 
@@ -780,10 +796,12 @@ async function removeTask(task) {
         void pollOnce();
     } catch (e) {
         tasks.value = snapshot;
-        loadError.value =
-            e.response?.data?.message ??
-            e.message ??
-            t('tasks.errors.deleteFailed');
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.deleteFailed',
+        );
     }
 }
 
@@ -1170,9 +1188,18 @@ watch(focusedTaskIndex, async (idx) => {
 
                         <div
                             v-if="loadError"
-                            class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100"
+                            class="flex flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between"
                         >
-                            {{ loadError }}
+                            <p class="min-w-0 flex-1">
+                                {{ loadError }}
+                            </p>
+                            <SecondaryButton
+                                type="button"
+                                class="shrink-0 self-start sm:self-center"
+                                @click="retryLoad"
+                            >
+                                {{ t('tasks.retry') }}
+                            </SecondaryButton>
                         </div>
 
                         <div

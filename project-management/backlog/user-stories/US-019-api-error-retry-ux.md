@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 3  
 **Created**: 2026-03-21  
@@ -26,9 +26,9 @@ As a user, I want to understand what failed and retry safely, so that transient 
 
 ## Acceptance Criteria
 
-- [ ] Mapped error types to human messages (auth expired, rate limit, generic).
-- [ ] Retry button or automatic bounded retry for idempotent reads; destructive actions confirm.
-- [ ] Logging: no sensitive tokens in logs; **PII in logs** follows product decision in [US-021](US-021-disconnect-purge-logging.md).
+- [x] Mapped error types to human messages (auth expired, rate limit, generic).
+- [x] Retry button or automatic bounded retry for idempotent reads; destructive actions confirm.
+- [x] Logging: no sensitive tokens in logs; **PII in logs** follows product decision in [US-021](US-021-disconnect-purge-logging.md).
 
 ## Dependencies
 
@@ -37,3 +37,4 @@ As a user, I want to understand what failed and retry safely, so that transient 
 ## History
 
 - 2026-03-21 - Created from discovery questionnaire
+- 2026-03-21 - Implemented: `GoogleTasksErrorCode`, structured JSON (`code`, `message`, `retry_after` for 429), `Log::warning` without response bodies; UI `messageFromAxiosError`, `withReadRetry` for reads, Retry button; i18n EN/FR

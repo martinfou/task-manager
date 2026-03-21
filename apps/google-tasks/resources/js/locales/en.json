@@ -74,13 +74,24 @@
         "helpBullet3": "New tasks from Today or Inbox are created in that default list.",
         "helpBulletBulk": "Bulk: use the first checkbox on each row, or Ctrl/Cmd+click to toggle and Shift+click for a range. On narrow screens, use the checkboxes — there is no touch multi-select gesture.",
         "helpBulletFilters": "Filters and board view apply on top of the current navigation (Today / Inbox / list). Board columns are P1–P4 by priority; drag a card to another column to change priority (same as the list dropdown).",
+        "retry": "Retry",
         "errors": {
             "rateLimited": "Google rate limited (429). Polling slowed; try again shortly.",
             "loadFailed": "Failed to load tasks.",
             "chooseDest": "Choose a destination (lists must load) and enter a title.",
             "createFailed": "Could not create task.",
             "updateFailed": "Could not update task.",
-            "deleteFailed": "Could not delete task."
+            "deleteFailed": "Could not delete task.",
+            "codes": {
+                "auth_expired": "Google access expired. Reconnect Google in Profile.",
+                "rate_limit": "Google rate limited this request. Try again shortly.",
+                "server_error": "Google Tasks is temporarily unavailable. Try again later.",
+                "network": "Could not reach Google. Check your connection.",
+                "bad_request": "This action could not be completed.",
+                "not_found": "That task or list was not found.",
+                "forbidden": "Google denied this request.",
+                "generic": "Something went wrong with Google Tasks."
+            }
         },
         "activeList": "Active list",
         "pollLine": "Poll: {current} ms · target {target} ms",

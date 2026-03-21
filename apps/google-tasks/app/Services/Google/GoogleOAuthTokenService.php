@@ -5,6 +5,7 @@ namespace App\Services\Google;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GoogleOAuthTokenService
 {
@@ -16,7 +17,11 @@ class GoogleOAuthTokenService
     public function getAccessToken(User $user): string
     {
         if (! $user->google_refresh_token) {
-            throw new GoogleTasksApiException('No Google refresh token on user.', 401);
+            throw new GoogleTasksApiException(
+                GoogleTasksErrorCode::AuthExpired->userMessage(),
+                401,
+                GoogleTasksErrorCode::AuthExpired->value,
+            );
         }
 
         $cached = Cache::get($this->cacheKey($user));
@@ -43,9 +48,15 @@ class GoogleOAuthTokenService
 
         if ($response->failed()) {
             Cache::forget($this->cacheKey($user));
+            Log::warning('google_oauth_token_refresh_failed', [
+                'user_id' => $user->getKey(),
+                'status' => $response->status(),
+            ]);
+
             throw new GoogleTasksApiException(
-                'Failed to refresh Google access token: '.$response->body(),
-                $response->status(),
+                GoogleTasksErrorCode::AuthExpired->userMessage(),
+                401,
+                GoogleTasksErrorCode::AuthExpired->value,
             );
         }
 
@@ -53,7 +64,15 @@ class GoogleOAuthTokenService
         $accessToken = $data['access_token'] ?? null;
         if (! is_string($accessToken) || $accessToken === '') {
             Cache::forget($this->cacheKey($user));
-            throw new GoogleTasksApiException('Google token response missing access_token.', 502);
+            Log::warning('google_oauth_token_response_invalid', [
+                'user_id' => $user->getKey(),
+            ]);
+
+            throw new GoogleTasksApiException(
+                GoogleTasksErrorCode::AuthExpired->userMessage(),
+                502,
+                GoogleTasksErrorCode::AuthExpired->value,
+            );
         }
 
         $expiresIn = isset($data['expires_in']) ? (int) $data['expires_in'] : 3600;

@@ -3,6 +3,7 @@
 namespace App\Services\Google;
 
 use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
@@ -109,13 +110,26 @@ class GoogleTasksClient
 
         $target = $query === [] ? $url : $url.'?'.http_build_query($query);
 
-        $response = match ($method) {
-            'get' => $pending->get($target),
-            'post' => $pending->post($target, $json),
-            'patch' => $pending->patch($target, $json),
-            'delete' => $pending->delete($target),
-            default => throw new GoogleTasksApiException("Unsupported HTTP method: {$method}", 500),
-        };
+        try {
+            $response = match ($method) {
+                'get' => $pending->get($target),
+                'post' => $pending->post($target, $json),
+                'patch' => $pending->patch($target, $json),
+                'delete' => $pending->delete($target),
+                default => throw new GoogleTasksApiException(
+                    GoogleTasksErrorCode::Generic->userMessage(),
+                    500,
+                    GoogleTasksErrorCode::Generic->value,
+                ),
+            };
+        } catch (ConnectionException $e) {
+            throw new GoogleTasksApiException(
+                GoogleTasksErrorCode::Network->userMessage(),
+                503,
+                GoogleTasksErrorCode::Network->value,
+                $e,
+            );
+        }
 
         return $this->decodeResponse($method, $response);
     }
@@ -132,9 +146,13 @@ class GoogleTasksClient
         }
 
         if ($response->failed()) {
+            $status = $response->status();
+            $code = GoogleTasksErrorCode::fromHttpStatus($status);
+
             throw new GoogleTasksApiException(
-                $response->body(),
-                $response->status(),
+                $code->userMessage(),
+                $status,
+                $code->value,
             );
         }
 
