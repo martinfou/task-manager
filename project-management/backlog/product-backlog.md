@@ -4,7 +4,7 @@ This is the main product backlog tracking all user stories and defects.
 
 **Last Updated**: 2026-03-21
 
-**Active Sprint**: [Sprint 1: AI Workflow Foundation](../sprints/sprint-01-ai-workflow-foundation.md)
+**Active Sprint**: None — [Sprint 1: AI Workflow Foundation](../sprints/sprint-01-ai-workflow-foundation.md) completed; sprint review 2026-03-21. Plan Sprint 2 before starting new sprint work.
 
 ## User Stories
 
@@ -59,9 +59,9 @@ This is the main product backlog tracking all user stories and defects.
 
 *Run `./project-management/scripts/backlog-metrics.sh --stats` to generate this section.*
 
-**Total Items**: 5  
+**Total Items**: 6  
 **By Status**:
-- ⭕ To Do: 0
+- ⭕ To Do: 1
 - ⏳ In Progress: 0
 - ✅ Done: 5
 
@@ -69,6 +69,6 @@ This is the main product backlog tracking all user stories and defects.
 - 🔴 Critical: 1
 - 🟠 High: 2
 - 🟡 Medium: 1
-- 🟢 Low: 1
+- 🟢 Low: 2
 
-**Total Story Points**: 9
+**Total Story Points**: 10
