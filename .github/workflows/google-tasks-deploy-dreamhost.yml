@@ -1,0 +1,108 @@
+# Deploy apps/google-tasks to DreamHost (https://tasks.martinfournier.com/)
+# Laravel root on server: /home/martinfournier_tasks/tasks.martinfournier.com
+# DreamHost document root should point to: .../tasks.martinfournier.com/public
+
+name: Google Tasks — DreamHost deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/google-tasks/**'
+      - '.github/workflows/google-tasks-deploy-dreamhost.yml'
+
+concurrency:
+  group: google-tasks-dreamhost-deploy
+  cancel-in-progress: true
+
+env:
+  # Laravel app root on DreamHost (parent of public/). Panel doc root = .../public
+  DREAMHOST_REMOTE_PATH: /home/martinfournier_tasks/tasks.martinfournier.com
+  # Default `php` on DreamHost is often 8.2; use a newer CLI binary (php-8.4 / php-8.5). Override: repo variable DREAMHOST_PHP_BIN
+  DREAMHOST_PHP_BIN: ${{ vars.DREAMHOST_PHP_BIN || 'php-8.4' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: apps/google-tasks
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, ctype, json, tokenizer, xml, bcmath
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: apps/google-tasks/vendor
+          key: ${{ runner.os }}-composer-prod-${{ hashFiles('apps/google-tasks/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-prod-
+
+      - name: Install Composer dependencies (production)
+        run: composer install --prefer-dist --no-interaction --no-progress --no-dev --optimize-autoloader
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/google-tasks/package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend (Vite)
+        run: npm run build
+
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DREAMHOST_SSH_KEY }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DREAMHOST_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Rsync application to DreamHost
+        env:
+          REMOTE: ${{ secrets.DREAMHOST_SSH_USER }}@${{ secrets.DREAMHOST_SSH_HOST }}
+        working-directory: apps/google-tasks
+        run: |
+          set -euo pipefail
+          EX=(
+            '--exclude=.git'
+            '--exclude=node_modules'
+            '--exclude=.github'
+            '--exclude=tests'
+            '--exclude=playwright-report'
+            '--exclude=test-results'
+            '--exclude=blob-report'
+            '--exclude=.env'
+            '--exclude=.env.*'
+            '--exclude=storage/logs/*'
+          )
+          RSYNC_SSH='ssh -o StrictHostKeyChecking=yes'
+          # Full tree: do not --delete (preserves server-only files under storage/, .env, etc.)
+          rsync -avz "${EX[@]}" -e "$RSYNC_SSH" ./ "${REMOTE}:${{ env.DREAMHOST_REMOTE_PATH }}/"
+          # Vite build output: prune stale hashed assets
+          rsync -avz --delete "${EX[@]}" -e "$RSYNC_SSH" ./public/build/ "${REMOTE}:${{ env.DREAMHOST_REMOTE_PATH }}/public/build/"
+
+      - name: Remote Artisan (migrate + caches)
+        env:
+          REMOTE: ${{ secrets.DREAMHOST_SSH_USER }}@${{ secrets.DREAMHOST_SSH_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=yes "${REMOTE}" \
+            "cd '${{ env.DREAMHOST_REMOTE_PATH }}' && ${{ env.DREAMHOST_PHP_BIN }} artisan migrate --force && ${{ env.DREAMHOST_PHP_BIN }} artisan config:cache && ${{ env.DREAMHOST_PHP_BIN }} artisan route:cache && ${{ env.DREAMHOST_PHP_BIN }} artisan view:cache"
