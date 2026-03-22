@@ -80,7 +80,7 @@ function priorityBadgeClass(priority) {
 
 <template>
     <div
-        class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        class="grid touch-manipulation gap-3 sm:grid-cols-2 lg:grid-cols-4"
         role="region"
         :aria-label="t('tasks.kanbanRegion')"
     >
@@ -111,7 +111,7 @@ function priorityBadgeClass(priority) {
                     @click="emit('task-click', task, $event)"
                     @dblclick="emit('card-dblclick', task, $event)"
                 >
-                    <div class="flex items-start gap-2 p-2">
+                    <div class="flex items-start gap-2 p-3">
                         <input
                             type="checkbox"
                             class="mt-0.5 rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field"

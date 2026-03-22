@@ -100,3 +100,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-21 - Clarified undo/toast window: 10 seconds
 - 2026-03-22 - Backlog refinement: DoR recorded
 - 2026-03-22 - Sprint 6: initial implementation — `useUndoToast`, `UndoToast`, `Index.vue` wiring (complete / deferred delete / single bulk move); i18n EN/FR
+- 2026-03-22 - Sprint 6 scope: US-027–US-036 all assigned to same sprint (**91** pts); see sprint doc for capacity note

@@ -19,7 +19,7 @@ const { t } = useI18n();
         <span class="min-w-0 flex-1">{{ message }}</span>
         <button
             type="button"
-            class="shrink-0 rounded-md bg-gt-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-gt-accent-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised"
+            class="shrink-0 rounded-md bg-gt-accent-strong px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-gt-accent-strong-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised"
             @click="emit('undo')"
         >
             {{ t('tasks.undo.button') }}

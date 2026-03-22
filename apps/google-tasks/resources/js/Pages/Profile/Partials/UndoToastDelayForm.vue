@@ -13,7 +13,7 @@ const page = usePage();
 const optionsMs = [3000, 5000, 10000, 15000, 30000];
 
 const currentMs = computed(
-    () => page.props.tasks?.undoToastDelayMs ?? 5000,
+    () => page.props.tasks?.undoToastDelayMs ?? 10_000,
 );
 
 const form = useForm({

@@ -101,6 +101,9 @@ const searchReindexLoading = ref(false);
 const showKeyboardHelp = ref(false);
 const showWorkflowHelpModal = ref(false);
 const showMobileSearch = ref(false);
+/** Collapsible filter bar on small screens; forced open at lg+ */
+const filtersDetailsRef = ref(null);
+let removeFiltersMqListener = null;
 const searchInputRef = ref(null);
 const newTaskTitleRef = ref(null);
 const focusedTaskIndex = ref(-1);
@@ -1217,14 +1220,14 @@ function indentClass(task) {
 
 function navButtonClass(active) {
     return active
-        ? 'bg-gt-accent-tint/60 text-gt-accent ring-1 ring-inset ring-gt-accent/25 dark:bg-gt-accent-tint/20 dark:text-gt-accent-hover dark:ring-gt-accent/30'
-        : 'text-gt-ink-secondary hover:bg-gt-field-muted';
+        ? 'bg-gt-accent-tint/60 text-gt-accent ring-1 ring-inset ring-gt-accent/25 dark:bg-gt-accent-tint/20 dark:text-gt-accent-hover dark:ring-gt-accent/30 active:opacity-90'
+        : 'text-gt-ink-secondary hover:bg-gt-field-muted active:bg-gt-field-muted';
 }
 
 function viewModeToggleClass(active) {
     return active
-        ? 'bg-gt-raised text-gt-ink shadow dark:bg-gt-field'
-        : 'text-gt-muted hover:text-gt-ink';
+        ? 'bg-gt-raised text-gt-ink shadow dark:bg-gt-field inline-flex items-center justify-center'
+        : 'text-gt-muted hover:text-gt-ink inline-flex items-center justify-center active:bg-gt-field-muted/60';
 }
 
 function loadPersistedTaskUi() {
@@ -1494,11 +1497,25 @@ watch(focusedTaskIndex, async (idx) => {
     el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
 });
 
-onMounted(() => {
+function syncFiltersDetailsOpen() {
+    const el = filtersDetailsRef.value;
+    if (!el) {
+        return;
+    }
+    el.open = window.matchMedia('(min-width: 1024px)').matches;
+}
+
+onMounted(async () => {
     loadPersistedTaskUi();
     if (searchMode.value === 'semantic' && !props.semanticSearchAvailable) {
         searchMode.value = 'keyword';
     }
+    await nextTick();
+    syncFiltersDetailsOpen();
+    const mq = window.matchMedia('(min-width: 1024px)');
+    mq.addEventListener('change', syncFiltersDetailsOpen);
+    removeFiltersMqListener = () =>
+        mq.removeEventListener('change', syncFiltersDetailsOpen);
     if (!props.connected) {
         return;
     }
@@ -1514,7 +1531,18 @@ watch(
     },
 );
 
+watch(
+    () => props.connected,
+    async (ok) => {
+        if (ok) {
+            await nextTick();
+            syncFiltersDetailsOpen();
+        }
+    },
+);
+
 onUnmounted(() => {
+    removeFiltersMqListener?.();
     clearTimeout(pollTimer);
     window.removeEventListener('keydown', escCloseInspector);
 });
@@ -1526,36 +1554,46 @@ onUnmounted(() => {
     <AuthenticatedLayout>
         <template #header>
             <div
-                class="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+                class="flex w-full flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
             >
                 <div
-                    class="flex flex-wrap items-center gap-x-3 gap-y-1"
-                >
-                    <h2
-                        class="text-xl font-semibold leading-tight text-gt-ink"
-                    >
-                        {{ pageTitle }}
-                    </h2>
-                    <button
-                        v-if="connected"
-                        type="button"
-                        class="text-xs font-medium text-gt-accent underline decoration-gt-accent/40 underline-offset-2 hover:text-gt-accent-hover"
-                        @click="showKeyboardHelp = true"
-                    >
-                        {{ t('shortcuts.hint') }}
-                    </button>
-                </div>
-                <div
-                    v-if="connected"
-                    class="flex w-full min-w-0 flex-col gap-2 sm:max-w-md"
+                    class="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start"
                 >
                     <div
-                        class="flex items-center justify-end gap-2 lg:hidden"
+                        class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-initial sm:gap-x-3"
+                    >
+                        <h2
+                            class="truncate font-display text-lg font-bold leading-tight tracking-tight text-gt-ink sm:text-2xl lg:text-3xl"
+                        >
+                            {{ pageTitle }}
+                        </h2>
+                        <button
+                            v-if="connected"
+                            type="button"
+                            class="inline-flex min-h-10 shrink-0 items-center rounded-md px-2 text-xs font-medium text-gt-accent underline decoration-gt-accent/40 underline-offset-2 touch-manipulation hover:text-gt-accent-hover active:bg-gt-accent-tint/20 sm:min-h-11 sm:px-0"
+                            @click="showKeyboardHelp = true"
+                        >
+                            <span class="hidden sm:inline">{{
+                                t('shortcuts.hint')
+                            }}</span>
+                            <span
+                                class="font-semibold sm:hidden"
+                                aria-hidden="true"
+                                >?</span
+                            >
+                            <span class="sr-only sm:hidden">{{
+                                t('shortcuts.hint')
+                            }}</span>
+                        </button>
+                    </div>
+                    <div
+                        v-if="connected"
+                        class="flex shrink-0 items-center sm:hidden"
                     >
                         <button
                             v-if="!showMobileSearch"
                             type="button"
-                            class="rounded-md border border-gt-border-strong bg-gt-field px-3 py-1.5 text-sm font-medium text-gt-ink shadow-sm hover:bg-gt-field-muted"
+                            class="inline-flex min-h-10 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field px-3 text-sm font-medium text-gt-ink shadow-sm touch-manipulation hover:bg-gt-field-muted active:bg-gt-field-muted"
                             @click="openMobileSearchPanel"
                         >
                             {{ t('tasks.searchOpen') }}
@@ -1563,7 +1601,32 @@ onUnmounted(() => {
                         <button
                             v-else
                             type="button"
-                            class="rounded-md px-3 py-1.5 text-sm font-medium text-gt-muted hover:text-gt-ink"
+                            class="inline-flex min-h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-gt-muted touch-manipulation hover:text-gt-ink active:bg-gt-field-muted"
+                            @click="showMobileSearch = false"
+                        >
+                            {{ t('tasks.searchClose') }}
+                        </button>
+                    </div>
+                </div>
+                <div
+                    v-if="connected"
+                    class="flex w-full min-w-0 flex-col gap-2 sm:max-w-md"
+                >
+                    <div
+                        class="hidden items-center justify-end gap-2 sm:flex lg:hidden"
+                    >
+                        <button
+                            v-if="!showMobileSearch"
+                            type="button"
+                            class="inline-flex min-h-11 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field px-4 text-sm font-medium text-gt-ink shadow-sm touch-manipulation hover:bg-gt-field-muted active:bg-gt-field-muted"
+                            @click="openMobileSearchPanel"
+                        >
+                            {{ t('tasks.searchOpen') }}
+                        </button>
+                        <button
+                            v-else
+                            type="button"
+                            class="inline-flex min-h-11 items-center justify-center rounded-md px-4 text-sm font-medium text-gt-muted touch-manipulation hover:text-gt-ink active:bg-gt-field-muted"
                             @click="showMobileSearch = false"
                         >
                             {{ t('tasks.searchClose') }}
@@ -1588,7 +1651,7 @@ onUnmounted(() => {
                         }}</span>
                         <select
                             v-model="searchMode"
-                            class="rounded-md border border-gt-border-strong bg-gt-field text-xs text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                            class="min-h-11 rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:min-h-0 sm:text-xs"
                         >
                             <option value="keyword">
                                 {{ t('tasks.searchModeKeyword') }}
@@ -1604,7 +1667,7 @@ onUnmounted(() => {
                         v-model="searchQuery"
                         type="search"
                         autocomplete="off"
-                        class="block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                        class="block w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                         :placeholder="t('tasks.searchPlaceholder')"
                     />
                     <p
@@ -1655,7 +1718,7 @@ onUnmounted(() => {
                         >
                             <button
                                 type="button"
-                                class="w-full px-3 py-2 text-left hover:bg-gt-field-muted"
+                                class="flex min-h-11 w-full touch-manipulation items-start px-3 py-3 text-left hover:bg-gt-field-muted active:bg-gt-field-muted"
                                 @click="openSearchResult(row)"
                             >
                                 <span
@@ -1719,7 +1782,7 @@ onUnmounted(() => {
                         <div class="flex flex-wrap items-center gap-3 pt-1">
                             <Link
                                 :href="route('google.redirect')"
-                                class="inline-flex items-center rounded-md border border-transparent bg-gt-accent px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90"
+                                class="inline-flex items-center rounded-md border border-transparent bg-gt-accent-strong px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-strong-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90"
                             >
                                 {{ t('tasks.connectGoogle') }}
                             </Link>
@@ -1740,7 +1803,7 @@ onUnmounted(() => {
                     >
                         <button
                             type="button"
-                            class="w-full rounded-md px-3 py-2 text-left text-sm font-medium"
+                            class="flex min-h-11 w-full touch-manipulation items-center rounded-md px-3 text-left text-sm font-medium"
                             :class="navButtonClass(navMode === 'today')"
                             @click="setNav('today')"
                         >
@@ -1748,7 +1811,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="w-full rounded-md px-3 py-2 text-left text-sm font-medium"
+                            class="flex min-h-11 w-full touch-manipulation items-center rounded-md px-3 text-left text-sm font-medium"
                             :class="navButtonClass(navMode === 'inbox')"
                             @click="setNav('inbox')"
                         >
@@ -1756,7 +1819,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="w-full rounded-md px-3 py-2 text-left text-sm font-medium"
+                            class="flex min-h-11 w-full touch-manipulation items-center rounded-md px-3 text-left text-sm font-medium"
                             :class="navButtonClass(navMode === 'all')"
                             @click="setNav('all')"
                         >
@@ -1771,7 +1834,7 @@ onUnmounted(() => {
                             v-for="list in taskLists"
                             :key="list.id"
                             type="button"
-                            class="w-full truncate rounded-md px-3 py-2 text-left text-sm font-medium"
+                            class="flex min-h-11 w-full touch-manipulation items-center truncate rounded-md px-3 text-left text-sm font-medium"
                             :class="
                                 navButtonClass(
                                     navMode === 'list' &&
@@ -1789,11 +1852,11 @@ onUnmounted(() => {
                         class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start"
                     >
                         <div
-                            class="min-w-0 flex-1 density-stack px-4 sm:px-6 lg:px-0"
+                            class="density-stack max-lg:space-y-3 min-w-0 flex-1 px-4 sm:px-6 lg:px-0"
                         >
                         <button
                             type="button"
-                            class="w-full rounded-md border border-gt-border bg-gt-raised px-3 py-2 text-left text-sm font-medium text-gt-accent shadow-sm hover:bg-gt-field-muted lg:hidden"
+                            class="w-full touch-manipulation py-1 text-left text-sm font-medium text-gt-accent underline decoration-gt-accent/40 underline-offset-2 hover:text-gt-accent-hover active:opacity-80 lg:hidden"
                             @click="showWorkflowHelpModal = true"
                         >
                             {{ t('tasks.helpLinkMobile') }}
@@ -1833,11 +1896,11 @@ onUnmounted(() => {
                             class="overflow-hidden gt-surface sm:rounded-lg"
                         >
                             <div
-                                class="border-b border-gt-border px-4 py-3 sm:px-6"
+                                class="border-b border-gt-border px-4 py-2 sm:px-6 sm:py-3"
                             >
                                 <div
                                     v-if="navMode === 'list'"
-                                    class="mb-3 lg:hidden"
+                                    class="mb-2 max-sm:mb-2 lg:hidden"
                                 >
                                     <InputLabel
                                         for="list"
@@ -1846,7 +1909,7 @@ onUnmounted(() => {
                                     <select
                                         id="list"
                                         v-model="selectedListId"
-                                        class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                         @change="onListDropdownChange"
                                     >
                                         <option
@@ -1870,7 +1933,7 @@ onUnmounted(() => {
                                         ref="newTaskTitleRef"
                                         v-model="newTitle"
                                         type="text"
-                                        class="block min-w-0 w-full flex-1"
+                                        class="block min-h-11 min-w-0 w-full flex-1 text-base sm:text-sm"
                                         :placeholder="t('tasks.titlePlaceholder')"
                                         @keyup.enter="submitNewTask"
                                     />
@@ -1897,7 +1960,10 @@ onUnmounted(() => {
                                 />
                             </div>
                             <div
-                                class="border-b border-gt-border px-6 py-3 text-sm text-gt-muted"
+                                class="border-b border-gt-border px-4 py-2 text-xs text-gt-muted sm:px-6 sm:py-2 sm:text-sm"
+                                :class="
+                                    navMode === 'list' ? 'max-lg:hidden' : ''
+                                "
                             >
                                 <span v-if="navMode === 'today'">
                                     {{ t('tasks.dueTodayRow') }}
@@ -1918,17 +1984,39 @@ onUnmounted(() => {
                                     t('tasks.noListSelected')
                                 }}</span>
                             </div>
-                            <div
-                                class="flex flex-wrap items-end gap-3 border-b border-gt-border px-4 py-3"
+                            <details
+                                ref="filtersDetailsRef"
+                                class="group border-b border-gt-border"
                             >
+                                <summary
+                                    class="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-sm font-medium text-gt-ink marker:content-none sm:px-6 lg:hidden [&::-webkit-details-marker]:hidden"
+                                >
+                                    <span>{{ t('tasks.filtersToggle') }}</span>
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-gt-muted transition group-open:rotate-180 motion-reduce:transition-none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                </summary>
                                 <div
-                                    class="inline-flex gap-0.5 rounded-lg bg-gt-field-muted p-0.5"
+                                    class="flex flex-wrap items-end gap-3 border-t border-gt-border px-4 pb-3 pt-2 max-sm:flex-col max-sm:items-stretch sm:px-6 lg:border-t-0 lg:px-6 lg:py-3"
+                                >
+                                <div
+                                    class="inline-flex w-full gap-0.5 rounded-lg bg-gt-field-muted p-0.5 sm:w-auto"
                                     role="group"
                                     :aria-label="t('tasks.viewModeGroup')"
                                 >
                                     <button
                                         type="button"
-                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                                        class="min-h-11 flex-1 touch-manipulation rounded-md px-3 text-xs font-medium transition sm:flex-none sm:px-3 sm:py-2"
                                         :class="viewModeToggleClass(viewMode === 'list')"
                                         @click="viewMode = 'list'"
                                     >
@@ -1936,7 +2024,7 @@ onUnmounted(() => {
                                     </button>
                                     <button
                                         type="button"
-                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition"
+                                        class="min-h-11 flex-1 touch-manipulation rounded-md px-3 text-xs font-medium transition sm:flex-none sm:px-3 sm:py-2"
                                         :class="viewModeToggleClass(viewMode === 'board')"
                                         @click="viewMode = 'board'"
                                     >
@@ -1951,7 +2039,7 @@ onUnmounted(() => {
                                     <select
                                         id="filter-completion"
                                         v-model="filterCompletion"
-                                        class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                     >
                                         <option value="all">
                                             {{ t('tasks.filterCompletionAll') }}
@@ -1976,7 +2064,7 @@ onUnmounted(() => {
                                     <select
                                         id="filter-due"
                                         v-model="filterDue"
-                                        class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                     >
                                         <option value="any">
                                             {{ t('tasks.filterDueAny') }}
@@ -2003,7 +2091,7 @@ onUnmounted(() => {
                                     <select
                                         id="filter-prio"
                                         v-model="filterPriority"
-                                        class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                     >
                                         <option value="all">
                                             {{ t('tasks.filterPriorityAll') }}
@@ -2033,7 +2121,7 @@ onUnmounted(() => {
                                     <select
                                         id="filter-list"
                                         v-model="filterListId"
-                                        class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                     >
                                         <option value="">
                                             {{ t('tasks.filterListAll') }}
@@ -2049,12 +2137,13 @@ onUnmounted(() => {
                                 </div>
                                 <SecondaryButton
                                     type="button"
-                                    class="mt-6"
+                                    class="mt-6 max-sm:mt-0 max-sm:w-full max-sm:justify-center"
                                     @click="resetFilters"
                                 >
                                     {{ t('tasks.resetFilters') }}
                                 </SecondaryButton>
                             </div>
+                            </details>
                             <div
                                 v-if="selectedCount > 0"
                                 class="flex flex-wrap items-center gap-2 border-b border-gt-border bg-gt-accent-tint/35 px-4 py-2.5 text-sm dark:bg-gt-accent-tint/15"
@@ -2106,7 +2195,7 @@ onUnmounted(() => {
                             </div>
                             <p
                                 v-if="viewMode === 'list'"
-                                class="border-b border-gt-border px-6 py-2 text-xs leading-relaxed text-gt-muted"
+                                class="hidden border-b border-gt-border px-4 py-2 text-xs leading-relaxed text-gt-muted sm:block sm:px-6"
                             >
                                 <span
                                     class="me-2 font-medium text-gt-ink-secondary"
@@ -2135,7 +2224,7 @@ onUnmounted(() => {
                                     <div
                                         :data-task-id="task.id"
                                         :class="[
-                                            'density-task-row flex cursor-pointer items-start gap-3 px-6 py-3 outline-none transition-shadow',
+                                            'density-task-row flex cursor-pointer items-start gap-3 px-4 py-3 outline-none transition-shadow sm:px-6',
                                             indentClass(task),
                                             isTaskSelected(task)
                                                 ? 'bg-gt-accent-tint/40 dark:bg-gt-accent-tint/15'
@@ -2240,7 +2329,7 @@ onUnmounted(() => {
                                     >
                                         <button
                                             type="button"
-                                            class="rounded-md px-2 py-1 text-xs font-medium text-gt-accent hover:bg-gt-accent-tint/30 disabled:text-gt-subtle dark:hover:bg-gt-accent-tint/15 dark:disabled:text-gt-subtle"
+                                            class="inline-flex min-h-11 touch-manipulation items-center rounded-md px-3 text-xs font-medium text-gt-accent hover:bg-gt-accent-tint/30 disabled:text-gt-subtle dark:hover:bg-gt-accent-tint/15 dark:disabled:text-gt-subtle"
                                             :disabled="task._optimistic"
                                             @click.stop="openEditInspector(task)"
                                         >
@@ -2248,7 +2337,7 @@ onUnmounted(() => {
                                         </button>
                                         <button
                                             type="button"
-                                            class="text-sm text-red-600 hover:text-red-800 disabled:text-gt-subtle dark:text-red-400 dark:hover:text-red-300 dark:disabled:text-gt-subtle"
+                                            class="inline-flex min-h-11 touch-manipulation items-center rounded-md px-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-800 disabled:text-gt-subtle dark:hover:bg-red-950/30 dark:text-red-400 dark:hover:text-red-300 dark:disabled:text-gt-subtle"
                                             :disabled="task._optimistic"
                                             @click.stop="removeTask(task)"
                                         >
@@ -2510,7 +2599,7 @@ onUnmounted(() => {
                                                 id="new-due"
                                                 v-model="newDue"
                                                 type="datetime-local"
-                                                class="mt-1 block w-full"
+                                                class="mt-1 block min-h-11 w-full text-base sm:text-sm"
                                             />
                                         </div>
                                         <div>
@@ -2524,7 +2613,7 @@ onUnmounted(() => {
                                                 id="new-recurrence"
                                                 v-model="newRecurrence"
                                                 type="text"
-                                                class="mt-1 block w-full"
+                                                class="mt-1 block min-h-11 w-full text-base sm:text-sm"
                                                 :placeholder="
                                                     t('tasks.recurrencePlaceholder')
                                                 "
@@ -2538,7 +2627,7 @@ onUnmounted(() => {
                                             <select
                                                 id="new-priority"
                                                 v-model="newPriority"
-                                                class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                                class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                             >
                                                 <option value="p1">
                                                     {{ t('tasks.priorityP1') }}
@@ -2563,7 +2652,7 @@ onUnmounted(() => {
                                                 id="new-notes"
                                                 v-model="newNotes"
                                                 rows="4"
-                                                class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                                class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
                                                 :placeholder="
                                                     t('tasks.notesPlaceholder')
                                                 "
@@ -2609,7 +2698,7 @@ onUnmounted(() => {
                         </div>
                         <button
                             type="button"
-                            class="block w-full px-4 py-3 text-left text-sm"
+                            class="flex min-h-12 w-full touch-manipulation items-center px-4 text-left text-sm"
                             :class="navButtonClass(navMode === 'today')"
                             @click="
                                 setNav('today');
@@ -2620,7 +2709,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-3 text-left text-sm"
+                            class="flex min-h-12 w-full touch-manipulation items-center px-4 text-left text-sm"
                             :class="navButtonClass(navMode === 'inbox')"
                             @click="
                                 setNav('inbox');
@@ -2631,7 +2720,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="block w-full px-4 py-3 text-left text-sm"
+                            class="flex min-h-12 w-full touch-manipulation items-center px-4 text-left text-sm"
                             :class="navButtonClass(navMode === 'all')"
                             @click="
                                 setNav('all');
@@ -2649,7 +2738,7 @@ onUnmounted(() => {
                             v-for="list in taskLists"
                             :key="`drawer-${list.id}`"
                             type="button"
-                            class="block w-full truncate px-4 py-3 text-left text-sm"
+                            class="flex min-h-12 w-full touch-manipulation items-center truncate px-4 text-left text-sm"
                             :class="
                                 navButtonClass(
                                     navMode === 'list' &&
@@ -2664,11 +2753,11 @@ onUnmounted(() => {
 
                     <!-- Mobile bottom nav -->
                     <nav
-                        class="fixed bottom-0 left-0 right-0 z-30 flex border-t border-gt-border bg-gt-raised pb-[env(safe-area-inset-bottom)] lg:hidden"
+                        class="fixed bottom-0 left-0 right-0 z-30 flex min-h-[3.25rem] border-t border-gt-border bg-gt-raised pb-[env(safe-area-inset-bottom)] touch-manipulation lg:hidden"
                     >
                         <button
                             type="button"
-                            class="flex flex-1 flex-col items-center py-2 text-xs font-medium"
+                            class="flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs font-medium active:bg-gt-field-muted"
                             :class="
                                 navMode === 'today'
                                     ? 'text-gt-accent dark:text-gt-accent-hover'
@@ -2680,7 +2769,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="flex flex-1 flex-col items-center py-2 text-xs font-medium"
+                            class="flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs font-medium active:bg-gt-field-muted"
                             :class="
                                 navMode === 'inbox'
                                     ? 'text-gt-accent dark:text-gt-accent-hover'
@@ -2692,7 +2781,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="flex flex-1 flex-col items-center py-2 text-xs font-medium"
+                            class="flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs font-medium active:bg-gt-field-muted"
                             :class="
                                 navMode === 'all'
                                     ? 'text-gt-accent dark:text-gt-accent-hover'
@@ -2704,7 +2793,7 @@ onUnmounted(() => {
                         </button>
                         <button
                             type="button"
-                            class="flex flex-1 flex-col items-center py-2 text-xs font-medium text-gt-muted"
+                            class="flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs font-medium text-gt-muted active:bg-gt-field-muted"
                             @click="showListDrawer = true"
                         >
                             {{ t('tasks.listsHeading') }}

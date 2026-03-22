@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 2  
 **Created**: 2026-03-22  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -78,3 +78,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 - 2026-03-22 - Created
 - 2026-03-22 - Backlog refinement: DoR recorded; Dependencies set to US-024 + US-014
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)

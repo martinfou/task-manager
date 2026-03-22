@@ -150,6 +150,26 @@ const kbdClass =
                     <tr>
                         <td class="py-2.5 pe-4 align-top">
                             <kbd :class="kbdClass">{{
+                                t('shortcuts.keysDetailSave')
+                            }}</kbd>
+                        </td>
+                        <td class="py-2.5 text-slate-800 dark:text-slate-200">
+                            {{ t('shortcuts.actionDetailSave') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-2.5 pe-4 align-top">
+                            <kbd :class="kbdClass">{{
+                                t('shortcuts.keysDetailNotesSave')
+                            }}</kbd>
+                        </td>
+                        <td class="py-2.5 text-slate-800 dark:text-slate-200">
+                            {{ t('shortcuts.actionDetailNotesSave') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-2.5 pe-4 align-top">
+                            <kbd :class="kbdClass">{{
                                 t('shortcuts.keysHelp')
                             }}</kbd>
                         </td>

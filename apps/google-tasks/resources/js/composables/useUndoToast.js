@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, onUnmounted, ref } from 'vue';
 
-const FALLBACK_MS = 5000;
+const FALLBACK_MS = 10_000;
 
 /**
  * Non-blocking undo toast (US-029). Supports:

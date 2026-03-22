@@ -39,7 +39,7 @@ defineProps({
     <AuthenticatedLayout>
         <template #header>
             <h2
-                class="text-xl font-semibold leading-tight text-gt-ink"
+                class="gt-page-title"
             >
                 Profile
             </h2>

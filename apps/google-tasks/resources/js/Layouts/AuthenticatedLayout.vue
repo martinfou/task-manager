@@ -19,7 +19,7 @@ const showingNavigationDropdown = ref(false);
     <div>
         <div class="min-h-screen bg-gt-canvas">
             <nav
-                class="border-b border-gt-nav-border bg-gt-nav"
+                class="relative border-b border-gt-nav-border bg-gt-nav after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gt-accent/25 after:to-transparent dark:after:via-gt-accent/35"
             >
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -210,7 +210,9 @@ const showingNavigationDropdown = ref(false);
                 class="border-b border-gt-nav-border bg-gt-nav shadow-sm dark:shadow-none"
                 v-if="$slots.header"
             >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div
+                    class="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6"
+                >
                     <slot name="header" />
                 </div>
             </header>

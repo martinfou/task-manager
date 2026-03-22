@@ -35,3 +35,45 @@ Follow `project-management/processes/git-commit-guide.md` for every commit.
 **Small change shortcut** — one-line body allowed per git-commit-guide “Alternative: One-Line Format” when appropriate.
 
 Repository commit template (optional for humans): `git config commit.template project-management/templates/git-commit-template.txt`
+
+---
+
+## Design Context (Google Tasks UI)
+
+**Canonical source:** `.impeccable.md` — update that file first, then mirror changes here so PM rules and product UX stay aligned.
+
+### Users
+
+- **Who**: People who use **Google Tasks** and want a capable web client (sync with Google, filters, Kanban-by-priority, bulk actions, keyboard workflows).
+- **Context**: Often **short sessions**—triaging inbox, updating due dates, marking complete—sometimes on mobile, sometimes at a desk.
+- **Job to be done**: See the right tasks fast, change them with minimal friction, and trust that changes sync back to Google.
+
+### Brand Personality
+
+- **Voice**: Still **clear and direct** for tasks and errors (EN/FR parity in `resources/js/locales/`); allow **warmth, wit, and personality** in secondary surfaces—empty states, onboarding hints, success moments—without noisy chrome in the main list.
+- **Three words**: **Playful**, **premium**, **hip**—a client that feels **cool** and considered, not generic “AI SaaS,” while staying fast to scan.
+- **Emotional goal**: **Confidence** (sync and state feel reliable) and **focus** on the list, plus **delight** when it’s safe (motion, microcopy, polish)—never at the cost of triage speed.
+
+### Aesthetic Direction
+
+- **Baseline**: **Tailwind + Breeze** conventions—**Figtree** (`tailwind.config.js`, Bunny Fonts in `app.blade.php`), **slate/gray** surfaces, `antialiased` body text.
+- **Theme**: **Dark by default** (`gt-theme` / `dark` class on `<html>`); **light mode** is a supported peer, not an afterthought. Inline boot script in `resources/views/app.blade.php` limits theme flash; `theme-color` is set immediately to **`#020617`** (dark) or **`#f8fafc`** (light) to match browser chrome.
+- **Density**: **Comfortable vs compact** (`data-density` on `<html>`, utilities in `resources/css/app.css`)—layout and spacing should honor both without breaking hierarchy.
+- **References to mirror**: **Familiar task patterns** (Google Tasks, Gmail-style density) for structure; **premium consumer apps** (polished dark UI, tight typography, restrained motion) for craft. Personality shows in **details**, not busy backgrounds.
+- **Anti-patterns**: Loud gradients-for-the-sake-of-it, low-contrast gray-on-gray in dark mode, breaking keyboard or screen-reader flows for visual flair, **generic “startup” purple gradients and interchangeable dashboard aesthetics**.
+
+### Accessibility
+
+- **Keyboard**: Tasks shortcuts follow a **typing-context guard** (no hijacking in inputs); help overlay documents bindings (`TasksKeyboardShortcutsHelp.vue`).
+- **Assistive tech**: Row highlight uses **visual ring** + **`aria-selected`** without breaking native checkbox/tab order (per app README).
+- **Motion**: Respect `prefers-reduced-motion` when adding animation (align with Impeccable motion guidance).
+- **Formal target (product choice)**: **No declared WCAG level**—prioritize **readable contrast**, **keyboard usability**, and **focus visibility** using **`gt-*` tokens** and existing patterns; treat stricter audits as optional follow-up unless requirements change.
+
+### Design Principles
+
+1. **Dark-first parity** — Every new screen or component must read well in **dark** and **light**; test both before shipping.
+2. **Density-aware spacing** — Prefer shared utilities (e.g. `.density-stack`, `.density-task-row`, `.density-card-padding`) or consistent Tailwind scales so compact mode stays usable.
+3. **Task content is the hero** — Color, motion, and borders support **scannability** of titles, due dates, and priority; express **playful / premium** character through **typography, spacing, subtle motion, and empty states**, not competing chrome around every row.
+4. **Keyboard and focus safety** — Respect “typing context” (no shortcut hijacking in inputs); visible focus rings and patterns that match existing Tasks accessibility choices.
+5. **i18n by default** — New strings go through **en + fr** locale files with the same keys; date/time uses locale-aware formatting already established in the app.
+6. **Tokens over one-offs** — Extend `tailwind.config.js` or shared CSS layers when introducing new colors or radii; do not scatter arbitrary hex values in Vue without justification.

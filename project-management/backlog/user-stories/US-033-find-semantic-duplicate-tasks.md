@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 13  
 **Created**: 2026-03-21  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -118,3 +118,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Clarified: duplicate detection **incomplete tasks only**
 - 2026-03-22 - Clarified: **soft hint** to prefer keeper with **richer notes** when clear; user overrides
 - 2026-03-22 - Backlog refinement: DoR recorded; optional Phase A/B split noted for capacity only
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)

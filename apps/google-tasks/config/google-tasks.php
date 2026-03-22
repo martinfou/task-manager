@@ -34,7 +34,7 @@ return [
     |
     */
 
-    'undo_toast_delay_ms' => (int) env('GOOGLE_TASKS_UNDO_TOAST_DELAY_MS', 5000),
+    'undo_toast_delay_ms' => (int) env('GOOGLE_TASKS_UNDO_TOAST_DELAY_MS', 10_000),
 
     /*
     |--------------------------------------------------------------------------

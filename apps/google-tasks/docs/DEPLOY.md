@@ -62,4 +62,4 @@ Tracked as [RI-003](../../../project-management/backlog/retrospective-improvemen
 
 ## Migrations (Tasks app)
 
-Run `php artisan migrate` after deploy when new migrations ship. Recent examples: `task_embeddings` (semantic search), `users.undo_toast_delay_ms` (optional per-user undo-toast delay for destructive actions; default comes from `GOOGLE_TASKS_UNDO_TOAST_DELAY_MS` in config when the column is null).
+Run `php artisan migrate` after deploy when new migrations ship. Recent examples: `task_embeddings` (semantic search), `users.undo_toast_delay_ms` (optional per-user undo-toast delay for destructive actions; default comes from `GOOGLE_TASKS_UNDO_TOAST_DELAY_MS` in config when the column is null). Behavior: [UNDO_TOAST.md](UNDO_TOAST.md).

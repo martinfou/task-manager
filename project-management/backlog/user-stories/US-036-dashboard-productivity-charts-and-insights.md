@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 13 *(re-estimate if extended metrics + offline caching expand engineering effort)*  
 **Created**: 2026-03-22  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -269,6 +269,7 @@ Target information architecture: **insight cards first** (answer “am I closing
 - 2026-03-22 - Created
 - 2026-03-22 - Added dashboard ASCII wireframes under Notes (layout for MVP + stretch + trust/empty states)
 - 2026-03-22 - Recorded clarifying decisions: `Task.created` preference + fallback, profile TZ default America/Toronto, best-effort completion times, offline last-stats + disclaimer, extended metrics in scope, low-guilt consistency (active days primary)
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
 
 ---
 

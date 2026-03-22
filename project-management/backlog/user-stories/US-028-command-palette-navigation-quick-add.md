@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 8  
 **Created**: 2026-03-21  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -103,3 +103,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-21 - Clarified palette shortcut: ⌘K / Ctrl+K
 - 2026-03-22 - Clarified: **middle path** mobile entry (overflow menu item); story points **8**
 - 2026-03-22 - Backlog refinement: DoR recorded
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)

@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 8  
 **Created**: 2026-03-22  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -93,3 +93,4 @@ Reduces **downtime and data-loss risk** for a single-tenant or small multi-user 
 - 2026-03-22 - Clarified retention: **14 daily**, **4 weekly**, **3 monthly**
 - 2026-03-22 - Clarified storage: **DreamHost** primary path + **Dropbox** offsite copy
 - 2026-03-22 - Clarified: **no** at-rest encryption of backups; access control only
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)

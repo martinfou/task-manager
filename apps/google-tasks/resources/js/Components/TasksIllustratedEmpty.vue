@@ -24,7 +24,7 @@ const { t } = useI18n();
             role="status"
         >
             <div
-                class="mb-4 flex justify-center text-gt-subtle"
+                class="mb-4 flex justify-center text-gt-accent/70 dark:text-gt-accent/80"
                 aria-hidden="true"
             >
                 <svg
@@ -43,7 +43,7 @@ const { t } = useI18n();
                 </svg>
             </div>
             <p
-                class="text-base font-semibold text-gt-ink"
+                class="font-display text-base font-semibold tracking-tight text-gt-ink"
             >
                 {{ title }}
             </p>

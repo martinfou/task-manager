@@ -5,7 +5,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { useI18n } from 'vue-i18n';
 
-defineProps({
+const props = defineProps({
     title: { type: String, required: true },
     due: { type: String, required: true },
     recurrence: { type: String, required: true },
@@ -27,6 +27,25 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
+
+/** US-034: Enter saves from single-line fields; notes use Ctrl/Cmd+Enter. */
+function onFieldEnter(e) {
+    if (props.saving) {
+        return;
+    }
+    e.preventDefault();
+    emit('save');
+}
+
+function onNotesKeydown(e) {
+    if (props.saving) {
+        return;
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        emit('save');
+    }
+}
 </script>
 
 <template>
@@ -42,6 +61,7 @@ const { t } = useI18n();
                 type="text"
                 class="mt-1 block w-full"
                 @update:model-value="emit('update:title', $event)"
+                @keydown.enter="onFieldEnter"
             />
         </div>
         <div>
@@ -55,6 +75,7 @@ const { t } = useI18n();
                 type="datetime-local"
                 class="mt-1 block w-full"
                 @update:model-value="emit('update:due', $event)"
+                @keydown.enter="onFieldEnter"
             />
         </div>
         <div>
@@ -69,6 +90,7 @@ const { t } = useI18n();
                 class="mt-1 block w-full"
                 :placeholder="t('tasks.recurrencePlaceholder')"
                 @update:model-value="emit('update:recurrence', $event)"
+                @keydown.enter="onFieldEnter"
             />
         </div>
         <div>
@@ -81,6 +103,7 @@ const { t } = useI18n();
                 :value="priority"
                 class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
                 @change="emit('update:priority', $event.target.value)"
+                @keydown.enter="onFieldEnter"
             >
                 <option value="p1">
                     {{ t('tasks.priorityP1') }}
@@ -109,6 +132,7 @@ const { t } = useI18n();
                 :placeholder="t('tasks.notesPlaceholder')"
                 @input="emit('update:notes', $event.target.value)"
                 @paste="emit('notes-paste', $event)"
+                @keydown="onNotesKeydown"
             />
         </div>
         <div class="flex flex-wrap gap-2 pt-1">

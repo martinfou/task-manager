@@ -10,11 +10,12 @@ compatible_with: [product-backlog]
 
 **Sprint status**: **Active** — started 2026-03-22 after [Sprint 5](sprint-05-google-tasks-ux-visibility.md) closed.
 
-**Sprint Goal**: Ship the **usability pack** from discovery: **undo toast** for destructive actions, **command palette** (⌘K / Ctrl+K), **snooze/defer presets**, and **mobile swipe** actions — faster triage with lower fear of mistakes.
+**Sprint Goal**: Ship the **usability pack** (undo, command palette, snooze/defer, mobile swipe) **and** complete **all remaining open product backlog stories** ([US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md)–[US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md)) in this sprint bucket.
 
-**Duration**: 2026-03-22 — 2026-04-05 (2 weeks) — *aligned with prior cadence; adjust end date if needed*  
-**Team Velocity (reference)**: **18** points in [Sprint 4](sprint-04-google-tasks-quality-and-v2.md); **24** committed in Sprint 5 ✅  
-**Sprint Planning Date**: 2026-03-22 (rolled from Sprint 5 close)  
+**Duration**: 2026-03-22 — 2026-04-05 (2 weeks) — *nominal end date; **91** story points committed (see below) — exceeds typical velocity (~18–24 pts/2w). **Replan**: extend sprint window, split into Sprint 6a/6b, or move lower-priority stories back to backlog after review.*
+
+**Team Velocity (reference)**: **18** points ([Sprint 4](sprint-04-google-tasks-quality-and-v2.md)); **24** ([Sprint 5](sprint-05-google-tasks-ux-visibility.md)) ✅  
+**Sprint Planning Date**: 2026-03-22 (rolled from Sprint 5 close); **expanded scope** 2026-03-22 — all open backlog stories assigned here  
 **Sprint Review Date**: *TBD*  
 **Sprint Retrospective Date**: *TBD*
 
@@ -22,35 +23,39 @@ compatible_with: [product-backlog]
 
 ---
 
-## Sprint planning record (2026-03-22)
+## Sprint planning record (2026-03-22, expanded)
 
 | Step | Result |
 |------|--------|
 | Backlog metrics | `./project-management/scripts/backlog-metrics.sh --stats` |
-| Definition of Ready | US-029–US-031 per [refinement session](backlog-refinement-session-2026-03-22.md) |
-| Capacity | **21** pts committed (US-029–US-031); flex US-034 deferred |
+| Definition of Ready | [Refinement session](backlog-refinement-session-2026-03-22.md); large stories groom before starting |
+| Capacity | **91** pts — **all** open stories (US-027–US-036); expect mid-sprint scope negotiation |
 | Branching | [ADR-002](../architecture-decision-records/ADR-002-branching-strategy.md) |
 
-### Implementation order
+### Suggested implementation order
 
-1. [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) — **Undo toast** (in progress — first slice landed in code 2026-03-22).  
-2. [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) — **Command palette**.  
+1. [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) — **Undo toast** (⏳ finish + DoD).  
+2. [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) — **Command palette** (reconcile vs search ⌘K).  
 3. [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) — **Snooze / defer**.  
-4. [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) — **Mobile swipe**.
+4. [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) — **Mobile swipe**.  
+5. [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) — **Enter to save** (small).  
+6. [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) — **Dates/priority consistency**.  
+7. [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) — **Kanban due lanes**.  
+8. [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) — **Semantic duplicate finder**.  
+9. [US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md) — **Dashboard insights**.  
+10. [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) — **Backup / restore** (ops; may parallelize).
 
-**From Sprint 5 retro (carry-in)**: [RI-004](../backlog/retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md), [RI-005](../backlog/retrospective-improvements/RI-005-all-tasks-aggregate-429-runbook.md) — schedule in Sprint 6 or early grooming (docs-only).
-
-**Deferred**: [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) (flex).
+**From Sprint 5 retro (carry-in)**: [RI-004](../backlog/retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md), [RI-005](../backlog/retrospective-improvements/RI-005-all-tasks-aggregate-429-runbook.md) — docs in Sprint 6.
 
 ---
 
 ## Sprint Overview
 
-**Focus Areas**: Undo safety · Command palette · Snooze · Swipe gestures
+**Focus Areas**: Undo · Command palette · Snooze · Swipe · Consistency · Kanban lanes · Duplicates · Dashboard · Backup · Keyboard save
 
-**Key Deliverables**: See story files; US-029 undo UI uses `useUndoToast` + `UndoToast.vue` (10s window; delete is deferred server commit).
+**Key Deliverables**: Per story files; see **Risks** for capacity.
 
-**Risks**: `Index.vue` size; palette vs existing Ctrl+K search shortcut — reconcile in US-028.
+**Risks**: `Index.vue` integration load ([RI-004](../backlog/retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md)); **91 pts** vs **~2-week** cadence — prioritize US-029–US-031 first, then negotiate carry-over.
 
 ---
 
@@ -58,12 +63,18 @@ compatible_with: [product-backlog]
 
 | ID | Title | Points | Status |
 |----|-------|--------|--------|
-| [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) | Undo toast | 3 | ⏳ |
+| [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent dates & priority | 13 | ⭕ |
 | [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) | Command palette | 8 | ⭕ |
+| [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) | Undo toast | 3 | ⏳ |
 | [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) | Snooze / defer | 5 | ⭕ |
 | [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) | Mobile swipe | 5 | ⭕ |
+| [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) | Kanban due-date lanes | 8 | ⭕ |
+| [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) | Semantic duplicate tasks | 13 | ⭕ |
+| [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) | Enter to save while editing | 2 | ⭕ |
+| [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) | Server backup & restore | 8 | ⭕ |
+| [US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard productivity charts | 13 | ⭕ |
 
-**Total Story Points**: 21
+**Total Story Points**: **91**
 
 ---
 
@@ -99,6 +110,8 @@ compatible_with: [product-backlog]
 | T-6.11 | Gesture layer + thresholds | composable | ⭕ |
 | T-6.12 | Wire actions + US-030 entry | `Index.vue` | ⭕ |
 
+*Tasks for US-027, US-032–US-036: add when each story is started.*
+
 ---
 
 ## Sprint Summary
@@ -121,3 +134,4 @@ compatible_with: [product-backlog]
 
 - 2026-03-22 — Planning draft created
 - 2026-03-22 — **Activated**: Sprint 5 closed; US-029 implementation started (undo toast)
+- 2026-03-22 — **Scope expansion**: all open backlog stories (US-027–US-036) assigned to Sprint 6; **91** pts total

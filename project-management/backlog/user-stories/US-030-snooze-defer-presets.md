@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 5  
 **Created**: 2026-03-21  
 **Updated**: 2026-03-21  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -102,3 +102,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-21 - Clarified “Next week”: Monday 00:00, first day of next ISO week (incl. if today is Monday → +7d)
 - 2026-03-21 - Clarified “Weekend”: next upcoming Saturday 09:00 local
 - 2026-03-22 - Backlog refinement: DoR recorded
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)

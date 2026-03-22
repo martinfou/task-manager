@@ -10,7 +10,7 @@ defineProps({
 const { t } = useI18n();
 
 const primaryLinkClass =
-    'inline-flex items-center rounded-md border border-transparent bg-gt-accent px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90';
+    'inline-flex items-center rounded-md border border-transparent bg-gt-accent-strong px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-strong-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90';
 
 const secondaryLinkClass =
     'inline-flex items-center rounded-md border border-gt-border bg-gt-raised px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gt-ink-secondary shadow-sm transition duration-150 ease-in-out hover:bg-gt-field-muted focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised dark:bg-gt-field-muted dark:text-gt-ink dark:hover:bg-gt-field';
@@ -21,9 +21,7 @@ const secondaryLinkClass =
 
     <AuthenticatedLayout>
         <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gt-ink"
-            >
+            <h2 class="gt-page-title">
                 {{ t('dashboard.title') }}
             </h2>
         </template>
@@ -36,7 +34,7 @@ const secondaryLinkClass =
                     >
                         <div>
                             <h3
-                                class="text-lg font-semibold text-gt-ink"
+                                class="font-display text-lg font-semibold tracking-tight text-gt-ink"
                             >
                                 {{ t('dashboard.welcomeTitle') }}
                             </h3>

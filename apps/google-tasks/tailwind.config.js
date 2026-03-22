@@ -16,6 +16,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                display: ['Outfit', 'Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 gt: {
@@ -31,6 +32,9 @@ export default {
                     subtle: 'rgb(var(--gt-subtle) / <alpha-value>)',
                     accent: 'rgb(var(--gt-accent) / <alpha-value>)',
                     'accent-hover': 'rgb(var(--gt-accent-hover) / <alpha-value>)',
+                    'accent-strong': 'rgb(var(--gt-accent-strong) / <alpha-value>)',
+                    'accent-strong-hover':
+                        'rgb(var(--gt-accent-strong-hover) / <alpha-value>)',
                     'accent-ring': 'rgb(var(--gt-accent-ring) / <alpha-value>)',
                     'accent-tint': 'rgb(var(--gt-accent-tint) / <alpha-value>)',
                     nav: 'rgb(var(--gt-nav) / <alpha-value>)',
