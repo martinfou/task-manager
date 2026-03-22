@@ -65,7 +65,7 @@ compatible_with: [product-backlog]
 
 | ID | Title | Points | Status |
 |----|-------|--------|--------|
-| [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent dates & priority | 13 | ⭕ |
+| [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent dates & priority | 13 | ⏳ |
 | [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) | Command palette | 8 | ✅ |
 | [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) | Undo toast | 3 | ✅ |
 | [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) | Snooze / defer | 5 | ✅ |
@@ -120,7 +120,13 @@ compatible_with: [product-backlog]
 |---------|------------------|-----------|--------|
 | T-6.13 | Enter / Ctrl+Enter handlers; list select; i18n + help | `TaskDetailEditPanel.vue`, `TasksKeyboardShortcutsHelp.vue`, `en.json`, `fr.json` | ✅ |
 
-*Tasks for US-027, US-032–US-036: add when each story is started.*
+### US-027 — Consistent dates & priority (in progress)
+
+| Task ID | Task Description | Reference | Status |
+|---------|------------------|-----------|--------|
+| T-6.14 | Global sort comparator + tests; persisted mode; list / Kanban / search metadata; sort UI + hints | `taskSort.js`, `Index.vue`, `TasksKanbanBoard.vue`, locales | ⏳ |
+
+*Tasks for US-032–US-036: add when each story is started.*
 
 ---
 
@@ -148,3 +154,4 @@ compatible_with: [product-backlog]
 - 2026-03-21 — **US-029** marked Done (AC verified; PHPUnit green)
 - 2026-03-21 — **US-028** marked Done (command palette + layout menu; build/tests green)
 - 2026-03-22 — **US-034** marked Done (Enter to save in task edit panel; keyboard help EN/FR)
+- 2026-03-22 — **US-027** started: global task sort + row metadata order (slice 1)

@@ -158,6 +158,16 @@
         "noListSelected": "Aucune liste sélectionnée",
         "delete": "Supprimer",
         "dueLabel": "Échéance : {date}",
+        "sort": {
+            "label": "Ordre des tâches",
+            "dueFirst": "Échéance d’abord",
+            "priorityFirst": "Priorité d’abord",
+            "hintLists": "S’applique à toutes les listes. Le classement de la recherche ne change pas.",
+            "hintKanban": "S’applique à toutes les vues. L’ordre des colonnes peut différer de Google."
+        },
+        "meta": {
+            "noDue": "Sans échéance"
+        },
         "emptyTodayTitle": "Rien pour aujourd’hui ni en retard",
         "emptyTodayBody": "Les tâches sans date d’échéance sont dans la boîte de réception ou une liste — pas ici. Changez de vue pour les voir.",
         "emptyInboxTitle": "Boîte de réception vide",

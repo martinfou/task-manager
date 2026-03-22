@@ -30,14 +30,21 @@ import {
     onMounted,
     onUnmounted,
     ref,
-    toRef,
     watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
     filterTasks,
     groupTasksByPriority,
+    isTaskDueToday,
+    isTaskOverdue,
 } from '@/utils/taskFilters';
+import {
+    DEFAULT_GLOBAL_TASK_SORT_MODE,
+    GLOBAL_TASK_SORT_STORAGE_KEY,
+    normalizeGlobalSortMode,
+    sortTasksGlobally,
+} from '@/utils/taskSort';
 import {
     messageFromAxiosError,
     withReadRetry,
@@ -187,6 +194,28 @@ const filterState = computed(() => ({
 
 const filteredTasks = computed(() => filterTasks(tasks.value, filterState.value));
 
+/** US-027: global sort mode (Due first | Priority first), persisted per browser. */
+const globalSortMode = ref(DEFAULT_GLOBAL_TASK_SORT_MODE);
+
+const sortedFilteredTasks = computed(() =>
+    sortTasksGlobally(
+        filteredTasks.value,
+        globalSortMode.value,
+        typeof locale.value === 'string' ? locale.value : 'en',
+    ),
+);
+
+watch(globalSortMode, (v) => {
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+    try {
+        localStorage.setItem(GLOBAL_TASK_SORT_STORAGE_KEY, v);
+    } catch {
+        /* ignore */
+    }
+});
+
 const tasksDataAvailable = computed(
     () => props.connected && !googleTasksForbidden.value,
 );
@@ -240,9 +269,17 @@ function reloadTasksPage() {
     });
 }
 
-const kanbanBuckets = computed(() =>
-    groupTasksByPriority(filteredTasks.value),
-);
+const kanbanBuckets = computed(() => {
+    const raw = groupTasksByPriority(filteredTasks.value);
+    const loc = typeof locale.value === 'string' ? locale.value : 'en';
+    const mode = globalSortMode.value;
+    return {
+        p1: sortTasksGlobally(raw.p1, mode, loc),
+        p2: sortTasksGlobally(raw.p2, mode, loc),
+        p3: sortTasksGlobally(raw.p3, mode, loc),
+        p4: sortTasksGlobally(raw.p4, mode, loc),
+    };
+});
 
 function wantsCompletedFromApi() {
     return filterCompletion.value !== 'needsAction';
@@ -257,7 +294,7 @@ function cloneTaskForUndo(task) {
 }
 
 const tasksForShortcuts = computed(() =>
-    viewMode.value === 'list' ? filteredTasks.value : [],
+    viewMode.value === 'list' ? sortedFilteredTasks.value : [],
 );
 
 const selectedListTitle = computed(() => {
@@ -584,7 +621,7 @@ function onTaskRowClick(task, taskIndex, e) {
             taskIndex < anchor ? [taskIndex, anchor] : [anchor, taskIndex];
         const next = { ...selectedKeys.value };
         for (let i = lo; i <= hi; i++) {
-            const t = filteredTasks.value[i];
+            const t = sortedFilteredTasks.value[i];
             if (t && !t._optimistic) {
                 next[taskKey(t)] = true;
             }
@@ -616,7 +653,7 @@ function onSelectionCheckboxClick(task, taskIndex) {
 
 function bulkSelectAll() {
     const next = { ...selectedKeys.value };
-    for (const t of filteredTasks.value) {
+    for (const t of sortedFilteredTasks.value) {
         if (!t._optimistic) {
             next[taskKey(t)] = true;
         }
@@ -1964,7 +2001,7 @@ function onKanbanDropPriority({ taskId, listId, newPriority }) {
 }
 
 function onKanbanTaskClick(task, e) {
-    const idx = filteredTasks.value.findIndex(
+    const idx = sortedFilteredTasks.value.findIndex(
         (x) => taskKey(x) === taskKey(task),
     );
     if (idx >= 0) {
@@ -1973,7 +2010,7 @@ function onKanbanTaskClick(task, e) {
 }
 
 function onKanbanSelectionClick(task) {
-    const idx = filteredTasks.value.findIndex(
+    const idx = sortedFilteredTasks.value.findIndex(
         (x) => taskKey(x) === taskKey(task),
     );
     if (idx >= 0) {
@@ -2046,12 +2083,12 @@ watch(selectedListId, () => {
 watch(tasks, pruneSelectionFromTasks);
 
 watch(
-    () => filteredTasks.value.length,
+    () => sortedFilteredTasks.value.length,
     () => {
-        if (focusedTaskIndex.value >= filteredTasks.value.length) {
+        if (focusedTaskIndex.value >= sortedFilteredTasks.value.length) {
             focusedTaskIndex.value =
-                filteredTasks.value.length > 0
-                    ? filteredTasks.value.length - 1
+                sortedFilteredTasks.value.length > 0
+                    ? sortedFilteredTasks.value.length - 1
                     : -1;
         }
     },
@@ -2137,6 +2174,15 @@ function syncFiltersDetailsOpen() {
 }
 
 onMounted(async () => {
+    try {
+        if (typeof localStorage !== 'undefined') {
+            globalSortMode.value = normalizeGlobalSortMode(
+                localStorage.getItem(GLOBAL_TASK_SORT_STORAGE_KEY),
+            );
+        }
+    } catch {
+        /* ignore */
+    }
     registerTasksCommandPaletteOpener(() => {
         if (tasksDataAvailable.value) {
             showCommandPalette.value = true;
@@ -2370,9 +2416,45 @@ onUnmounted(() => {
                         >
                             <button
                                 type="button"
-                                class="flex min-h-11 w-full touch-manipulation items-start px-3 py-3 text-left hover:bg-gt-field-muted active:bg-gt-field-muted"
+                                class="flex min-h-11 w-full flex-col items-start gap-1 px-3 py-3 text-left hover:bg-gt-field-muted active:bg-gt-field-muted"
                                 @click="openSearchResult(row)"
                             >
+                                <div
+                                    class="flex flex-wrap items-center gap-x-2 gap-y-0.5"
+                                >
+                                    <span
+                                        class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                                        :class="
+                                            priorityBadgeClass(
+                                                row.task.priority ?? 'p3',
+                                            )
+                                        "
+                                    >
+                                        {{
+                                            t(
+                                                `tasks.priorityBadge.${(row.task.priority ?? 'p3').toLowerCase()}`,
+                                            )
+                                        }}
+                                    </span>
+                                    <span
+                                        v-if="row.task.due"
+                                        class="text-[10px] text-gt-muted"
+                                    >
+                                        {{
+                                            t('tasks.dueLabel', {
+                                                date: formatDateTime(
+                                                    row.task.due,
+                                                ),
+                                            })
+                                        }}
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="text-[10px] italic text-gt-muted"
+                                    >
+                                        {{ t('tasks.meta.noDue') }}
+                                    </span>
+                                </div>
                                 <span
                                     class="block font-medium text-gt-ink"
                                     >{{ row.task.title }}</span
@@ -3027,6 +3109,50 @@ onUnmounted(() => {
                                 >
                             </div>
                             </Transition>
+                            <div
+                                v-if="
+                                    (viewMode === 'list' ||
+                                        viewMode === 'board') &&
+                                    taskLists.length > 0
+                                "
+                                class="flex flex-col gap-2 border-b border-gt-border bg-gt-field-muted/25 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:bg-gt-field/15"
+                            >
+                                <div
+                                    class="min-w-0 flex max-w-xl flex-1 flex-col gap-1"
+                                >
+                                    <label
+                                        for="global-task-sort"
+                                        class="text-xs font-medium text-gt-ink-secondary"
+                                    >
+                                        {{ t('tasks.sort.label') }}
+                                    </label>
+                                    <select
+                                        id="global-task-sort"
+                                        v-model="globalSortMode"
+                                        class="block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                        aria-describedby="global-sort-hint"
+                                    >
+                                        <option value="due_first">
+                                            {{ t('tasks.sort.dueFirst') }}
+                                        </option>
+                                        <option value="priority_first">
+                                            {{
+                                                t('tasks.sort.priorityFirst')
+                                            }}
+                                        </option>
+                                    </select>
+                                    <p
+                                        id="global-sort-hint"
+                                        class="text-xs leading-relaxed text-gt-muted"
+                                    >
+                                        {{
+                                            viewMode === 'board'
+                                                ? t('tasks.sort.hintKanban')
+                                                : t('tasks.sort.hintLists')
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
                             <p
                                 v-if="viewMode === 'list'"
                                 class="hidden border-b border-gt-border px-4 py-2 text-xs leading-relaxed text-gt-muted sm:block sm:px-6"
@@ -3050,7 +3176,7 @@ onUnmounted(() => {
                                 aria-label="Tasks"
                             >
                                 <li
-                                    v-for="(task, taskIndex) in filteredTasks"
+                                    v-for="(task, taskIndex) in sortedFilteredTasks"
                                     :key="`${taskKey(task)}`"
                                     role="listitem"
                                     :aria-selected="
@@ -3116,7 +3242,9 @@ onUnmounted(() => {
                                         @change="toggleComplete(task)"
                                     />
                                     <div class="min-w-0 flex-1">
-                                        <div class="flex flex-wrap items-center gap-2">
+                                        <div
+                                            class="flex flex-wrap items-center gap-x-2 gap-y-1"
+                                        >
                                             <span
                                                 class="rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
                                                 :class="
@@ -3131,9 +3259,36 @@ onUnmounted(() => {
                                                     )
                                                 }}
                                             </span>
+                                            <span
+                                                v-if="task.due"
+                                                :class="[
+                                                    'text-xs',
+                                                    task.status === 'completed'
+                                                        ? 'text-gt-muted'
+                                                        : isTaskOverdue(task)
+                                                          ? 'font-medium text-red-600 dark:text-red-400'
+                                                          : isTaskDueToday(task)
+                                                            ? 'font-medium text-gt-accent'
+                                                            : 'text-gt-muted',
+                                                ]"
+                                            >
+                                                {{
+                                                    t('tasks.dueLabel', {
+                                                        date: formatDateTime(
+                                                            task.due,
+                                                        ),
+                                                    })
+                                                }}
+                                            </span>
+                                            <span
+                                                v-else
+                                                class="text-xs italic text-gt-muted"
+                                            >
+                                                {{ t('tasks.meta.noDue') }}
+                                            </span>
                                             <p
                                                 :class="[
-                                                    'font-medium text-gt-ink',
+                                                    'min-w-[8rem] flex-1 font-medium text-gt-ink',
                                                     task.status === 'completed'
                                                         ? 'line-through text-gt-subtle'
                                                         : '',
@@ -3157,18 +3312,6 @@ onUnmounted(() => {
                                             class="mt-1 text-sm text-gt-muted"
                                             :text="task.notes"
                                         />
-                                        <p
-                                            v-if="task.due"
-                                            class="mt-1 text-xs text-gt-muted"
-                                        >
-                                            {{
-                                                t('tasks.dueLabel', {
-                                                    date: formatDateTime(
-                                                        task.due,
-                                                    ),
-                                                })
-                                            }}
-                                        </p>
                                         <p
                                             v-if="task.recurrence?.length"
                                             class="mt-1 text-xs text-gt-muted"

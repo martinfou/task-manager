@@ -25,7 +25,7 @@ This is the main product backlog tracking all user stories and defects.
 | [US-030](user-stories/US-030-snooze-defer-presets.md) | Snooze and Defer Presets (Due Date) | 🟡 Medium | 5 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
 | [US-029](user-stories/US-029-undo-toast-destructive-actions.md) | Undo Toast for Complete, Delete, and Move | 🟠 High | 3 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
 | [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) | Command Palette — Navigate, Search, and Quick Add | 🟠 High | 8 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
-| [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent Dates and Priority Across Every View | 🟡 Medium | 13 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
+| [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent Dates and Priority Across Every View | 🟡 Medium | 13 | ⏳ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
 | [US-026](user-stories/US-026-double-click-edit-task.md) | Double-Click a Task to Edit | 🟡 Medium | 3 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
 | [US-025](user-stories/US-025-mobile-tasks-shell-improvements.md) | Mobile Tasks Shell — Progressive Search & Less Collapsible Chrome | 🟠 High | 8 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
 | [US-024](user-stories/US-024-task-details-inline-expand.md) | Task Details Expand Below the Row | 🟡 Medium | 5 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
@@ -103,8 +103,8 @@ This is the main product backlog tracking all user stories and defects.
 
 **Total Items**: 39 (38 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
 **By Status**:
-- ⭕ To Do: 8
-- ⏳ In Progress: 1
+- ⭕ To Do: 7
+- ⏳ In Progress: 2
 - ✅ Done: 29
 
 **By Priority**:

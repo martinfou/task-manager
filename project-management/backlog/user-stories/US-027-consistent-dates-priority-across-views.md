@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ⏳ In Progress  
 **Priority**: 🟡 Medium  
 **Story Points**: 13  
 **Created**: 2026-03-21  
@@ -252,3 +252,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - **All tasks** sort: **phased** with US-023 — US-027 **supersedes** list→title when US-027 ships (Q25 option 3)
 - 2026-03-22 - Backlog refinement: DoR recorded; vertical-slice delivery note for 13 pt scope
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-22 - **Slice 1**: global sort (`taskSort.js`, `gt-task-sort-mode` localStorage), list + Kanban + search row metadata order (priority → due → title); inline sort hints EN/FR — onboarding, “no priority” placeholders, compact density tokens, profile persistence **not** done yet

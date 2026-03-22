@@ -3,6 +3,7 @@ import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskNotesRichText from '@/Components/TaskNotesRichText.vue';
 import { useLocaleDate } from '@/composables/useLocaleDate';
 import { useI18n } from 'vue-i18n';
+import { isTaskDueToday, isTaskOverdue } from '@/utils/taskFilters';
 
 const { t } = useI18n();
 const { formatDateTime } = useLocaleDate();
@@ -142,7 +143,9 @@ function priorityBadgeClass(priority) {
                             @change="emit('toggle-complete', task)"
                         />
                         <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-1">
+                            <div
+                                class="flex flex-wrap items-center gap-x-1 gap-y-0.5"
+                            >
                                 <span
                                     class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
                                     :class="
@@ -156,6 +159,31 @@ function priorityBadgeClass(priority) {
                                             `tasks.priorityBadge.${(task.priority ?? 'p3').toLowerCase()}`,
                                         )
                                     }}
+                                </span>
+                                <span
+                                    v-if="task.due"
+                                    :class="[
+                                        'text-[10px] leading-tight',
+                                        task.status === 'completed'
+                                            ? 'text-gt-muted'
+                                            : isTaskOverdue(task)
+                                              ? 'font-medium text-red-600 dark:text-red-400'
+                                              : isTaskDueToday(task)
+                                                ? 'font-medium text-gt-accent'
+                                                : 'text-gt-muted',
+                                    ]"
+                                >
+                                    {{
+                                        t('tasks.dueLabel', {
+                                            date: formatDateTime(task.due),
+                                        })
+                                    }}
+                                </span>
+                                <span
+                                    v-else
+                                    class="text-[10px] italic text-gt-muted"
+                                >
+                                    {{ t('tasks.meta.noDue') }}
                                 </span>
                                 <span
                                     v-if="
@@ -183,16 +211,6 @@ function priorityBadgeClass(priority) {
                                 class="mt-1 line-clamp-2 text-xs text-gt-muted"
                                 :text="task.notes"
                             />
-                            <p
-                                v-if="task.due"
-                                class="mt-1 text-[10px] text-gt-muted"
-                            >
-                                {{
-                                    t('tasks.dueLabel', {
-                                        date: formatDateTime(task.due),
-                                    })
-                                }}
-                            </p>
                             <div
                                 class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1"
                             >

@@ -158,6 +158,16 @@
         "noListSelected": "No list selected",
         "delete": "Delete",
         "dueLabel": "Due: {date}",
+        "sort": {
+            "label": "Task order",
+            "dueFirst": "Due first",
+            "priorityFirst": "Priority first",
+            "hintLists": "Applies to all lists. Search ranking is unchanged.",
+            "hintKanban": "Applies to all views. Column order may differ from Google."
+        },
+        "meta": {
+            "noDue": "No due"
+        },
         "emptyTodayTitle": "Nothing due today or overdue",
         "emptyTodayBody": "Tasks without a due date appear in Inbox or a list — not here. Switch navigation to find them.",
         "emptyInboxTitle": "Inbox is empty",
