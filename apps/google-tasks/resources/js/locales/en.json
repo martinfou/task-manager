@@ -126,6 +126,8 @@
             }
         },
         "activeList": "Active list",
+        "addToList": "Add to list",
+        "listFieldLabel": "List",
         "pollLine": "Poll: {current} ms · target {target} ms",
         "newTask": "New task",
         "titlePlaceholder": "Title",
@@ -169,6 +171,7 @@
         "searchLabel": "Search tasks",
         "searchPlaceholder": "Search titles and notes…",
         "searchLoading": "Searching…",
+        "loadingTasks": "Loading tasks…",
         "searchError": "Search failed.",
         "searchTruncated": "Showing first matches only — refine your query.",
         "searchNoResults": "No tasks match.",

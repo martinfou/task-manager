@@ -126,6 +126,8 @@
             }
         },
         "activeList": "Liste active",
+        "addToList": "Ajouter à la liste",
+        "listFieldLabel": "Liste",
         "pollLine": "Rafraîchissement : {current} ms · cible {target} ms",
         "newTask": "Nouvelle tâche",
         "titlePlaceholder": "Titre",
@@ -169,6 +171,7 @@
         "searchLabel": "Rechercher des tâches",
         "searchPlaceholder": "Rechercher dans les titres et notes…",
         "searchLoading": "Recherche…",
+        "loadingTasks": "Chargement des tâches…",
         "searchError": "Échec de la recherche.",
         "searchTruncated": "Premiers résultats uniquement — affinez votre recherche.",
         "searchNoResults": "Aucune tâche ne correspond.",
