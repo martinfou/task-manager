@@ -126,4 +126,4 @@ See [docs/TESTING.md](docs/TESTING.md) for the pyramid, coverage stance, and CI.
 
 ## Deploy
 
-See [docs/DEPLOY.md](docs/DEPLOY.md). OAuth setup: [docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md).
+Production deploys from the monorepo **`main`** branch: push (or merge) to `main` triggers the **Google Tasks — DreamHost deploy** workflow when `apps/google-tasks/**` changes. Details, secrets, and manual DreamHost steps: [docs/DEPLOY.md](docs/DEPLOY.md). OAuth setup: [docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md).

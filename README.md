@@ -30,7 +30,9 @@ If you clone the repo elsewhere, update the `command` and `cwd` paths in `.curso
 
 ## Git
 
-This repository uses a feature-branch workflow; commit messages follow `project-management/processes/git-commit-guide.md`. Optional local template:
+- **Default / production branch**: **`main`**. Merge feature branches via PR (or fast-forward) when ready to release; **pushing to `main`** triggers [DreamHost deploy](apps/google-tasks/docs/DEPLOY.md) for `apps/google-tasks/` via GitHub Actions.
+- Feature branches: `feature/US-XXX-short-description` per [ADR-002](project-management/architecture-decision-records/ADR-002-branching-strategy.md).
+- Commit messages follow [git-commit-guide.md](project-management/processes/git-commit-guide.md). Optional local template:
 
 ```bash
 git config commit.template project-management/templates/git-commit-template.txt

@@ -2,6 +2,16 @@
 
 Stack: **Laravel 13**, **Inertia**, **Vue 3**, **Vite**. PHP **^8.4** (see `composer.json`), Node **>=20** (see `package.json`).
 
+## Production branch
+
+**`main` is the production branch** for this monorepo. Merge or push work there when it is ready to ship.
+
+- **GitHub Actions — DreamHost**: pushing to `main` (with changes under `apps/google-tasks/` or the deploy workflow file) runs [`.github/workflows/google-tasks-deploy-dreamhost.yml`](../../../.github/workflows/google-tasks-deploy-dreamhost.yml): build assets, `rsync` to the server, then remote `artisan migrate --force` and Laravel caches.
+- **CI on `main`**: [`.github/workflows/google-tasks-ci.yml`](../../../.github/workflows/google-tasks-ci.yml) runs tests on the same path filters.
+- You can also run the DreamHost workflow manually: **Actions → Google Tasks — DreamHost deploy → Run workflow** (uses the selected branch; use `main` for production).
+
+**GitHub setting**: the repository default branch should be **`main`** (Settings → General → Default branch) so PRs and clones target production by default.
+
 ## Prerequisites
 
 - Composer 2.x, PHP 8.4+ with extensions Laravel needs (`openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`).
@@ -17,10 +27,14 @@ Stack: **Laravel 13**, **Inertia**, **Vue 3**, **Vite**. PHP **^8.4** (see `comp
 
 ## DreamHost (shared / VPS)
 
-1. PHP 8.4+ on the host; document root should point to `public/` (not project root).
-2. Set `APP_URL`, `APP_KEY`, database, mail, and `GOOGLE_*` in `.env` on the server.
-3. Run `composer install --no-dev --optimize-autoloader`, `npm ci && npm run build`, `php artisan config:cache route:cache view:cache`, `php artisan migrate --force`.
-4. Ensure `storage/` and `bootstrap/cache/` are writable; cron for `php artisan schedule:run` if you use the scheduler later.
+**Typical flow**: configure the server once (below), then rely on **push to `main`** (or manual workflow) for deploys. First-time or emergency deploys can still run the commands on the server by hand.
+
+1. PHP 8.4+ on the host; **document root** must point to **`public/`** (not the Laravel project root).
+2. Set `APP_URL`, `APP_KEY`, database, mail, and `GOOGLE_*` in **`.env` on the server** (never committed). Match production URL in Google Cloud OAuth redirect URIs.
+3. **GitHub Actions secrets** for automated deploy: `DREAMHOST_SSH_KEY`, `DREAMHOST_SSH_HOST`, `DREAMHOST_SSH_USER`. Optional repo variable **`DREAMHOST_PHP_BIN`** if your shell uses something other than `php-8.4` (see workflow comments).
+4. Ensure `storage/` and `bootstrap/cache/` are writable; cron for `php artisan schedule:run` only if you add scheduled tasks.
+
+The workflow rsyncs `apps/google-tasks/` to `DREAMHOST_REMOTE_PATH` (set in the workflow file), runs `migrate --force`, then `config:cache`, `route:cache`, `view:cache` on the server.
 
 ## OAuth redirect URIs
 

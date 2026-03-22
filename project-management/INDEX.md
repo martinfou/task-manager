@@ -86,6 +86,7 @@ An [MCP server](../mcp-project-management/README.md) exposes this project-manage
 
 - [Backlog refinement session — all user stories (2026-03-22)](sprints/backlog-refinement-session-2026-03-22.md) — DoR sweep, inventory US-001–US-034
 - [Sprint 6 — Trust, commands, mobile (active)](sprints/sprint-06-google-tasks-trust-commands-mobile.md) — US-029 undo toast in progress; US-028–US-031 to do
+- **Production branch**: `main` (Google Tasks DreamHost deploy + CI on push; see `apps/google-tasks/docs/DEPLOY.md`)
 - [Sprint 5 — Tasks UX (closed)](sprints/sprint-05-google-tasks-ux-visibility.md) — US-023–US-026 ✅; sprint review + retrospective **2026-03-22**
 - [Product backlog](backlog/product-backlog.md) — **Active sprint**: [Sprint 6](sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 - [README.md](README.md) — Overview for humans
