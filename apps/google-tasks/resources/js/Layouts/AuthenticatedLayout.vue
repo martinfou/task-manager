@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AppearanceControls from '@/Components/AppearanceControls.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
@@ -7,10 +7,13 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import LocaleSwitcher from '@/Components/LocaleSwitcher.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { commandPaletteRequestOpen } from '@/composables/commandPaletteBridge';
+import { Link, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const page = usePage();
+const isTasksIndex = computed(() => page.component === 'Tasks/Index');
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -86,6 +89,18 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
+                                        <button
+                                            v-if="isTasksIndex"
+                                            type="button"
+                                            class="block w-full px-4 py-2 text-start text-sm leading-5 text-gt-ink-secondary transition duration-150 ease-in-out hover:bg-gt-field-muted focus:bg-gt-field-muted focus:outline-none dark:text-gt-ink"
+                                            @click="commandPaletteRequestOpen()"
+                                        >
+                                            {{
+                                                t(
+                                                    'tasks.commandPalette.openFromMenu',
+                                                )
+                                            }}
+                                        </button>
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
@@ -167,6 +182,17 @@ const showingNavigationDropdown = ref(false);
                         >
                             {{ t('nav.tasks') }}
                         </ResponsiveNavLink>
+                        <button
+                            v-if="isTasksIndex"
+                            type="button"
+                            class="block w-full border-l-4 border-transparent py-2 pe-4 ps-3 text-start text-base font-medium text-gt-muted transition duration-150 ease-in-out hover:border-gt-border hover:bg-gt-field-muted hover:text-gt-ink focus:bg-gt-field-muted focus:text-gt-ink focus:outline-none"
+                            @click="
+                                commandPaletteRequestOpen();
+                                showingNavigationDropdown = false;
+                            "
+                        >
+                            {{ t('tasks.commandPalette.openFromMenu') }}
+                        </button>
                     </div>
 
                     <!-- Responsive Settings Options -->

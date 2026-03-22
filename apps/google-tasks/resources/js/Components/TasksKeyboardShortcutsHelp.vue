@@ -60,6 +60,16 @@ const kbdClass =
                     <tr>
                         <td class="py-2.5 pe-4 align-top">
                             <kbd :class="kbdClass">{{
+                                t('shortcuts.keysCommandPalette')
+                            }}</kbd>
+                        </td>
+                        <td class="py-2.5 text-slate-800 dark:text-slate-200">
+                            {{ t('shortcuts.actionCommandPalette') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-2.5 pe-4 align-top">
+                            <kbd :class="kbdClass">{{
                                 t('shortcuts.keysNewTask')
                             }}</kbd>
                         </td>

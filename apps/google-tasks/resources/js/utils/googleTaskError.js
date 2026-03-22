@@ -54,15 +54,19 @@ export function messageFromAxiosError(e, t, te, fallbackKey = 'tasks.errors.load
  * @param {unknown} e
  */
 export function isRetryableReadError(e) {
-    const status =
+    const rawStatus =
         e &&
         typeof e === 'object' &&
         'response' in e &&
         e.response &&
-        typeof e.response === 'object' &&
-        'status' in e.response
-            ? e.response.status
+        typeof e.response === 'object'
+            ? /** @type {{ status?: unknown }} */ (e.response).status
             : undefined;
+    const statusNum =
+        rawStatus === undefined || rawStatus === null
+            ? NaN
+            : Number(rawStatus);
+    const status = Number.isFinite(statusNum) ? statusNum : null;
     const code =
         e &&
         typeof e === 'object' &&
@@ -87,7 +91,7 @@ export function isRetryableReadError(e) {
     if (status === 429) {
         return true;
     }
-    if (typeof status === 'number' && status >= 500 && status < 600) {
+    if (status !== null && status >= 500 && status < 600) {
         return true;
     }
     if (code === 'network') {

@@ -11,6 +11,8 @@ import { onMounted, onUnmounted } from 'vue';
  * @param {import('vue').Ref<unknown[]>} options.tasks
  * @param {import('vue').Ref<number>} options.focusedTaskIndex
  * @param {() => void} options.onOpenHelp
+ * @param {import('vue').Ref<boolean>} [options.showCommandPalette]
+ * @param {() => void} options.onOpenCommandPalette
  * @param {() => void} options.onFocusSearch
  * @param {() => void} options.onFocusNewTask
  * @param {() => void | Promise<void>} options.onGoToday
@@ -24,9 +26,11 @@ export function useTasksKeyboardShortcuts(options) {
     const {
         connected,
         showHelp,
+        showCommandPalette,
         tasks,
         focusedTaskIndex,
         onOpenHelp,
+        onOpenCommandPalette,
         onFocusSearch,
         onFocusNewTask,
         onGoToday,
@@ -100,6 +104,10 @@ export function useTasksKeyboardShortcuts(options) {
             return;
         }
 
+        if (showCommandPalette?.value) {
+            return;
+        }
+
         const typing = isTypingContext(e.target);
 
         if ((e.ctrlKey || e.metaKey) && (e.key === '/' || e.code === 'Slash')) {
@@ -116,7 +124,7 @@ export function useTasksKeyboardShortcuts(options) {
 
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
-            onFocusSearch();
+            onOpenCommandPalette();
             return;
         }
 

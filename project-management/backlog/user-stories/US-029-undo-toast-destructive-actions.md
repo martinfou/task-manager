@@ -9,11 +9,11 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 3  
 **Created**: 2026-03-21  
-**Updated**: 2026-03-22  
+**Updated**: 2026-03-21  
 **Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
@@ -26,13 +26,13 @@ As a user, I want to **undo recent task actions** from a toast, so that accident
 
 ## Acceptance Criteria
 
-- [ ] **Complete**: toast with Undo restores task to incomplete state (or equivalent API operations) when still within the undo window.
-- [ ] **Delete**: Undo restores the task if Google API allows recreation within window; if not possible, document behavior and offer best-effort (e.g. only undo before sync confirmed) — **spike note**: align with actual API constraints in implementation doc.
-- [ ] **Move to another list**: Undo moves task back to the previous list.
-- [ ] Toast **auto-dismisses** after a **configurable delay** (default **5 seconds** via `GOOGLE_TASKS_UNDO_TOAST_DELAY_MS` / Profile); Undo is available until dismiss or timeout (document in help if needed).
-- [ ] **Stacking**: if multiple actions occur quickly, behavior is defined (e.g. one toast at a time vs queue); no silent loss of undo for the prior action without documentation.
-- [ ] **i18n**: EN/FR for toast copy and Undo label.
-- [ ] **Accessibility**: toast exposes `role="status"` or `alert` per severity; Undo is keyboard reachable.
+- [x] **Complete**: toast with Undo restores task to incomplete state (or equivalent API operations) when still within the undo window.
+- [x] **Delete**: Undo restores the task if Google API allows recreation within window; if not possible, document behavior and offer best-effort (e.g. only undo before sync confirmed) — **spike note**: align with actual API constraints in implementation doc.
+- [x] **Move to another list**: Undo moves task back to the previous list.
+- [x] Toast **auto-dismisses** after a **configurable delay** (default **10 seconds** via `GOOGLE_TASKS_UNDO_TOAST_DELAY_MS` / Profile; clarified 2026-03-21); Undo is available until dismiss or timeout (document in help if needed).
+- [x] **Stacking**: if multiple actions occur quickly, behavior is defined (e.g. one toast at a time vs queue); no silent loss of undo for the prior action without documentation.
+- [x] **i18n**: EN/FR for toast copy and Undo label.
+- [x] **Accessibility**: toast exposes `role="status"` or `alert` per severity; Undo is keyboard reachable.
 
 ## Business Value
 
@@ -91,8 +91,8 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed (code review + `php artisan test` 61 passed; delete behavior documented in `apps/google-tasks/docs/UNDO_TOAST.md`)
 
 ## History
 
@@ -101,3 +101,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Backlog refinement: DoR recorded
 - 2026-03-22 - Sprint 6: initial implementation — `useUndoToast`, `UndoToast`, `Index.vue` wiring (complete / deferred delete / single bulk move); i18n EN/FR
 - 2026-03-22 - Sprint 6 scope: US-027–US-036 all assigned to same sprint (**91** pts); see sprint doc for capacity note
+- 2026-03-21 - Marked **Done**: AC verified against implementation; backlog + sprint docs updated

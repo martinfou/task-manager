@@ -9,11 +9,11 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 5  
 **Created**: 2026-03-21  
-**Updated**: 2026-03-21  
+**Updated**: 2026-03-22  
 **Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
@@ -26,14 +26,14 @@ As a mobile user, I want to **act on tasks with swipes**, so that I can triage q
 
 ## Acceptance Criteria
 
-- [ ] On **narrow / touch** breakpoints (LTR): **swipe right** reveals **Complete** (primary); **swipe left** reveals **More** leading to **defer/snooze** ([US-030](US-030-snooze-defer-presets.md) presets or equivalent), **move to list**, and **delete** (sheet, action row, or bottom sheet — labels in EN/FR).
-- [ ] **Together**, the two directions cover **Complete**, **defer**, **move**, and **delete** without requiring a third swipe pattern for the baseline set.
-- [ ] **Move to list** is available via swipe or nested action without breaking scroll performance.
-- [ ] **Delete** uses confirmation **or** relies on undo toast when [US-029](US-029-undo-toast-destructive-actions.md) is done; document chosen pattern.
-- [ ] **Scroll vs swipe** disambiguation: vertical scroll remains smooth; no accidental completes at scroll end (thresholds documented).
-- [ ] **Accessibility**: non-touch path still fully usable (long-press menu or action buttons); swipe actions have text labels.
-- [ ] **i18n**: EN/FR for action labels and hints.
-- [ ] **Kanban**: if cards are shown on mobile, define whether swipe applies or list-only (document and test).
+- [x] On **narrow / touch** breakpoints (LTR): **swipe right** reveals **Complete** (primary); **swipe left** reveals **More** leading to **defer/snooze** ([US-030](US-030-snooze-defer-presets.md) presets or equivalent), **move to list**, and **delete** (sheet, action row, or bottom sheet — labels in EN/FR).
+- [x] **Together**, the two directions cover **Complete**, **defer**, **move**, and **delete** without requiring a third swipe pattern for the baseline set.
+- [x] **Move to list** is available via swipe or nested action without breaking scroll performance.
+- [x] **Delete** uses confirmation **or** relies on undo toast when [US-029](US-029-undo-toast-destructive-actions.md) is done; document chosen pattern.
+- [x] **Scroll vs swipe** disambiguation: vertical scroll remains smooth; no accidental completes at scroll end (thresholds documented).
+- [x] **Accessibility**: non-touch path still fully usable (long-press menu or action buttons); swipe actions have text labels.
+- [x] **i18n**: EN/FR for action labels and hints.
+- [x] **Kanban**: if cards are shown on mobile, define whether swipe applies or list-only (document and test).
 
 ## Business Value
 
@@ -95,11 +95,12 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
+- 2026-03-22 - Implemented: `TaskListRowSwipe.vue`, list-only swipe + long-press sheet, single-task move via bulk modal, undo delete, `docs/MOBILE_SWIPE.md`
 - 2026-03-21 - Created from usability report; scope D
 - 2026-03-21 - Clarified bidirectional swipe (option 3); action mapping: swipe right → Complete; swipe left → More (defer, move, delete)
 - 2026-03-22 - Backlog refinement: DoR recorded; sequencing note vs US-025

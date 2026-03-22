@@ -53,9 +53,9 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 
 - **Where**: Tasks page (`/tasks`) when Google is connected. Shortcuts are **disabled** while focus is in a text field (`input` / `textarea` / `select` / `contenteditable`) so typing is never hijacked—industry-standard “typing context” guard.
 - **Implementation**: [`resources/js/composables/useTasksKeyboardShortcuts.js`](resources/js/composables/useTasksKeyboardShortcuts.js) (global `keydown` listener, **capture** phase for Space/Enter on highlighted rows). Help overlay: [`TasksKeyboardShortcutsHelp.vue`](resources/js/Components/TasksKeyboardShortcutsHelp.vue) + Breeze [`Modal.vue`](resources/js/Components/Modal.vue).
-- **Bindings (summary)**: `/` or **Ctrl+K** — focus search · **n** — focus new task · **g** then **t** / **i** / **l** — Today / Inbox / list view · **↑**/**↓** — move row highlight · **Space** / **Enter** — toggle complete on highlighted row · **?** or **Ctrl+/** — help. Full table is localized (`shortcuts.*` in `locales/en.json` / `fr.json`).
+- **Bindings (summary)**: `/` — focus search · **Ctrl+K** / **⌘K** — command palette (navigate, search, quick add) · **n** — focus new task · **g** then **t** / **i** / **l** — Today / Inbox / list view · **↑**/**↓** — move row highlight · **Space** / **Enter** — toggle complete on highlighted row · **?** or **Ctrl+/** — help. Full table is localized (`shortcuts.*` in `locales/en.json` / `fr.json`).
 - **Accessibility**: Row highlight uses a **visual ring** (no roving `tabindex` on rows) so native checkbox/tab order stays intact; `aria-selected` reflects the highlighted row for assistive tech.
-- **Browser notes**: Documented in the help dialog—e.g. some browsers reserve **Ctrl+K** or **/**; use the alternate binding where needed.
+- **Browser notes**: Documented in the help dialog—e.g. some browsers reserve keys; use **/** for search or open the command palette from the nav menu if needed.
 
 ## Priority encoding in Google (US-015)
 
@@ -127,3 +127,5 @@ See [docs/TESTING.md](docs/TESTING.md) for the pyramid, coverage stance, and CI.
 ## Deploy
 
 Production deploys from the monorepo **`main`** branch: push (or merge) to `main` triggers the **Google Tasks — DreamHost deploy** workflow when `apps/google-tasks/**` changes. Details, secrets, and manual DreamHost steps: [docs/DEPLOY.md](docs/DEPLOY.md). OAuth setup: [docs/GOOGLE_OAUTH.md](docs/GOOGLE_OAUTH.md).
+
+**Backups / restore** ([US-035](../../../project-management/backlog/user-stories/US-035-server-backup-and-restore.md)): [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md), script `scripts/backup-google-tasks.sh`.

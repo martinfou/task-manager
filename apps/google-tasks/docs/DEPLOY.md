@@ -16,7 +16,7 @@ Stack: **Laravel 13**, **Inertia**, **Vue 3**, **Vite**. PHP **^8.4** (see `comp
 
 - Composer 2.x, PHP 8.4+ with extensions Laravel needs (`openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`).
 - Node 20+ for `npm ci` / `npm run build`.
-- SQLite (default) or MySQL/PostgreSQL for production.
+- **Production (DreamHost for this app)**: **SQLite** (`DB_CONNECTION=sqlite`, file e.g. `database/database.sqlite`). MySQL/PostgreSQL are supported by Laravel if you switch later.
 
 ## Fly.io (recommended path)
 
@@ -30,11 +30,15 @@ Stack: **Laravel 13**, **Inertia**, **Vue 3**, **Vite**. PHP **^8.4** (see `comp
 **Typical flow**: configure the server once (below), then rely on **push to `main`** (or manual workflow) for deploys. First-time or emergency deploys can still run the commands on the server by hand.
 
 1. PHP 8.4+ on the host; **document root** must point to **`public/`** (not the Laravel project root).
-2. Set `APP_URL`, `APP_KEY`, database, mail, and `GOOGLE_*` in **`.env` on the server** (never committed). Match production URL in Google Cloud OAuth redirect URIs.
+2. Set `APP_URL`, `APP_KEY`, database, mail, and `GOOGLE_*` in **`.env` on the server** (never committed). For SQLite, ensure `database/` exists and is writable so `database/database.sqlite` can be created by `migrate`. Match production URL in Google Cloud OAuth redirect URIs.
 3. **GitHub Actions secrets** for automated deploy: `DREAMHOST_SSH_KEY`, `DREAMHOST_SSH_HOST`, `DREAMHOST_SSH_USER`. Optional repo variable **`DREAMHOST_PHP_BIN`** if your shell uses something other than `php-8.4` (see workflow comments).
 4. Ensure `storage/` and `bootstrap/cache/` are writable; cron for `php artisan schedule:run` only if you add scheduled tasks.
 
 The workflow rsyncs `apps/google-tasks/` to `DREAMHOST_REMOTE_PATH` (set in the workflow file), runs `migrate --force`, then `config:cache`, `route:cache`, `view:cache` on the server.
+
+## Backups and restore (production)
+
+**Database**, **`storage/`** (excluding logs), and **tiered retention** with optional **Dropbox** via **rclone** are documented in **[BACKUP_RESTORE.md](BACKUP_RESTORE.md)** ([US-035](../../../project-management/backlog/user-stories/US-035-server-backup-and-restore.md)). Backup script: `scripts/backup-google-tasks.sh`. **`.env` is not** inside backup archives; re-apply secrets after any restore.
 
 ## OAuth redirect URIs
 

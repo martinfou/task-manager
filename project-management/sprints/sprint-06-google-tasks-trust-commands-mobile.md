@@ -1,6 +1,6 @@
 ---
 template_version: 1.1.0
-last_updated: 2026-03-22
+last_updated: 2026-03-21
 compatible_with: [product-backlog]
 ---
 
@@ -34,10 +34,10 @@ compatible_with: [product-backlog]
 
 ### Suggested implementation order
 
-1. [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) — **Undo toast** (⏳ finish + DoD).  
-2. [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) — **Command palette** (reconcile vs search ⌘K).  
-3. [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) — **Snooze / defer**.  
-4. [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) — **Mobile swipe**.  
+1. [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) — **Undo toast** ✅.  
+2. [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) — **Command palette** ✅.  
+3. [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) — **Snooze / defer** ✅.  
+4. [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) — **Mobile swipe** ✅.  
 5. [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) — **Enter to save** (small).  
 6. [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) — **Dates/priority consistency**.  
 7. [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) — **Kanban due lanes**.  
@@ -64,10 +64,10 @@ compatible_with: [product-backlog]
 | ID | Title | Points | Status |
 |----|-------|--------|--------|
 | [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent dates & priority | 13 | ⭕ |
-| [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) | Command palette | 8 | ⭕ |
-| [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) | Undo toast | 3 | ⏳ |
-| [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) | Snooze / defer | 5 | ⭕ |
-| [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) | Mobile swipe | 5 | ⭕ |
+| [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) | Command palette | 8 | ✅ |
+| [US-029](../backlog/user-stories/US-029-undo-toast-destructive-actions.md) | Undo toast | 3 | ✅ |
+| [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) | Snooze / defer | 5 | ✅ |
+| [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) | Mobile swipe | 5 | ✅ |
 | [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) | Kanban due-date lanes | 8 | ⭕ |
 | [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) | Semantic duplicate tasks | 13 | ⭕ |
 | [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) | Enter to save while editing | 2 | ⭕ |
@@ -84,31 +84,31 @@ compatible_with: [product-backlog]
 
 | Task ID | Task Description | Reference | Status |
 |---------|------------------|-----------|--------|
-| T-6.1 | Toast + `useUndoToast`; complete / deferred delete / single bulk-move undo | `Index.vue`, `useUndoToast.js`, `UndoToast.vue` | ⏳ |
-| T-6.2 | i18n EN/FR; `role="status"` | `en.json`, `fr.json` | ⏳ |
-| T-6.3 | Manual QA + mark DoD | — | ⭕ |
+| T-6.1 | Toast + `useUndoToast`; complete / deferred delete / single bulk-move undo | `Index.vue`, `useUndoToast.js`, `UndoToast.vue` | ✅ |
+| T-6.2 | i18n EN/FR; `role="status"` | `en.json`, `fr.json` | ✅ |
+| T-6.3 | Manual QA + mark DoD | — | ✅ |
 
 ### US-028 — Command palette
 
 | Task ID | Task Description | Reference | Status |
 |---------|------------------|-----------|--------|
-| T-6.4 | Modal + ⌘K/Ctrl+K; typing guard | new component | ⭕ |
-| T-6.5 | Commands + quick add | `Index.vue` | ⭕ |
-| T-6.6 | Mobile menu entry | — | ⭕ |
+| T-6.4 | Modal + ⌘K/Ctrl+K; typing guard | `TasksCommandPalette.vue` | ✅ |
+| T-6.5 | Commands + quick add | `Index.vue` | ✅ |
+| T-6.6 | Mobile menu entry | `AuthenticatedLayout.vue` | ✅ |
 
 ### US-030 — Snooze
 
 | Task ID | Task Description | Reference | Status |
 |---------|------------------|-----------|--------|
-| T-6.8 | Preset date helper + tests | `taskFilters` or util | ⭕ |
-| T-6.9 | UI list + board | `Index.vue` | ⭕ |
+| T-6.8 | Preset date helper + tests | `deferPresets.js` | ✅ |
+| T-6.9 | UI list + board + inspector + doc | `Index.vue`, `DEFER_SNOOZE.md` | ✅ |
 
 ### US-031 — Mobile swipe
 
 | Task ID | Task Description | Reference | Status |
 |---------|------------------|-----------|--------|
-| T-6.11 | Gesture layer + thresholds | composable | ⭕ |
-| T-6.12 | Wire actions + US-030 entry | `Index.vue` | ⭕ |
+| T-6.11 | Gesture layer + thresholds | `TaskListRowSwipe.vue` | ✅ |
+| T-6.12 | Wire actions + US-030 entry | `Index.vue`, `MOBILE_SWIPE.md` | ✅ |
 
 *Tasks for US-027, US-032–US-036: add when each story is started.*
 
@@ -135,3 +135,5 @@ compatible_with: [product-backlog]
 - 2026-03-22 — Planning draft created
 - 2026-03-22 — **Activated**: Sprint 5 closed; US-029 implementation started (undo toast)
 - 2026-03-22 — **Scope expansion**: all open backlog stories (US-027–US-036) assigned to Sprint 6; **91** pts total
+- 2026-03-21 — **US-029** marked Done (AC verified; PHPUnit green)
+- 2026-03-21 — **US-028** marked Done (command palette + layout menu; build/tests green)

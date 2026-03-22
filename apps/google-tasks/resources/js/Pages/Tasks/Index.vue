@@ -9,13 +9,20 @@ import TasksIllustratedEmpty from '@/Components/TasksIllustratedEmpty.vue';
 import TasksWorkflowHelp from '@/Components/TasksWorkflowHelp.vue';
 import TasksKanbanBoard from '@/Components/TasksKanbanBoard.vue';
 import TasksKeyboardShortcutsHelp from '@/Components/TasksKeyboardShortcutsHelp.vue';
+import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
+import TaskListRowSwipe from '@/Components/TaskListRowSwipe.vue';
+import TasksCommandPalette from '@/Components/TasksCommandPalette.vue';
 import UndoToast from '@/Components/UndoToast.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import { useLocaleDate } from '@/composables/useLocaleDate';
+import {
+    registerTasksCommandPaletteOpener,
+    unregisterTasksCommandPaletteOpener,
+} from '@/composables/commandPaletteBridge';
 import { useTasksKeyboardShortcuts } from '@/composables/useTasksKeyboardShortcuts';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     computed,
@@ -35,6 +42,7 @@ import {
     messageFromAxiosError,
     withReadRetry,
 } from '@/utils/googleTaskError';
+import { computeDeferDueIso } from '@/utils/deferPresets';
 import { useUndoToast } from '@/composables/useUndoToast';
 
 const VIEW_MODE_KEY = 'gt-task-view-mode';
@@ -123,6 +131,7 @@ const searchReindexLoading = ref(false);
 const showKeyboardHelp = ref(false);
 const showWorkflowHelpModal = ref(false);
 const showMobileSearch = ref(false);
+const showCommandPalette = ref(false);
 /** Collapsible filter bar on small screens; forced open at lg+ */
 const filtersDetailsRef = ref(null);
 let removeFiltersMqListener = null;
@@ -140,8 +149,22 @@ const bulkMoveDestination = ref(null);
 const showBulkResultModal = ref(false);
 /** @type {import('vue').Ref<{ title: string; message: string }[]>} */
 const bulkFailureLines = ref([]);
+/** US-031: list-row swipe on coarse pointer + narrow viewport */
+const swipeRowsEnabled = ref(false);
+let removeSwipeMqListener = null;
+const swipeSheetReset = ref(0);
+const showSwipeMoreModal = ref(false);
+/** @type {import('vue').Ref<object|null>} */
+const swipeMoreForTask = ref(null);
+/** @type {import('vue').Ref<object|null>} */
+const swipeMoveTask = ref(null);
 let pollTimer = null;
 let searchDebounce = null;
+let pollOnceInFlight = false;
+/** Skip one-shot filter watcher while restoring localStorage (avoids racing pollOnce). */
+const suppressCompletionSyncFetch = ref(false);
+/** Google Tasks data API returned 403 (disconnected / stale Inertia props). */
+const googleTasksForbidden = ref(false);
 
 /** @type {import('vue').Ref<'list'|'board'>} */
 const viewMode = ref('list');
@@ -163,6 +186,59 @@ const filterState = computed(() => ({
 }));
 
 const filteredTasks = computed(() => filterTasks(tasks.value, filterState.value));
+
+const tasksDataAvailable = computed(
+    () => props.connected && !googleTasksForbidden.value,
+);
+
+function stopPollLoop() {
+    if (pollTimer != null) {
+        clearTimeout(pollTimer);
+        pollTimer = null;
+    }
+}
+
+/**
+ * Any HTTP 403 from Tasks JSON routes stops polling and shows the connect / refresh UI.
+ * Payloads differ: middleware (“Google Tasks is not connected…”), Google proxy (“Google denied…”),
+ * or non-JSON 403 pages — all previously left the poll loop running and spammed the console.
+ *
+ * @param {unknown} e
+ * @returns {boolean}
+ */
+function consumeGoogleTasksForbidden(e) {
+    const st =
+        e &&
+        typeof e === 'object' &&
+        'response' in e &&
+        e.response &&
+        typeof e.response === 'object'
+            ? Number(
+                  /** @type {{ status?: unknown }} */ (e.response).status,
+              )
+            : NaN;
+    if (
+        !e ||
+        typeof e !== 'object' ||
+        !('response' in e) ||
+        !e.response ||
+        typeof e.response !== 'object' ||
+        !Number.isFinite(st) ||
+        st !== 403
+    ) {
+        return false;
+    }
+    googleTasksForbidden.value = true;
+    stopPollLoop();
+    return true;
+}
+
+function reloadTasksPage() {
+    googleTasksForbidden.value = false;
+    router.reload({
+        preserveScroll: true,
+    });
+}
 
 const kanbanBuckets = computed(() =>
     groupTasksByPriority(filteredTasks.value),
@@ -389,6 +465,108 @@ function openMobileSearchPanel() {
     });
 }
 
+const commandPaletteItems = computed(() => {
+    if (!tasksDataAvailable.value) {
+        return [];
+    }
+    const items = [];
+    const push = (id, sectionKey, labelKey, keywords = '') => {
+        items.push({
+            id,
+            sectionKey,
+            label: t(labelKey),
+            keywords,
+        });
+    };
+    push(
+        'action-search',
+        'actions',
+        'tasks.commandPalette.cmdSearch',
+        'search find',
+    );
+    push(
+        'action-new-task',
+        'actions',
+        'tasks.commandPalette.cmdNewTask',
+        'new task composer title',
+    );
+    push(
+        'quick-add',
+        'actions',
+        'tasks.commandPalette.cmdQuickAdd',
+        'quick add create',
+    );
+    push(
+        'view-today',
+        'views',
+        'tasks.commandPalette.cmdToday',
+        'today',
+    );
+    push(
+        'view-inbox',
+        'views',
+        'tasks.commandPalette.cmdInbox',
+        'inbox',
+    );
+    push(
+        'view-all',
+        'views',
+        'tasks.commandPalette.cmdAll',
+        'all lists',
+    );
+    for (const list of taskLists.value) {
+        items.push({
+            id: `list-${list.id}`,
+            sectionKey: 'lists',
+            label: list.title,
+            keywords: list.title,
+        });
+    }
+    return items;
+});
+
+async function handleCommandPaletteSelect(id) {
+    await nextTick();
+    if (id === 'action-search') {
+        openMobileSearchPanel();
+        await nextTick();
+        searchInputRef.value?.focus?.();
+        searchInputRef.value?.select?.();
+        return;
+    }
+    if (id === 'action-new-task') {
+        focusedTaskIndex.value = -1;
+        await nextTick();
+        newTaskTitleRef.value?.focus?.();
+        return;
+    }
+    if (id === 'view-today') {
+        await setNav('today');
+        return;
+    }
+    if (id === 'view-inbox') {
+        await setNav('inbox');
+        return;
+    }
+    if (id === 'view-all') {
+        await setNav('all');
+        return;
+    }
+    if (id.startsWith('list-')) {
+        const listId = id.slice('list-'.length);
+        const list = taskLists.value.find((l) => l.id === listId);
+        if (list) {
+            await selectList(list);
+        }
+    }
+}
+
+async function handleCommandPaletteQuickAdd(title) {
+    newTitle.value = title;
+    await nextTick();
+    await submitNewTask();
+}
+
 function onTaskRowClick(task, taskIndex, e) {
     if (task._optimistic) {
         focusedTaskIndex.value = taskIndex;
@@ -524,8 +702,76 @@ async function executeBulkDelete() {
 }
 
 function openBulkMoveModal() {
+    swipeMoveTask.value = null;
     bulkMoveDestination.value = taskLists.value[0]?.id ?? null;
     showBulkMoveModal.value = true;
+}
+
+function onBulkMoveModalClose() {
+    showBulkMoveModal.value = false;
+    swipeMoveTask.value = null;
+}
+
+function updateSwipeRowsEnabled() {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+        return;
+    }
+    swipeRowsEnabled.value = window.matchMedia(
+        '(max-width: 639px) and (hover: none) and (pointer: coarse)',
+    ).matches;
+}
+
+function openSwipeMoreSheet(task) {
+    if (task._optimistic) {
+        return;
+    }
+    swipeMoreForTask.value = task;
+    swipeSheetReset.value++;
+    showSwipeMoreModal.value = true;
+}
+
+function closeSwipeMoreSheet() {
+    showSwipeMoreModal.value = false;
+    swipeMoreForTask.value = null;
+}
+
+function onSwipeRowComplete(task) {
+    swipeSheetReset.value++;
+    void toggleComplete(task);
+}
+
+function onSwipeDeferPreset(preset) {
+    const task = swipeMoreForTask.value;
+    if (!task) {
+        return;
+    }
+    closeSwipeMoreSheet();
+    void applyDeferPreset(task, preset);
+}
+
+function openSwipeMoveFromSheet() {
+    const task = swipeMoreForTask.value;
+    if (!task) {
+        return;
+    }
+    swipeMoveTask.value = task;
+    const sid = listIdForTask(task);
+    bulkMoveDestination.value =
+        taskLists.value.find((l) => l.id !== sid)?.id ??
+        taskLists.value[0]?.id ??
+        null;
+    closeSwipeMoreSheet();
+    swipeSheetReset.value++;
+    showBulkMoveModal.value = true;
+}
+
+function onSwipeSheetDelete() {
+    const task = swipeMoreForTask.value;
+    if (!task) {
+        return;
+    }
+    closeSwipeMoreSheet();
+    void removeTask(task);
 }
 
 async function executeBulkMove() {
@@ -533,7 +779,75 @@ async function executeBulkMove() {
     if (!dest) {
         return;
     }
+    const singleFromSwipe = swipeMoveTask.value;
     showBulkMoveModal.value = false;
+    swipeMoveTask.value = null;
+
+    if (singleFromSwipe) {
+        bulkWorking.value = true;
+        bulkFailureLines.value = [];
+        /** @type {{ task: object, sourceListId: string, dest: string }[]} */
+        const movedOk = [];
+        const task = singleFromSwipe;
+        const sourceListId = listIdForTask(task);
+        if (sourceListId !== dest) {
+            try {
+                await axios.post(
+                    route('tasks.data.tasks.move', {
+                        taskList: sourceListId,
+                        task: task.id,
+                    }),
+                    { destinationTasklist: dest },
+                );
+                movedOk.push({
+                    task: cloneTaskForUndo(task),
+                    sourceListId,
+                    dest,
+                });
+            } catch (e) {
+                bulkFailureLines.value.push({
+                    title: task.title,
+                    message: messageFromAxiosError(
+                        e,
+                        t,
+                        te,
+                        'tasks.errors.updateFailed',
+                    ),
+                });
+            }
+        }
+        bulkWorking.value = false;
+        await pollOnce();
+        if (bulkFailureLines.value.length > 0) {
+            showBulkResultModal.value = true;
+        } else if (movedOk.length === 1) {
+            const m = movedOk[0];
+            void showUndoToast({
+                message: t('tasks.undo.moved'),
+                onUndo: async () => {
+                    try {
+                        await axios.post(
+                            route('tasks.data.tasks.move', {
+                                taskList: m.dest,
+                                task: m.task.id,
+                            }),
+                            { destinationTasklist: m.sourceListId },
+                        );
+                        void pollOnce();
+                    } catch (e) {
+                        loadError.value = messageFromAxiosError(
+                            e,
+                            t,
+                            te,
+                            'tasks.errors.updateFailed',
+                        );
+                    }
+                },
+            });
+        }
+        return;
+    }
+
     const list = selectedTasksFlat();
     if (list.length === 0) {
         return;
@@ -605,6 +919,9 @@ async function executeBulkMove() {
 }
 
 async function fetchTaskLists() {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     const { data } = await axios.get(route('tasks.data.task-lists'));
     taskLists.value = normalizeItems(data);
     const lists = taskLists.value;
@@ -619,6 +936,9 @@ async function fetchTaskLists() {
 }
 
 async function fetchTasksForList() {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     if (!selectedListId.value) {
         tasks.value = [];
         return;
@@ -634,6 +954,9 @@ async function fetchTasksForList() {
 }
 
 async function fetchToday() {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     const { data } = await axios.get(route('tasks.data.views.today'));
     tasks.value = (data.items ?? []).map((row) => ({
         ...row.task,
@@ -643,6 +966,9 @@ async function fetchToday() {
 }
 
 async function fetchInbox() {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     const { data } = await axios.get(route('tasks.data.views.inbox'), {
         params: { showCompleted: wantsCompletedFromApi() },
     });
@@ -656,6 +982,9 @@ async function fetchInbox() {
 }
 
 async function fetchAll() {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     const { data } = await axios.get(route('tasks.data.views.all'), {
         params: { showCompleted: wantsCompletedFromApi() },
     });
@@ -667,10 +996,20 @@ async function fetchAll() {
 }
 
 async function pollOnce() {
+    if (!props.connected || googleTasksForbidden.value) {
+        return;
+    }
+    if (pollOnceInFlight) {
+        return;
+    }
+    pollOnceInFlight = true;
     loadError.value = '';
     try {
         await withReadRetry(async () => {
             await fetchTaskLists();
+            if (!tasksDataAvailable.value) {
+                return;
+            }
             if (navMode.value === 'today') {
                 await fetchToday();
             } else if (navMode.value === 'inbox') {
@@ -683,6 +1022,10 @@ async function pollOnce() {
         });
         pollBackoffMs.value = props.pollIntervalMs;
     } catch (e) {
+        if (consumeGoogleTasksForbidden(e)) {
+            loadError.value = messageFromAxiosError(e, t, te);
+            return;
+        }
         if (e.response?.status === 429) {
             pollBackoffMs.value = Math.min(
                 props.maxBackoffMs,
@@ -690,6 +1033,8 @@ async function pollOnce() {
             );
         }
         loadError.value = messageFromAxiosError(e, t, te);
+    } finally {
+        pollOnceInFlight = false;
     }
 }
 
@@ -701,14 +1046,32 @@ async function retryLoad() {
 }
 
 async function pollLoop() {
+    if (googleTasksForbidden.value) {
+        return;
+    }
     if (!undoHoldPolling.value) {
         await pollOnce();
     }
-    pollTimer = setTimeout(pollLoop, pollBackoffMs.value);
+    if (googleTasksForbidden.value) {
+        return;
+    }
+    const backoff = Number(pollBackoffMs.value);
+    const delay = Number.isFinite(backoff)
+        ? Math.min(
+              props.maxBackoffMs,
+              Math.max(props.pollIntervalMs, backoff),
+          )
+        : props.pollIntervalMs;
+    pollTimer = setTimeout(pollLoop, delay);
 }
 
 watch(undoHoldPolling, (held, wasHeld) => {
-    if (held === false && wasHeld === true && props.connected) {
+    if (
+        held === false &&
+        wasHeld === true &&
+        props.connected &&
+        !googleTasksForbidden.value
+    ) {
         void pollOnce();
     }
 });
@@ -720,7 +1083,7 @@ async function setNav(mode) {
     if (mode === 'list' && !selectedListId.value && taskLists.value.length > 0) {
         selectedListId.value = taskLists.value[0].id;
     }
-    if (!props.connected) {
+    if (!tasksDataAvailable.value) {
         return;
     }
     await withTasksLoad(async () => {
@@ -738,6 +1101,7 @@ async function setNav(mode) {
                 }
             });
         } catch (e) {
+            consumeGoogleTasksForbidden(e);
             loadError.value = messageFromAxiosError(e, t, te);
         }
     });
@@ -748,7 +1112,7 @@ async function selectList(list) {
     navMode.value = 'list';
     selectedListId.value = list.id;
     showListDrawer.value = false;
-    if (!props.connected) {
+    if (!tasksDataAvailable.value) {
         return;
     }
     await withTasksLoad(async () => {
@@ -758,6 +1122,7 @@ async function selectList(list) {
                 await fetchTasksForList();
             });
         } catch (e) {
+            consumeGoogleTasksForbidden(e);
             loadError.value = messageFromAxiosError(e, t, te);
         }
     });
@@ -766,6 +1131,9 @@ async function selectList(list) {
 /** When the composer list changes in list mode, follow the selection (tasks + URL state). */
 async function onComposerListChange() {
     if (!newTaskListId.value || navMode.value !== 'list') {
+        return;
+    }
+    if (!tasksDataAvailable.value) {
         return;
     }
     if (selectedListId.value === newTaskListId.value) {
@@ -777,6 +1145,7 @@ async function onComposerListChange() {
         try {
             await withReadRetry(() => fetchTasksForList());
         } catch (e) {
+            consumeGoogleTasksForbidden(e);
             loadError.value = messageFromAxiosError(e, t, te);
         }
     });
@@ -798,6 +1167,7 @@ async function executeSearchQuery() {
         searchTruncated.value = Boolean(data.truncated);
         searchIndexEmpty.value = Boolean(data.index_empty);
     } catch (e) {
+        consumeGoogleTasksForbidden(e);
         searchError.value = messageFromAxiosError(
             e,
             t,
@@ -845,6 +1215,7 @@ async function reindexSemanticIndex() {
             await executeSearchQuery();
         }
     } catch (e) {
+        consumeGoogleTasksForbidden(e);
         searchError.value = messageFromAxiosError(
             e,
             t,
@@ -857,6 +1228,9 @@ async function reindexSemanticIndex() {
 }
 
 async function openSearchResult(row) {
+    if (!tasksDataAvailable.value) {
+        return;
+    }
     clearSelection();
     closeDetailEdit();
     showMobileSearch.value = false;
@@ -894,6 +1268,10 @@ async function openSearchResult(row) {
                 }
             }
         } catch (e) {
+            if (consumeGoogleTasksForbidden(e)) {
+                loadError.value = messageFromAxiosError(e, t, te);
+                return;
+            }
             loadError.value = messageFromAxiosError(e, t, te);
         }
     });
@@ -972,7 +1350,7 @@ function openInspectorNew() {
     syncNewTaskListFromNav();
 }
 
-function openEditInspector(task, e) {
+function openEditInspector(task, e, opts = {}) {
     if (e) {
         e.stopPropagation();
     }
@@ -980,7 +1358,7 @@ function openEditInspector(task, e) {
         return;
     }
     const k = taskKey(task);
-    if (inspectorEditTaskKey.value === k) {
+    if (inspectorEditTaskKey.value === k && !opts.forceOpen) {
         closeDetailEdit();
         return;
     }
@@ -1077,6 +1455,16 @@ async function removeInspectedTask() {
 
 function escCloseInspector(e) {
     if (e.key !== 'Escape') {
+        return;
+    }
+    if (showCommandPalette.value) {
+        e.preventDefault();
+        showCommandPalette.value = false;
+        return;
+    }
+    if (showSwipeMoreModal.value) {
+        e.preventDefault();
+        closeSwipeMoreSheet();
         return;
     }
     if (showKeyboardHelp.value) {
@@ -1296,6 +1684,111 @@ async function toggleComplete(task) {
     }
 }
 
+function syncInspectorDueIfOpen(editKey, dueIso) {
+    if (inspectorEditTaskKey.value === editKey) {
+        editDue.value = toDatetimeLocalValue(dueIso);
+    }
+}
+
+function onDeferPresetFromPanel(preset) {
+    const key = inspectorEditTaskKey.value;
+    const task = tasks.value.find((t) => taskKey(t) === key);
+    if (!task) {
+        return;
+    }
+    void applyDeferPreset(task, preset);
+}
+
+async function applyDeferPreset(task, preset) {
+    if (task._optimistic) {
+        return;
+    }
+    if (preset === 'pickDate') {
+        openEditInspector(task, undefined, { forceOpen: true });
+        nextTick(() => {
+            document.getElementById('detail-edit-due')?.focus?.();
+        });
+        return;
+    }
+    const listId = listIdForTask(task);
+    const editKey = taskKey(task);
+    const prev = { ...task };
+    let dueIso;
+    try {
+        dueIso = computeDeferDueIso(preset, new Date(), task.due);
+    } catch {
+        return;
+    }
+    tasks.value = tasks.value.map((t) =>
+        t.id === task.id ? { ...t, due: dueIso } : t,
+    );
+    syncInspectorDueIfOpen(editKey, dueIso);
+    try {
+        const { data } = await axios.patch(
+            route('tasks.data.tasks.update', {
+                taskList: listId,
+                task: task.id,
+            }),
+            { due: dueIso },
+        );
+        const merged = { ...data };
+        if (task._taskListId) {
+            merged._taskListId = task._taskListId;
+            merged._taskListTitle = task._taskListTitle;
+        }
+        tasks.value = tasks.value.map((t) =>
+            t.id === task.id ? merged : t,
+        );
+        syncInspectorDueIfOpen(editKey, merged.due);
+        void pollOnce();
+        if (prev.due) {
+            const prevDue = prev.due;
+            void showUndoToast({
+                message: t('tasks.undo.dueUpdated'),
+                onUndo: async () => {
+                    try {
+                        const { data: d2 } = await axios.patch(
+                            route('tasks.data.tasks.update', {
+                                taskList: listId,
+                                task: merged.id,
+                            }),
+                            { due: prevDue },
+                        );
+                        const restored = { ...d2 };
+                        if (merged._taskListId) {
+                            restored._taskListId = merged._taskListId;
+                            restored._taskListTitle = merged._taskListTitle;
+                        }
+                        tasks.value = tasks.value.map((x) =>
+                            x.id === merged.id ? restored : x,
+                        );
+                        syncInspectorDueIfOpen(editKey, restored.due);
+                        void pollOnce();
+                    } catch (err) {
+                        loadError.value = messageFromAxiosError(
+                            err,
+                            t,
+                            te,
+                            'tasks.errors.updateFailed',
+                        );
+                    }
+                },
+            });
+        }
+    } catch (e) {
+        tasks.value = tasks.value.map((t) =>
+            t.id === task.id ? prev : t,
+        );
+        syncInspectorDueIfOpen(editKey, prev.due);
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.updateFailed',
+        );
+    }
+}
+
 async function removeTask(task) {
     const listId = listIdForTask(task);
     const saved = cloneTaskForUndo(task);
@@ -1489,16 +1982,26 @@ function onKanbanSelectionClick(task) {
 }
 
 useTasksKeyboardShortcuts({
-    connected: toRef(props, 'connected'),
+    connected: tasksDataAvailable,
     showHelp: showKeyboardHelp,
+    showCommandPalette,
     tasks: tasksForShortcuts,
     focusedTaskIndex,
     onOpenHelp: () => {
         showKeyboardHelp.value = true;
     },
+    onOpenCommandPalette: () => {
+        if (!tasksDataAvailable.value) {
+            return;
+        }
+        showCommandPalette.value = true;
+    },
     onFocusSearch: () => {
-        searchInputRef.value?.focus();
-        searchInputRef.value?.select?.();
+        openMobileSearchPanel();
+        void nextTick(() => {
+            searchInputRef.value?.focus();
+            searchInputRef.value?.select?.();
+        });
     },
     onFocusNewTask: () => {
         newTaskTitleRef.value?.focus?.();
@@ -1559,7 +2062,10 @@ watch(viewMode, () => {
 });
 
 watch(filterCompletion, async () => {
-    if (!props.connected) {
+    if (suppressCompletionSyncFetch.value) {
+        return;
+    }
+    if (!tasksDataAvailable.value) {
         return;
     }
     await withTasksLoad(async () => {
@@ -1578,6 +2084,10 @@ watch(filterCompletion, async () => {
             });
             pollBackoffMs.value = props.pollIntervalMs;
         } catch (e) {
+            if (consumeGoogleTasksForbidden(e)) {
+                loadError.value = messageFromAxiosError(e, t, te);
+                return;
+            }
             if (e.response?.status === 429) {
                 pollBackoffMs.value = Math.min(
                     props.maxBackoffMs,
@@ -1627,16 +2137,30 @@ function syncFiltersDetailsOpen() {
 }
 
 onMounted(async () => {
+    registerTasksCommandPaletteOpener(() => {
+        if (tasksDataAvailable.value) {
+            showCommandPalette.value = true;
+        }
+    });
+    suppressCompletionSyncFetch.value = true;
     loadPersistedTaskUi();
     if (searchMode.value === 'semantic' && !props.semanticSearchAvailable) {
         searchMode.value = 'keyword';
     }
     await nextTick();
+    suppressCompletionSyncFetch.value = false;
     syncFiltersDetailsOpen();
     const mq = window.matchMedia('(min-width: 1024px)');
     mq.addEventListener('change', syncFiltersDetailsOpen);
     removeFiltersMqListener = () =>
         mq.removeEventListener('change', syncFiltersDetailsOpen);
+    updateSwipeRowsEnabled();
+    const swipeMq = window.matchMedia(
+        '(max-width: 639px) and (hover: none) and (pointer: coarse)',
+    );
+    swipeMq.addEventListener('change', updateSwipeRowsEnabled);
+    removeSwipeMqListener = () =>
+        swipeMq.removeEventListener('change', updateSwipeRowsEnabled);
     if (!props.connected) {
         return;
     }
@@ -1654,7 +2178,12 @@ watch(
 
 watch(
     () => props.connected,
-    async (ok) => {
+    async (ok, wasOk) => {
+        if (!ok) {
+            googleTasksForbidden.value = false;
+        } else if (wasOk === false) {
+            googleTasksForbidden.value = false;
+        }
         if (ok) {
             await nextTick();
             syncFiltersDetailsOpen();
@@ -1663,8 +2192,10 @@ watch(
 );
 
 onUnmounted(() => {
+    unregisterTasksCommandPaletteOpener();
     removeFiltersMqListener?.();
-    clearTimeout(pollTimer);
+    removeSwipeMqListener?.();
+    stopPollLoop();
     window.removeEventListener('keydown', escCloseInspector);
 });
 </script>
@@ -1689,7 +2220,7 @@ onUnmounted(() => {
                             {{ pageTitle }}
                         </h2>
                         <button
-                            v-if="connected"
+                            v-if="tasksDataAvailable"
                             type="button"
                             class="inline-flex min-h-10 shrink-0 items-center rounded-md px-2 text-xs font-medium text-gt-accent underline decoration-gt-accent/40 underline-offset-2 touch-manipulation hover:text-gt-accent-hover active:bg-gt-accent-tint/20 sm:min-h-11 sm:px-0"
                             @click="showKeyboardHelp = true"
@@ -1708,7 +2239,7 @@ onUnmounted(() => {
                         </button>
                     </div>
                     <div
-                        v-if="connected"
+                        v-if="tasksDataAvailable"
                         class="flex shrink-0 items-center sm:hidden"
                     >
                         <button
@@ -1730,7 +2261,7 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <div
-                    v-if="connected"
+                    v-if="tasksDataAvailable"
                     class="flex w-full min-w-0 flex-col gap-2 sm:max-w-md"
                 >
                     <div
@@ -1880,7 +2411,7 @@ onUnmounted(() => {
                 class="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row lg:px-6"
             >
                 <div
-                    v-if="!connected"
+                    v-if="!tasksDataAvailable"
                     class="overflow-hidden gt-surface sm:mx-6 sm:rounded-lg lg:mx-0"
                 >
                     <div class="density-stack density-card-padding max-w-2xl">
@@ -1889,6 +2420,12 @@ onUnmounted(() => {
                         >
                             {{ t('tasks.connectHeadline') }}
                         </h3>
+                        <p
+                            v-if="googleTasksForbidden && connected"
+                            class="mt-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+                        >
+                            {{ t('tasks.staleGoogleConnectionHint') }}
+                        </p>
                         <p
                             class="text-sm leading-relaxed text-gt-muted"
                         >
@@ -1901,6 +2438,14 @@ onUnmounted(() => {
                             <li>{{ t('tasks.connectBullet2') }}</li>
                         </ul>
                         <div class="flex flex-wrap items-center gap-3 pt-1">
+                            <button
+                                v-if="googleTasksForbidden && connected"
+                                type="button"
+                                class="inline-flex items-center rounded-md border border-gt-border-strong bg-gt-field px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gt-ink shadow-sm transition hover:bg-gt-field-muted focus:outline-none focus:ring-2 focus:ring-gt-accent-ring"
+                                @click="reloadTasksPage"
+                            >
+                                {{ t('tasks.reloadPage') }}
+                            </button>
                             <Link
                                 :href="route('google.redirect')"
                                 class="inline-flex items-center rounded-md border border-transparent bg-gt-accent-strong px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-strong-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90"
@@ -2012,7 +2557,7 @@ onUnmounted(() => {
                         </div>
 
                         <div
-                            class="overflow-hidden gt-surface sm:rounded-lg"
+                            class="flex w-full min-w-0 flex-col overflow-hidden gt-surface sm:rounded-lg"
                         >
                             <div
                                 class="border-b border-gt-border px-4 py-2 sm:px-6 sm:py-3"
@@ -2080,7 +2625,7 @@ onUnmounted(() => {
                             </div>
                             <div
                                 v-if="inspectorMode === 'new'"
-                                class="border-b border-gt-border bg-gt-field-muted/30 px-4 py-4 sm:px-6 dark:bg-gt-field/20"
+                                class="w-full min-w-0 shrink-0 border-b border-gt-border bg-gt-field-muted/30 px-4 py-4 sm:px-6 dark:bg-gt-field/20"
                                 role="region"
                                 :aria-label="t('tasks.inspectorNewTitle')"
                             >
@@ -2492,6 +3037,12 @@ onUnmounted(() => {
                                 >
                                 {{ t('tasks.checkboxRowHint') }}
                             </p>
+                            <p
+                                v-if="viewMode === 'list' && swipeRowsEnabled"
+                                class="border-b border-gt-border px-4 py-2 text-xs leading-relaxed text-gt-muted sm:hidden"
+                            >
+                                {{ t('tasks.swipe.rowHint') }}
+                            </p>
                             <ul
                                 v-if="viewMode === 'list'"
                                 class="divide-y divide-gt-border"
@@ -2510,6 +3061,18 @@ onUnmounted(() => {
                                     "
                                     class="border-b border-gt-border last:border-b-0"
                                 >
+                                    <TaskListRowSwipe
+                                        :enabled="swipeRowsEnabled"
+                                        :disabled="!!task._optimistic"
+                                        :is-completed="
+                                            task.status === 'completed'
+                                        "
+                                        :reset-signal="swipeSheetReset"
+                                        @complete="
+                                            onSwipeRowComplete(task)
+                                        "
+                                        @more="openSwipeMoreSheet(task)"
+                                    >
                                     <div
                                         :data-task-id="task.id"
                                         :class="[
@@ -2614,8 +3177,14 @@ onUnmounted(() => {
                                         </p>
                                     </div>
                                     <div
+                                        v-show="!swipeRowsEnabled"
                                         class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center"
                                     >
+                                        <TaskDeferMenu
+                                            touch-comfortable
+                                            :disabled="task._optimistic"
+                                            @pick="applyDeferPreset(task, $event)"
+                                        />
                                         <button
                                             type="button"
                                             class="inline-flex min-h-11 touch-manipulation items-center rounded-md px-3 text-xs font-medium text-gt-accent hover:bg-gt-accent-tint/30 disabled:text-gt-subtle dark:hover:bg-gt-accent-tint/15 dark:disabled:text-gt-subtle"
@@ -2634,6 +3203,7 @@ onUnmounted(() => {
                                         </button>
                                     </div>
                                     </div>
+                                    </TaskListRowSwipe>
                                     <div
                                         v-if="
                                             inspectorEditTaskKey ===
@@ -2672,6 +3242,9 @@ onUnmounted(() => {
                                             @close="closeDetailEdit"
                                             @delete="removeInspectedTask"
                                             @notes-paste="onInspectorNotesPaste"
+                                            @defer-preset="
+                                                onDeferPresetFromPanel
+                                            "
                                         />
                                     </div>
                                 </li>
@@ -2756,6 +3329,13 @@ onUnmounted(() => {
                                         @selection-click="onKanbanSelectionClick"
                                         @toggle-complete="toggleComplete"
                                         @inspect-task="openEditInspector"
+                                        @defer-preset="
+                                            ({ task, preset }) =>
+                                                applyDeferPreset(
+                                                    task,
+                                                    preset,
+                                                )
+                                        "
                                         @card-dblclick="
                                             (task, e) =>
                                                 onKanbanCardDoubleClick(
@@ -2818,6 +3398,9 @@ onUnmounted(() => {
                                                     "
                                                     @notes-paste="
                                                         onInspectorNotesPaste
+                                                    "
+                                                    @defer-preset="
+                                                        onDeferPresetFromPanel
                                                     "
                                                 />
                                             </div>
@@ -3030,9 +3613,91 @@ onUnmounted(() => {
         </Modal>
 
         <Modal
+            :show="showSwipeMoreModal"
+            max-width="sm"
+            @close="closeSwipeMoreSheet"
+        >
+            <div
+                v-if="swipeMoreForTask"
+                class="p-6"
+            >
+                <h3
+                    class="text-lg font-semibold text-gt-ink"
+                >
+                    {{ t('tasks.swipe.sheetTitle') }}
+                </h3>
+                <p
+                    class="mt-1 truncate text-sm text-gt-muted"
+                    :title="swipeMoreForTask.title"
+                >
+                    {{ swipeMoreForTask.title }}
+                </p>
+                <p
+                    class="mt-3 text-xs font-semibold uppercase tracking-wide text-gt-subtle"
+                >
+                    {{ t('tasks.defer.menuSummary') }}
+                </p>
+                <div class="mt-2 grid gap-2">
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-gt-border bg-gt-field px-3 py-2 text-start text-sm text-gt-ink touch-manipulation hover:bg-gt-field-muted"
+                        @click="onSwipeDeferPreset('tomorrow')"
+                    >
+                        {{ t('tasks.defer.tomorrow') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-gt-border bg-gt-field px-3 py-2 text-start text-sm text-gt-ink touch-manipulation hover:bg-gt-field-muted"
+                        @click="onSwipeDeferPreset('nextWeek')"
+                    >
+                        {{ t('tasks.defer.nextWeek') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-gt-border bg-gt-field px-3 py-2 text-start text-sm text-gt-ink touch-manipulation hover:bg-gt-field-muted"
+                        @click="onSwipeDeferPreset('weekend')"
+                    >
+                        {{ t('tasks.defer.weekend') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-gt-border bg-gt-field px-3 py-2 text-start text-sm text-gt-ink touch-manipulation hover:bg-gt-field-muted"
+                        @click="onSwipeDeferPreset('pickDate')"
+                    >
+                        {{ t('tasks.defer.pickDate') }}
+                    </button>
+                </div>
+                <div class="mt-4 grid gap-2 border-t border-gt-border pt-4">
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-gt-border bg-gt-field px-3 py-2 text-start text-sm font-medium text-gt-ink touch-manipulation hover:bg-gt-field-muted"
+                        @click="openSwipeMoveFromSheet"
+                    >
+                        {{ t('tasks.swipe.moveToList') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="w-full rounded-md border border-red-200 bg-red-50 px-3 py-2 text-start text-sm font-medium text-red-800 touch-manipulation hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
+                        @click="onSwipeSheetDelete"
+                    >
+                        {{ t('tasks.delete') }}
+                    </button>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <SecondaryButton
+                        type="button"
+                        @click="closeSwipeMoreSheet"
+                    >
+                        {{ t('tasks.swipe.sheetClose') }}
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal
             :show="showBulkMoveModal"
             max-width="md"
-            @close="showBulkMoveModal = false"
+            @close="onBulkMoveModalClose"
         >
             <div class="p-6">
                 <h3
@@ -3063,7 +3728,7 @@ onUnmounted(() => {
                     <SecondaryButton
                         type="button"
                         :disabled="bulkWorking"
-                        @click="showBulkMoveModal = false"
+                        @click="onBulkMoveModalClose"
                     >
                         {{ t('tasks.bulkMoveCancel') }}
                     </SecondaryButton>
@@ -3112,6 +3777,14 @@ onUnmounted(() => {
             </div>
         </Modal>
     </AuthenticatedLayout>
+
+    <TasksCommandPalette
+        :show="showCommandPalette"
+        :items="commandPaletteItems"
+        @close="showCommandPalette = false"
+        @select="handleCommandPaletteSelect"
+        @quick-add="handleCommandPaletteQuickAdd"
+    />
 
     <Teleport to="body">
         <div

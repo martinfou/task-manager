@@ -2,9 +2,9 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-22 (all open stories assigned to Sprint 6)
+**Last Updated**: 2026-03-22 (US-030–US-031 done; US-037 in backlog)
 
-**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **active**; **all open user stories** [US-027](user-stories/US-027-consistent-dates-priority-across-views.md)–[US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) are assigned to this sprint (**91** pts committed — see sprint doc for scope risk and order). In progress: [US-029](user-stories/US-029-undo-toast-destructive-actions.md) (undo toast — verify DoD).
+**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **active**. **Done in this sprint**: [US-029](user-stories/US-029-undo-toast-destructive-actions.md) ✅, [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) ✅, [US-030](user-stories/US-030-snooze-defer-presets.md) ✅, [US-031](user-stories/US-031-mobile-swipe-task-actions.md) ✅. **Still to do**: [US-027](user-stories/US-027-consistent-dates-priority-across-views.md), [US-032](user-stories/US-032-kanban-due-date-lanes.md)–[US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) — see sprint doc for scope risk and order. **Next suggested**: [US-034](user-stories/US-034-enter-key-save-task-edit.md) (small) or [US-027](user-stories/US-027-consistent-dates-priority-across-views.md).
 
 **Previous sprint**: [Sprint 5: Google Tasks — UX, Visibility, and Interaction](../sprints/sprint-05-google-tasks-ux-visibility.md) — **closed** 2026-03-22; [US-023](user-stories/US-023-all-tasks-all-lists.md)–[US-026](user-stories/US-026-double-click-edit-task.md) ✅. [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21. [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21. [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) and [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
@@ -14,15 +14,16 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-037](user-stories/US-037-instant-list-switch-cache-first-sync.md) | Instant List Switch (Cache-First, Background Sync) | 🟠 High | 8 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
 | [US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard Productivity Charts and Insights | 🟡 Medium | 13 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
-| [US-035](user-stories/US-035-server-backup-and-restore.md) | Server Backup and Easy Restore | 🟠 High | 8 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
+| [US-035](user-stories/US-035-server-backup-and-restore.md) | Server Backup and Easy Restore | 🟠 High | 8 | ⏳ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
 | [US-034](user-stories/US-034-enter-key-save-task-edit.md) | Press Enter to Save While Editing a Task | 🟡 Medium | 2 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
 | [US-033](user-stories/US-033-find-semantic-duplicate-tasks.md) | Find Semantic Duplicate Tasks Across Lists | 🟡 Medium | 13 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
 | [US-032](user-stories/US-032-kanban-due-date-lanes.md) | Kanban Due-Date Lanes (Reschedule by Drag) | 🟠 High | 8 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
-| [US-031](user-stories/US-031-mobile-swipe-task-actions.md) | Mobile Swipe Actions on Task Rows | 🟠 High | 5 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
-| [US-030](user-stories/US-030-snooze-defer-presets.md) | Snooze and Defer Presets (Due Date) | 🟡 Medium | 5 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
-| [US-029](user-stories/US-029-undo-toast-destructive-actions.md) | Undo Toast for Complete, Delete, and Move | 🟠 High | 3 | ⏳ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
-| [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) | Command Palette — Navigate, Search, and Quick Add | 🟠 High | 8 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
+| [US-031](user-stories/US-031-mobile-swipe-task-actions.md) | Mobile Swipe Actions on Task Rows | 🟠 High | 5 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
+| [US-030](user-stories/US-030-snooze-defer-presets.md) | Snooze and Defer Presets (Due Date) | 🟡 Medium | 5 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
+| [US-029](user-stories/US-029-undo-toast-destructive-actions.md) | Undo Toast for Complete, Delete, and Move | 🟠 High | 3 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
+| [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) | Command Palette — Navigate, Search, and Quick Add | 🟠 High | 8 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
 | [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent Dates and Priority Across Every View | 🟡 Medium | 13 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-21 |
 | [US-026](user-stories/US-026-double-click-edit-task.md) | Double-Click a Task to Edit | 🟡 Medium | 3 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
 | [US-025](user-stories/US-025-mobile-tasks-shell-improvements.md) | Mobile Tasks Shell — Progressive Search & Less Collapsible Chrome | 🟠 High | 8 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
@@ -99,16 +100,16 @@ This is the main product backlog tracking all user stories and defects.
 
 *Run `./project-management/scripts/backlog-metrics.sh --stats` to generate this section.*
 
-**Total Items**: 37 (36 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
+**Total Items**: 38 (37 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
 **By Status**:
-- ⭕ To Do: 9
+- ⭕ To Do: 7
 - ⏳ In Progress: 1
-- ✅ Done: 27
+- ✅ Done: 29
 
 **By Priority**:
 - 🔴 Critical: 5
-- 🟠 High: 17
+- 🟠 High: 18
 - 🟡 Medium: 13
 - 🟢 Low: 3
 
-**Total Story Points**: 189 (sum of all backlog table rows above, including DEF-001)
+**Total Story Points**: 197 (sum of all backlog table rows above, including DEF-001)

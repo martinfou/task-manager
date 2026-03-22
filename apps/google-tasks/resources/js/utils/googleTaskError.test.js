@@ -57,6 +57,16 @@ describe('isRetryableReadError', () => {
         expect(isRetryableReadError({ response: { status: 503 } })).toBe(true);
     });
 
+    it('returns false for 403 (numeric)', () => {
+        expect(isRetryableReadError({ response: { status: 403 } })).toBe(false);
+    });
+
+    it('returns false for 403 (string status, axios edge case)', () => {
+        expect(isRetryableReadError({ response: { status: '403' } })).toBe(
+            false,
+        );
+    });
+
     it('returns true when no response (network)', () => {
         expect(isRetryableReadError(new Error('fetch failed'))).toBe(true);
     });

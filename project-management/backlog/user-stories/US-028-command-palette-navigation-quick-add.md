@@ -9,11 +9,11 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-21  
-**Updated**: 2026-03-22  
+**Updated**: 2026-03-21  
 **Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
@@ -26,13 +26,13 @@ As a user, I want a **command palette** to go anywhere and capture a task quickl
 
 ## Acceptance Criteria
 
-- [ ] **`⌘K` / `Ctrl+K`** opens the palette on **desktop** (documented in app help); shortcut appears in [US-014](US-014-keyboard-shortcuts.md) help overlay and does not fire while typing in inputs (same guard pattern as other shortcuts). **External keyboard** on tablet/large narrow view: same shortcut when focus is not in an input.
-- [ ] **Mobile / narrow (middle path)**: on documented **small-viewport** or **touch-primary** breakpoint, user can open the **same** palette from the **primary overflow / “More” / account menu** (single menu item, e.g. **Command palette** — i18n EN/FR). **No** dedicated persistent toolbar icon required in US-028; **no** requirement for a software-keyboard shortcut on phone.
-- [ ] Palette lists **navigable actions**: jump to Today, Inbox, each task list, All-tasks view when [US-023](US-023-all-tasks-all-lists.md) exists, open/focus search, **New task** (targets current context list or documented default).
-- [ ] **Type-to-filter** narrows commands and lists; **Arrow keys + Enter** selects; **Escape** closes; focus trap and focus restore on close.
-- [ ] **Quick add** path from palette: user can enter a title and confirm; task is created via existing API/sync patterns (same list rules as inline add).
-- [ ] **i18n**: EN/FR for palette chrome, empty state, and command labels.
-- [ ] **No regression**: existing shortcuts still work; palette does not steal keys when inputs/modals already focused (reuse typing-context patterns from keyboard shortcuts).
+- [x] **`⌘K` / `Ctrl+K`** opens the palette on **desktop** (documented in app help); shortcut appears in [US-014](US-014-keyboard-shortcuts.md) help overlay and does not fire while typing in inputs (same guard pattern as other shortcuts). **External keyboard** on tablet/large narrow view: same shortcut when focus is not in an input.
+- [x] **Mobile / narrow (middle path)**: on documented **small-viewport** or **touch-primary** breakpoint, user can open the **same** palette from the **primary overflow / “More” / account menu** (single menu item, e.g. **Command palette** — i18n EN/FR). **No** dedicated persistent toolbar icon required in US-028; **no** requirement for a software-keyboard shortcut on phone.
+- [x] Palette lists **navigable actions**: jump to Today, Inbox, each task list, All-tasks view when [US-023](US-023-all-tasks-all-lists.md) exists, open/focus search, **New task** (targets current context list or documented default).
+- [x] **Type-to-filter** narrows commands and lists; **Arrow keys + Enter** selects; **Escape** closes; focus trap and focus restore on close.
+- [x] **Quick add** path from palette: user can enter a title and confirm; task is created via existing API/sync patterns (same list rules as inline add).
+- [x] **i18n**: EN/FR for palette chrome, empty state, and command labels.
+- [x] **No regression**: existing shortcuts still work; palette does not steal keys when inputs/modals already focused (reuse typing-context patterns from keyboard shortcuts).
 
 ## Business Value
 
@@ -50,7 +50,10 @@ Cuts navigation friction for multi-list users; matches discovery emphasis on **s
 ## Technical References
 
 - `apps/google-tasks/resources/js/composables/useTasksKeyboardShortcuts.js`
+- `apps/google-tasks/resources/js/composables/commandPaletteBridge.js`
+- `apps/google-tasks/resources/js/Components/TasksCommandPalette.vue`
 - `apps/google-tasks/resources/js/Components/TasksKeyboardShortcutsHelp.vue`
+- `apps/google-tasks/resources/js/Layouts/AuthenticatedLayout.vue`
 - `apps/google-tasks/resources/js/Pages/Tasks/Index.vue`
 
 ## Dependencies
@@ -94,8 +97,8 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed (`npm run build`, `php artisan test`)
 
 ## History
 
@@ -104,3 +107,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Clarified: **middle path** mobile entry (overflow menu item); story points **8**
 - 2026-03-22 - Backlog refinement: DoR recorded
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-21 - Implemented: `TasksCommandPalette`, bridge, layout menu entries, `/` vs ⌘K/Ctrl+K split; marked **Done**

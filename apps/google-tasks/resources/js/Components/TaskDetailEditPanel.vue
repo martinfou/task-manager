@@ -1,5 +1,6 @@
 <script setup>
 import InputLabel from '@/Components/InputLabel.vue';
+import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -12,6 +13,9 @@ const props = defineProps({
     priority: { type: String, required: true },
     notes: { type: String, required: true },
     saving: { type: Boolean, default: false },
+    /** When non-empty, show list selector (task edit — move to another list). */
+    lists: { type: Array, default: () => [] },
+    targetListId: { type: String, default: '' },
 });
 
 const emit = defineEmits([
@@ -24,6 +28,8 @@ const emit = defineEmits([
     'close',
     'delete',
     'notes-paste',
+    'update:targetListId',
+    'defer-preset',
 ]);
 
 const { t } = useI18n();
@@ -50,6 +56,28 @@ function onNotesKeydown(e) {
 
 <template>
     <div class="space-y-3">
+        <div v-if="lists.length > 0">
+            <InputLabel
+                for="detail-edit-list"
+                :value="t('tasks.listFieldLabel')"
+            />
+            <select
+                id="detail-edit-list"
+                :value="targetListId"
+                class="mt-1 block w-full rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                @change="
+                    emit('update:targetListId', $event.target.value)
+                "
+            >
+                <option
+                    v-for="list in lists"
+                    :key="`ed-${list.id}`"
+                    :value="list.id"
+                >
+                    {{ list.title }}
+                </option>
+            </select>
+        </div>
         <div>
             <InputLabel
                 for="detail-edit-title"
@@ -65,10 +93,18 @@ function onNotesKeydown(e) {
             />
         </div>
         <div>
-            <InputLabel
-                for="detail-edit-due"
-                :value="t('tasks.dueOptional')"
-            />
+            <div
+                class="mb-1 flex flex-wrap items-center justify-between gap-2"
+            >
+                <InputLabel
+                    for="detail-edit-due"
+                    :value="t('tasks.dueOptional')"
+                />
+                <TaskDeferMenu
+                    :disabled="saving"
+                    @pick="emit('defer-preset', $event)"
+                />
+            </div>
             <TextInput
                 id="detail-edit-due"
                 :model-value="due"

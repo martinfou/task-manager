@@ -1,4 +1,5 @@
 <script setup>
+import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskNotesRichText from '@/Components/TaskNotesRichText.vue';
 import { useLocaleDate } from '@/composables/useLocaleDate';
 import { useI18n } from 'vue-i18n';
@@ -24,6 +25,7 @@ const emit = defineEmits([
     'drop-priority',
     'inspect-task',
     'card-dblclick',
+    'defer-preset',
 ]);
 
 const PRIOS = ['p1', 'p2', 'p3', 'p4'];
@@ -191,14 +193,28 @@ function priorityBadgeClass(priority) {
                                     })
                                 }}
                             </p>
-                            <button
-                                type="button"
-                                class="mt-2 text-[10px] font-medium text-gt-accent hover:underline"
-                                :disabled="task._optimistic"
-                                @click.stop="emit('inspect-task', task)"
+                            <div
+                                class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1"
                             >
-                                {{ t('tasks.taskDetails') }}
-                            </button>
+                                <TaskDeferMenu
+                                    compact
+                                    :disabled="task._optimistic"
+                                    @pick="
+                                        emit('defer-preset', {
+                                            task,
+                                            preset: $event,
+                                        })
+                                    "
+                                />
+                                <button
+                                    type="button"
+                                    class="text-[10px] font-medium text-gt-accent hover:underline"
+                                    :disabled="task._optimistic"
+                                    @click.stop="emit('inspect-task', task)"
+                                >
+                                    {{ t('tasks.taskDetails') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <slot
