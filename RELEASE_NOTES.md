@@ -20,6 +20,7 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 - **Command palette** — **Ctrl+K** / **⌘K** opens a dialog to filter commands: views (Today, Inbox, All lists, each list), focus search, focus new task, **Quick add**; **/** focuses search only; mobile hamburger + account menu include **Command palette…**. [US-028](project-management/backlog/user-stories/US-028-command-palette-navigation-quick-add.md)
 - **Snooze / defer presets** — One-tap **Tomorrow**, **Next week**, **Weekend**, and **Pick date…** on list rows, kanban, and task detail; optional undo when a prior due existed. [apps/google-tasks/docs/DEFER_SNOOZE.md](apps/google-tasks/docs/DEFER_SNOOZE.md). [US-030](project-management/backlog/user-stories/US-030-snooze-defer-presets.md)
 - **Mobile list-row swipe** — On narrow viewports with coarse touch: **swipe right** for complete / incomplete, **swipe left** or **long-press** for a sheet (defer presets, move to list, delete with undo toast). Kanban stays list-only for this gesture; see [apps/google-tasks/docs/MOBILE_SWIPE.md](apps/google-tasks/docs/MOBILE_SWIPE.md). [US-031](project-management/backlog/user-stories/US-031-mobile-swipe-task-actions.md)
+- **Enter to save task edit** — In the inline task edit panel, **Enter** saves from title, due, recurrence, list, and priority fields; in **Notes**, **Ctrl+Enter** / **Cmd+Enter** saves (plain Enter still inserts a newline). Documented in keyboard help. [US-034](project-management/backlog/user-stories/US-034-enter-key-save-task-edit.md)
 
 ### Defect Fixes
 

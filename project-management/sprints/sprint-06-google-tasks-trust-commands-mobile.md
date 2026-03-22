@@ -38,7 +38,7 @@ compatible_with: [product-backlog]
 2. [US-028](../backlog/user-stories/US-028-command-palette-navigation-quick-add.md) — **Command palette** ✅.  
 3. [US-030](../backlog/user-stories/US-030-snooze-defer-presets.md) — **Snooze / defer** ✅.  
 4. [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) — **Mobile swipe** ✅.  
-5. [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) — **Enter to save** (small).  
+5. [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) — **Enter to save** (small) ✅.  
 6. [US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md) — **Dates/priority consistency**.  
 7. [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) — **Kanban due lanes**.  
 8. [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) — **Semantic duplicate finder**.  
@@ -70,7 +70,7 @@ compatible_with: [product-backlog]
 | [US-031](../backlog/user-stories/US-031-mobile-swipe-task-actions.md) | Mobile swipe | 5 | ✅ |
 | [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) | Kanban due-date lanes | 8 | ⭕ |
 | [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) | Semantic duplicate tasks | 13 | ⭕ |
-| [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) | Enter to save while editing | 2 | ⭕ |
+| [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) | Enter to save while editing | 2 | ✅ |
 | [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) | Server backup & restore | 8 | ⭕ |
 | [US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard productivity charts | 13 | ⭕ |
 
@@ -110,6 +110,12 @@ compatible_with: [product-backlog]
 | T-6.11 | Gesture layer + thresholds | `TaskListRowSwipe.vue` | ✅ |
 | T-6.12 | Wire actions + US-030 entry | `Index.vue`, `MOBILE_SWIPE.md` | ✅ |
 
+### US-034 — Enter to save
+
+| Task ID | Task Description | Reference | Status |
+|---------|------------------|-----------|--------|
+| T-6.13 | Enter / Ctrl+Enter handlers; list select; i18n + help | `TaskDetailEditPanel.vue`, `TasksKeyboardShortcutsHelp.vue`, `en.json`, `fr.json` | ✅ |
+
 *Tasks for US-027, US-032–US-036: add when each story is started.*
 
 ---
@@ -137,3 +143,4 @@ compatible_with: [product-backlog]
 - 2026-03-22 — **Scope expansion**: all open backlog stories (US-027–US-036) assigned to Sprint 6; **91** pts total
 - 2026-03-21 — **US-029** marked Done (AC verified; PHPUnit green)
 - 2026-03-21 — **US-028** marked Done (command palette + layout menu; build/tests green)
+- 2026-03-22 — **US-034** marked Done (Enter to save in task edit panel; keyboard help EN/FR)

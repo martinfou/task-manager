@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done  
 **Priority**: 🟡 Medium  
 **Story Points**: 2  
 **Created**: 2026-03-22  
@@ -26,12 +26,12 @@ As a user editing a task, I want to press **Enter** to **save my changes**, so t
 
 ## Acceptance Criteria
 
-- [ ] With task details open for edit, pressing **Enter** triggers the same **save** action as **Save changes** (successful path and error handling unchanged).
-- [ ] **Title** field (`TextInput`): **Enter** saves (and does not submit a second time if already saving / disabled).
-- [ ] **Notes** (`textarea`): plain **Enter** continues to insert a **newline**; **Ctrl+Enter** (Windows/Linux) and **Cmd+Enter** (macOS) save the task (document in keyboard help if not already covered).
-- [ ] Other single-line fields (**due** `datetime-local`, **recurrence** text): **Enter** saves unless the browser uses Enter for native picker behavior — document any exception.
-- [ ] **Priority** `<select>`: **Enter** saves when the control would not otherwise commit a native change (align with browser defaults; no duplicate save loops).
-- [ ] **No regression**: Escape still closes/cancels per existing behavior; **Save** / **Delete** / validation messages unchanged; bulk selection and list shortcuts unaffected when focus is in the edit panel.
+- [x] With task details open for edit, pressing **Enter** triggers the same **save** action as **Save changes** (successful path and error handling unchanged).
+- [x] **Title** field (`TextInput`): **Enter** saves (and does not submit a second time if already saving / disabled).
+- [x] **Notes** (`textarea`): plain **Enter** continues to insert a **newline**; **Ctrl+Enter** (Windows/Linux) and **Cmd+Enter** (macOS) save the task (document in keyboard help if not already covered).
+- [x] Other single-line fields (**due** `datetime-local`, **recurrence** text): **Enter** saves unless the browser uses Enter for native picker behavior — document any exception.
+- [x] **Priority** `<select>` (and **list** `<select>` when moving): **Enter** saves when the control would not otherwise commit a native change (align with browser defaults; no duplicate save loops).
+- [x] **No regression**: Escape still closes/cancels per existing behavior; **Save** / **Delete** / validation messages unchanged; bulk selection and list shortcuts unaffected when focus is in the edit panel.
 
 ## Business Value
 
@@ -41,6 +41,10 @@ Reduces friction for keyboard-heavy users and aligns the edit form with familiar
 
 - Implement in `apps/google-tasks/resources/js/Components/TaskDetailEditPanel.vue` (and parent wiring in `Tasks/Index.vue` if the save handler must be invoked from the panel).
 - Optional: mention in `TasksKeyboardShortcutsHelp.vue` if we add **Cmd/Ctrl+Enter** for notes.
+
+## Implementation notes
+
+- **`datetime-local`**: Enter is wired to save; some browsers may prioritize native picker behavior — if Enter does not reach the handler, use **Save changes**.
 
 ## Technical References
 
@@ -71,11 +75,12 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria verified
-- [ ] Documentation-Code Consistency check before marking Done
+- [x] All acceptance criteria verified
+- [x] Documentation-Code Consistency check before marking Done
 
 ## History
 
 - 2026-03-22 - Created
 - 2026-03-22 - Backlog refinement: DoR recorded; Dependencies set to US-024 + US-014
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-22 - **Done**: `TaskDetailEditPanel.vue` — Enter on single-line fields and list/priority selects; Ctrl/Cmd+Enter on notes; `saving` guard; keyboard help EN/FR updated

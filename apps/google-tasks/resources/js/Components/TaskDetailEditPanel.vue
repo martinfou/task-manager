@@ -68,6 +68,7 @@ function onNotesKeydown(e) {
                 @change="
                     emit('update:targetListId', $event.target.value)
                 "
+                @keydown.enter="onFieldEnter"
             >
                 <option
                     v-for="list in lists"

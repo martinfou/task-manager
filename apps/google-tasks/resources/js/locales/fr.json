@@ -57,12 +57,12 @@
         "keysDblClick": "Double-clic sur une tâche",
         "actionDblClick": "Ouvrir les détails (ligne ou carte, hors boutons)",
         "keysDetailSave": "Entrée",
-        "actionDetailSave": "Enregistrer les détails (titre, échéance, récurrence, priorité)",
+        "actionDetailSave": "Enregistrer les détails (liste, titre, échéance, récurrence, priorité)",
         "keysDetailNotesSave": "Ctrl+Entrée / Cmd+Entrée",
         "actionDetailNotesSave": "Enregistrer depuis les notes (Entrée seule ajoute une ligne)",
         "keysHelp": "? ou Ctrl+/",
         "actionHelp": "Ouvrir cette aide",
-        "conflictsNote": "Les raccourcis sont ignorés pendant la saisie. Ctrl+K / ⌘K ouvre la palette ; « / » va à la recherche. Si un navigateur réserve une touche, utilisez la palette.",
+        "conflictsNote": "Les raccourcis de navigation (g puis t, etc.) sont ignorés quand le focus est dans un champ ; Entrée dans le panneau d’édition enregistre (voir ci-dessus). Ctrl+K / ⌘K ouvre la palette ; « / » va à la recherche. Si un navigateur réserve une touche, utilisez la palette.",
         "hint": "? pour les raccourcis"
     },
     "appearance": {

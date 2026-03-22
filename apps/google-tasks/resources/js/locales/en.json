@@ -57,12 +57,12 @@
         "keysDblClick": "Double-click task",
         "actionDblClick": "Open details (row or card, outside buttons)",
         "keysDetailSave": "Enter",
-        "actionDetailSave": "Save task details (title, due, recurrence, priority)",
+        "actionDetailSave": "Save task details (list, title, due, recurrence, priority fields)",
         "keysDetailNotesSave": "Ctrl+Enter / Cmd+Enter",
         "actionDetailNotesSave": "Save from notes (plain Enter adds a newline)",
         "keysHelp": "? or Ctrl+/",
         "actionHelp": "Open this help",
-        "conflictsNote": "Shortcuts are ignored while typing in fields. Ctrl+K / ⌘K opens the command palette; “/” focuses search. Some browsers reserve keys — use the palette if a binding conflicts.",
+        "conflictsNote": "Navigation shortcuts (g then t, etc.) are skipped while focus is in a field; Enter in the task edit panel saves (see rows above). Ctrl+K / ⌘K opens the command palette; “/” focuses search. Some browsers reserve keys — use the palette if a binding conflicts.",
         "hint": "Press ? for shortcuts"
     },
     "appearance": {
