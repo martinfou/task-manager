@@ -2,9 +2,11 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-21
+**Last Updated**: 2026-03-22 (Sprint 5 review/retro close; RI-004/RI-005; release notes 2026-03-22)
 
-**Active Sprint**: **None** — [Sprint 4: Google Tasks — Quality, Semantic Search, and Privacy](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21 (US-018–US-021; review + retrospective). [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21 (US-011–US-017; [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) / [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) ✅). [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) completed 2026-03-21. [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
+**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **active**; in progress [US-029](user-stories/US-029-undo-toast-destructive-actions.md) (undo toast shipped in app — verify DoD), remaining [US-028](user-stories/US-028-command-palette-navigation-quick-add.md)–[US-031](user-stories/US-031-mobile-swipe-task-actions.md) ⭕.
+
+**Previous sprint**: [Sprint 5: Google Tasks — UX, Visibility, and Interaction](../sprints/sprint-05-google-tasks-ux-visibility.md) — **closed** 2026-03-22; [US-023](user-stories/US-023-all-tasks-all-lists.md)–[US-026](user-stories/US-026-double-click-edit-task.md) ✅. [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21. [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21. [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) and [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
 **Product discovery (Google Tasks client)**: [responses-submitted-2026-03-21.json](../../docs/google-tasks-discovery/responses-submitted-2026-03-21.json)
 
@@ -12,6 +14,20 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard Productivity Charts and Insights | 🟡 Medium | 13 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
+| [US-035](user-stories/US-035-server-backup-and-restore.md) | Server Backup and Easy Restore | 🟠 High | 8 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
+| [US-034](user-stories/US-034-enter-key-save-task-edit.md) | Press Enter to Save While Editing a Task | 🟡 Medium | 2 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
+| [US-033](user-stories/US-033-find-semantic-duplicate-tasks.md) | Find Semantic Duplicate Tasks Across Lists | 🟡 Medium | 13 | ⭕ | Backlog | 2026-03-21 | 2026-03-22 |
+| [US-032](user-stories/US-032-kanban-due-date-lanes.md) | Kanban Due-Date Lanes (Reschedule by Drag) | 🟠 High | 8 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
+| [US-031](user-stories/US-031-mobile-swipe-task-actions.md) | Mobile Swipe Actions on Task Rows | 🟠 High | 5 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
+| [US-030](user-stories/US-030-snooze-defer-presets.md) | Snooze and Defer Presets (Due Date) | 🟡 Medium | 5 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
+| [US-029](user-stories/US-029-undo-toast-destructive-actions.md) | Undo Toast for Complete, Delete, and Move | 🟠 High | 3 | ⏳ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-21 | 2026-03-22 |
+| [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) | Command Palette — Navigate, Search, and Quick Add | 🟠 High | 8 | ⭕ | Backlog | 2026-03-21 | 2026-03-22 |
+| [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) | Consistent Dates and Priority Across Every View | 🟡 Medium | 13 | ⭕ | Backlog | 2026-03-21 | 2026-03-21 |
+| [US-026](user-stories/US-026-double-click-edit-task.md) | Double-Click a Task to Edit | 🟡 Medium | 3 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
+| [US-025](user-stories/US-025-mobile-tasks-shell-improvements.md) | Mobile Tasks Shell — Progressive Search & Less Collapsible Chrome | 🟠 High | 8 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
+| [US-024](user-stories/US-024-task-details-inline-expand.md) | Task Details Expand Below the Row | 🟡 Medium | 5 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
+| [US-023](user-stories/US-023-all-tasks-all-lists.md) | All Tasks Across All Lists | 🟠 High | 8 | ✅ | [Sprint 5](../sprints/sprint-05-google-tasks-ux-visibility.md) | 2026-03-21 | 2026-03-22 |
 | [US-022](user-stories/US-022-pwa-install-phase.md) | PWA Install (Post-MVP Phase) | 🟢 Low | 5 | ✅ | Backlog | 2026-03-21 | 2026-03-21 |
 | [US-021](user-stories/US-021-disconnect-purge-logging.md) | Disconnect, Purge, and Logging Policy | 🟠 High | 2 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
 | [US-020](user-stories/US-020-test-pyramid-ci.md) | Test Pyramid and CI | 🟠 High | 5 | ✅ | [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) | 2026-03-21 | 2026-03-21 |
@@ -50,6 +66,8 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Description | Owner | Due Sprint | Status |
 |----|-------------|-------|------------|--------|
+| [RI-005](retrospective-improvements/RI-005-all-tasks-aggregate-429-runbook.md) | All-tasks aggregate: operator runbook for 429 / partial list failure | Developer | Sprint 6 | ⭕ |
+| [RI-004](retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md) | Tasks `Index.vue` integration order + merge checklist (docs) | Developer | Sprint 6 | ⭕ |
 | [RI-003](retrospective-improvements/RI-003-semantic-search-ops-runbook.md) | Semantic search operations runbook in `apps/google-tasks/docs/DEPLOY.md` | Developer | Sprint 4 retro | ✅ |
 | [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) | Google Cloud OAuth + Tasks API checklist in `docs/` | Developer | Sprint 3 | ✅ |
 | [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) | CI workflow for `apps/google-tasks` (Composer, Vite, tests) | Developer | Sprint 3 | ✅ |
@@ -81,16 +99,16 @@ This is the main product backlog tracking all user stories and defects.
 
 *Run `./project-management/scripts/backlog-metrics.sh --stats` to generate this section.*
 
-**Total Items**: 23  
+**Total Items**: 37 (36 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
 **By Status**:
-- ⭕ To Do: 0
-- ⏳ In Progress: 0
-- ✅ Done: 23
+- ⭕ To Do: 9
+- ⏳ In Progress: 1
+- ✅ Done: 27
 
 **By Priority**:
 - 🔴 Critical: 5
-- 🟠 High: 10
-- 🟡 Medium: 5
+- 🟠 High: 17
+- 🟡 Medium: 13
 - 🟢 Low: 3
 
-**Total Story Points**: 87
+**Total Story Points**: 189 (sum of all backlog table rows above, including DEF-001)

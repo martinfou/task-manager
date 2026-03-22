@@ -15,8 +15,10 @@ import { onMounted, onUnmounted } from 'vue';
  * @param {() => void} options.onFocusNewTask
  * @param {() => void | Promise<void>} options.onGoToday
  * @param {() => void | Promise<void>} options.onGoInbox
+ * @param {() => void | Promise<void>} options.onGoAll
  * @param {() => void | Promise<void>} options.onGoList
  * @param {(task: object) => void | Promise<void>} options.onToggleComplete
+ * @param {(() => void) | undefined} options.onInspectFocusedTask
  */
 export function useTasksKeyboardShortcuts(options) {
     const {
@@ -29,8 +31,10 @@ export function useTasksKeyboardShortcuts(options) {
         onFocusNewTask,
         onGoToday,
         onGoInbox,
+        onGoAll,
         onGoList,
         onToggleComplete,
+        onInspectFocusedTask,
     } = options;
 
     let gChordTimer = null;
@@ -138,7 +142,7 @@ export function useTasksKeyboardShortcuts(options) {
         if (
             gChordPending &&
             !typing &&
-            ['t', 'i', 'l'].includes(e.key) &&
+            ['t', 'i', 'l', 'a'].includes(e.key) &&
             !e.ctrlKey &&
             !e.metaKey &&
             !e.altKey
@@ -149,6 +153,8 @@ export function useTasksKeyboardShortcuts(options) {
                 void onGoToday();
             } else if (e.key === 'i') {
                 void onGoInbox();
+            } else if (e.key === 'a') {
+                void onGoAll();
             } else {
                 void onGoList();
             }
@@ -196,6 +202,27 @@ export function useTasksKeyboardShortcuts(options) {
             }
             e.preventDefault();
             void onToggleComplete(task);
+            return;
+        }
+
+        if (
+            onInspectFocusedTask &&
+            e.key === 'i' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            !e.shiftKey
+        ) {
+            const idx = focusedTaskIndex.value;
+            if (idx < 0) {
+                return;
+            }
+            const task = tasks.value[idx];
+            if (!task || task._optimistic) {
+                return;
+            }
+            e.preventDefault();
+            onInspectFocusedTask();
         }
     }
 

@@ -42,3 +42,4 @@ As a power user, I want filters and a board view, so that I can triage work like
 
 - 2026-03-21 - Created from discovery questionnaire
 - 2026-03-21 - Implemented: client-side filters (status, due, priority, list on Today); list/board toggle; P1–P4 Kanban with DnD → `updatePriority`; `taskFilters.js`; scrollable columns; README + in-app help
+- 2026-03-22 - Backlog refinement ([session](../../sprints/backlog-refinement-session-2026-03-22.md)): light audit — story and links still accurate; no doc defect opened

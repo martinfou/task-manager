@@ -47,7 +47,7 @@ const submit = () => {
         <div v-if="googleLoginEnabled" class="mb-6">
             <a
                 :href="route('google.redirect')"
-                class="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                class="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2"
             >
                 Continue with Google
             </a>
@@ -99,7 +99,7 @@ const submit = () => {
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2"
                 >
                     {{ t('auth.forgotPassword') }}
                 </Link>

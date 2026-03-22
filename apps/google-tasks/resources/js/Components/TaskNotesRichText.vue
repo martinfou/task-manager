@@ -15,7 +15,7 @@ const segments = computed(() => linkifyNotes(props.text));
             <a
                 v-if="seg.type === 'link'"
                 :href="seg.href"
-                class="text-indigo-600 underline decoration-indigo-600/30 underline-offset-2 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                class="text-gt-accent underline decoration-gt-accent/35 underline-offset-2 hover:text-gt-accent-hover"
                 target="_blank"
                 rel="noopener noreferrer"
                 @click.stop

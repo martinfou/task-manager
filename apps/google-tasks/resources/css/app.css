@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Google Tasks — semantic theme (light / .dark).
+ * Tweak accents and neutrals here; Tailwind maps them in tailwind.config.js.
+ */
+@layer base {
+    :root {
+        --gt-canvas: 248 250 252;
+        --gt-raised: 255 255 255;
+        --gt-field: 255 255 255;
+        --gt-field-muted: 241 245 249;
+        --gt-border: 226 232 240;
+        --gt-border-strong: 203 213 225;
+        --gt-ink: 15 23 42;
+        --gt-ink-secondary: 51 65 85;
+        --gt-muted: 100 116 139;
+        --gt-subtle: 148 163 184;
+        /* True blue accent (Tailwind blue ~600 / ~700 / ~500 / ~50) */
+        --gt-accent: 37 99 235;
+        --gt-accent-hover: 29 78 216;
+        --gt-accent-ring: 59 130 246;
+        --gt-accent-tint: 239 246 255;
+        --gt-nav: 255 255 255;
+        --gt-nav-border: 241 245 249;
+    }
+
+    .dark {
+        --gt-canvas: 2 6 23;
+        --gt-raised: 15 23 42;
+        --gt-field: 51 65 85;
+        --gt-field-muted: 30 41 59;
+        --gt-border: 51 65 85;
+        --gt-border-strong: 71 85 105;
+        --gt-ink: 248 250 252;
+        --gt-ink-secondary: 226 232 240;
+        --gt-muted: 148 163 184;
+        --gt-subtle: 100 116 139;
+        --gt-accent: 96 165 250;
+        --gt-accent-hover: 147 197 253;
+        --gt-accent-ring: 96 165 250;
+        --gt-accent-tint: 30 58 138;
+        --gt-nav: 15 23 42;
+        --gt-nav-border: 30 41 59;
+    }
+}
+
 @layer components {
     .density-stack {
         @apply space-y-6;
@@ -25,5 +70,10 @@
 
     html[data-density='compact'] .density-card-padding {
         @apply p-4;
+    }
+
+    /** Raised panels (cards, main task shell) — ring matches theme */
+    .gt-surface {
+        @apply bg-gt-raised shadow-sm ring-1 ring-gt-border dark:shadow-none;
     }
 }

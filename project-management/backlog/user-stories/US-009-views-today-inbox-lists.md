@@ -48,3 +48,4 @@ Directly matches the one-liner: “easy way to navigate my multiple tasks lists.
 
 - 2026-03-21 - Created from discovery questionnaire
 - 2026-03-21 - Implemented `TaskViewAggregator` + `/tasks/data/views/today|inbox`; Tasks shell with desktop sidebar, mobile bottom nav + list drawer; in-app help copy; empty states; status ✅ Done
+- 2026-03-22 - Backlog refinement ([session](../../sprints/backlog-refinement-session-2026-03-22.md)): light audit — story and links still accurate; no doc defect opened

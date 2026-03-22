@@ -81,4 +81,44 @@ class TaskViewsTest extends TestCase
         $response->assertJsonPath('taskList.id', 'inbox-id');
         $response->assertJsonPath('items.0.title', 'Inbox task');
     }
+
+    public function test_all_lists_view_returns_tasks_from_every_list(): void
+    {
+        Http::fake([
+            'oauth2.googleapis.com/token' => Http::response([
+                'access_token' => 'test-access-token',
+                'expires_in' => 3600,
+            ], 200),
+            'tasks.googleapis.com/tasks/v1/users/@me/lists' => Http::response([
+                'items' => [
+                    ['id' => 'list-a', 'title' => 'Alpha'],
+                    ['id' => 'list-b', 'title' => 'Beta'],
+                ],
+            ], 200),
+            'tasks.googleapis.com/tasks/v1/lists/list-a/tasks*' => Http::response([
+                'items' => [
+                    ['id' => 'a1', 'title' => 'From A', 'status' => 'needsAction'],
+                ],
+            ], 200),
+            'tasks.googleapis.com/tasks/v1/lists/list-b/tasks*' => Http::response([
+                'items' => [
+                    ['id' => 'b1', 'title' => 'From B', 'status' => 'needsAction'],
+                ],
+            ], 200),
+        ]);
+
+        $user = User::factory()->create([
+            'google_refresh_token' => 'fake-refresh',
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('tasks.data.views.all'));
+
+        $response->assertOk();
+        $response->assertJsonCount(2, 'items');
+        $response->assertJsonPath('items.0.taskListId', 'list-a');
+        $response->assertJsonPath('items.0.taskListTitle', 'Alpha');
+        $response->assertJsonPath('items.0.task.id', 'a1');
+        $response->assertJsonPath('items.1.taskListId', 'list-b');
+        $response->assertJsonPath('items.1.task.id', 'b1');
+    }
 }

@@ -28,6 +28,13 @@ export function applyAppearance(theme, density) {
     }
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.setAttribute('data-density', density);
+    const tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) {
+        tc.setAttribute(
+            'content',
+            theme === 'dark' ? '#020617' : '#f8fafc',
+        );
+    }
 }
 
 export function initAppearance() {

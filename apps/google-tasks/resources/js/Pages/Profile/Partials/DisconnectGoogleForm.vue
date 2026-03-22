@@ -44,11 +44,11 @@ const closeModal = () => {
 <template>
     <section class="space-y-6">
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
+            <h2 class="text-lg font-medium text-gt-ink">
                 {{ t('profile.disconnectGoogleTitle') }}
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-gt-muted">
                 {{ t('profile.disconnectGoogleDescription') }}
             </p>
         </header>
@@ -61,11 +61,11 @@ const closeModal = () => {
 
         <Modal :show="confirming" @close="closeModal">
             <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900">
+                <h2 class="text-lg font-medium text-gt-ink">
                     {{ t('profile.disconnectGoogleConfirmTitle') }}
                 </h2>
 
-                <p class="mt-1 text-sm text-gray-600">
+                <p class="mt-1 text-sm text-gt-muted">
                     {{ t('profile.disconnectGoogleConfirmBody') }}
                 </p>
 

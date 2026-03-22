@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,6 +24,8 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'hasGoogleTasksConnection' => $request->user()->hasGoogleTasksConnection(),
+            'googleTasksPollIntervalMs' => (int) config('google-tasks.poll_interval_ms'),
+            'googleTasksMaxBackoffMs' => (int) config('google-tasks.max_backoff_ms'),
         ]);
     }
 
@@ -84,5 +87,23 @@ class ProfileController extends Controller
         $purge->disconnect($user);
 
         return Redirect::route('profile.edit')->with('status', 'google-disconnected');
+    }
+
+    /**
+     * Update Tasks-related preferences (undo toast delay, etc.).
+     */
+    public function updateTasksPreferences(Request $request): RedirectResponse
+    {
+        $allowed = [3000, 5000, 10000, 15000, 30000];
+
+        $validated = $request->validate([
+            'undo_toast_delay_ms' => ['required', 'integer', Rule::in($allowed)],
+        ]);
+
+        $request->user()->update([
+            'undo_toast_delay_ms' => $validated['undo_toast_delay_ms'],
+        ]);
+
+        return Redirect::route('profile.edit');
     }
 }

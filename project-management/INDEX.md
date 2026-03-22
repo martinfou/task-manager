@@ -84,6 +84,10 @@ An [MCP server](../mcp-project-management/README.md) exposes this project-manage
 
 ## Related
 
+- [Backlog refinement session — all user stories (2026-03-22)](sprints/backlog-refinement-session-2026-03-22.md) — DoR sweep, inventory US-001–US-034
+- [Sprint 6 — Trust, commands, mobile (active)](sprints/sprint-06-google-tasks-trust-commands-mobile.md) — US-029 undo toast in progress; US-028–US-031 to do
+- [Sprint 5 — Tasks UX (closed)](sprints/sprint-05-google-tasks-ux-visibility.md) — US-023–US-026 ✅; sprint review + retrospective **2026-03-22**
+- [Product backlog](backlog/product-backlog.md) — **Active sprint**: [Sprint 6](sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 - [README.md](README.md) — Overview for humans
 - [prompts.md](prompts.md) — Reusable AI prompts
 - [scripts/README.md](scripts/README.md) — Script usage (validate-backlog, check-links, lint-project-management, validate-backlog-integrity, validate-mermaid, visualize-dependencies, test-scripts)

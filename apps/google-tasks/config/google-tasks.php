@@ -25,6 +25,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Undo toast (US-029) — deferred delete timer
+    |--------------------------------------------------------------------------
+    |
+    | Default delay before a deleted task is removed on the server, unless the
+    | user undoes. Users may override this in Profile; null on the user uses
+    | this default.
+    |
+    */
+
+    'undo_toast_delay_ms' => (int) env('GOOGLE_TASKS_UNDO_TOAST_DELAY_MS', 5000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Semantic search (US-018) — OpenAI-compatible embeddings API
     |--------------------------------------------------------------------------
     |

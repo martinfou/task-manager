@@ -45,3 +45,7 @@ When `SEMANTIC_SEARCH_ENABLED=true` and `OPENAI_API_KEY` (or compatible endpoint
 | **After deploy** | No extra migration beyond `task_embeddings` migration; ensure env vars are set in production. |
 
 Tracked as [RI-003](../../../project-management/backlog/retrospective-improvements/RI-003-semantic-search-ops-runbook.md).
+
+## Migrations (Tasks app)
+
+Run `php artisan migrate` after deploy when new migrations ship. Recent examples: `task_embeddings` (semantic search), `users.undo_toast_delay_ms` (optional per-user undo-toast delay for destructive actions; default comes from `GOOGLE_TASKS_UNDO_TOAST_DELAY_MS` in config when the column is null).

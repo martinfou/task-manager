@@ -35,6 +35,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'locale' => app()->getLocale(),
+            'tasks' => fn () => $request->user() === null ? null : [
+                'undoToastDelayMs' => (int) ($request->user()->undo_toast_delay_ms
+                    ?? config('google-tasks.undo_toast_delay_ms')),
+            ],
         ];
     }
 }

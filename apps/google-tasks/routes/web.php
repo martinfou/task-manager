@@ -40,7 +40,9 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard', [
+        'hasGoogleTasksConnection' => auth()->user()?->hasGoogleTasksConnection() ?? false,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -52,6 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/search/reindex', [TasksController::class, 'reindexSearchEmbeddings'])->name('tasks.data.search.reindex');
         Route::get('/views/today', [TasksController::class, 'todayView'])->name('tasks.data.views.today');
         Route::get('/views/inbox', [TasksController::class, 'inboxView'])->name('tasks.data.views.inbox');
+        Route::get('/views/all', [TasksController::class, 'allListsView'])->name('tasks.data.views.all');
         Route::get('/{taskList}/tasks', [TasksController::class, 'tasks'])->name('tasks.data.tasks');
         Route::post('/{taskList}/tasks', [TasksController::class, 'storeTask'])->name('tasks.data.tasks.store');
         Route::post('/{taskList}/tasks/{task}/move', [TasksController::class, 'moveTask'])->name('tasks.data.tasks.move');
@@ -63,6 +66,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/tasks-preferences', [ProfileController::class, 'updateTasksPreferences'])
+        ->name('profile.tasks-preferences.update');
     Route::post('/profile/google/disconnect', [ProfileController::class, 'disconnectGoogle'])->name('profile.google.disconnect');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

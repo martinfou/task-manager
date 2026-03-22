@@ -18,7 +18,7 @@ function setLocale(code) {
 
 <template>
     <div
-        class="flex items-center gap-1 rounded-md border border-gray-200 p-0.5 dark:border-slate-600"
+        class="flex items-center gap-1 rounded-md border border-gt-border p-0.5"
         role="group"
         :aria-label="t('locale.label')"
     >
@@ -27,8 +27,8 @@ function setLocale(code) {
             class="rounded px-2 py-1 text-xs font-medium"
             :class="
                 locale === 'en'
-                    ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/50 dark:text-indigo-100'
-                    : 'text-gray-600 dark:text-slate-400'
+                    ? 'bg-gt-accent-tint/50 text-gt-accent dark:bg-gt-accent-tint/25 dark:text-gt-accent-hover'
+                    : 'text-gt-muted'
             "
             @click="setLocale('en')"
         >
@@ -39,8 +39,8 @@ function setLocale(code) {
             class="rounded px-2 py-1 text-xs font-medium"
             :class="
                 locale === 'fr'
-                    ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/50 dark:text-indigo-100'
-                    : 'text-gray-600 dark:text-slate-400'
+                    ? 'bg-gt-accent-tint/50 text-gt-accent dark:bg-gt-accent-tint/25 dark:text-gt-accent-hover'
+                    : 'text-gt-muted'
             "
             @click="setLocale('fr')"
         >

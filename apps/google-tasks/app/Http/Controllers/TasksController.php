@@ -161,6 +161,23 @@ class TasksController extends Controller
         });
     }
 
+    public function allListsView(Request $request): JsonResponse
+    {
+        return $this->run(function () use ($request) {
+            $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
+            $aggregator = new TaskViewAggregator;
+
+            $items = $aggregator->allListsTasks(
+                $client,
+                $request->boolean('showCompleted', false),
+            );
+
+            return response()->json([
+                'items' => $this->decodeTodayRows($items),
+            ]);
+        });
+    }
+
     public function tasks(Request $request, string $taskList): JsonResponse
     {
         return $this->run(function () use ($request, $taskList) {

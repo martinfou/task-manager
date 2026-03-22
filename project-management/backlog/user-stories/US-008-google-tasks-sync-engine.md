@@ -49,3 +49,4 @@ Core product differentiator versus raw tasks.google.com — reliable sync is man
 
 - 2026-03-21 - Created from discovery questionnaire
 - 2026-03-21 - Implemented `GoogleTasksClient` + token refresh cache; `/tasks` + `/tasks/data/*` JSON API; `Tasks/Index.vue` polling + optimistic CRUD; README performance note; status ✅ Done
+- 2026-03-22 - Backlog refinement ([session](../../sprints/backlog-refinement-session-2026-03-22.md)): light audit — story and links still accurate; no doc defect opened

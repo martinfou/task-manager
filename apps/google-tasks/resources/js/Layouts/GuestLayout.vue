@@ -6,7 +6,7 @@ import { Link } from '@inertiajs/vue3';
 
 <template>
     <div
-        class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 dark:bg-slate-950 sm:justify-center sm:pt-0"
+        class="flex min-h-screen flex-col items-center bg-gt-canvas pt-6 sm:justify-center sm:pt-0"
     >
         <div class="flex w-full max-w-md justify-end px-6 sm:px-0">
             <LocaleSwitcher />
@@ -14,13 +14,13 @@ import { Link } from '@inertiajs/vue3';
         <div>
             <Link href="/">
                 <ApplicationLogo
-                    class="h-20 w-20 fill-current text-gray-500 dark:text-slate-400"
+                    class="h-20 w-20 fill-current text-gt-muted"
                 />
             </Link>
         </div>
 
         <div
-            class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md dark:bg-slate-900 dark:shadow-slate-900/50 sm:max-w-md sm:rounded-lg"
+            class="gt-surface mt-6 w-full overflow-hidden px-6 py-4 sm:max-w-md sm:rounded-lg"
         >
             <slot />
         </div>

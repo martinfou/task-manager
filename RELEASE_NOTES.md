@@ -8,6 +8,33 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 
 ---
 
+## 2026-03-22
+
+### New Features
+
+- **All tasks across all lists** — Aggregate view with per-row list badge, filter parity, and API-backed aggregation. [US-023](project-management/backlog/user-stories/US-023-all-tasks-all-lists.md)
+- **Task details below the row** — Inline `TaskDetailEditPanel`; desktop right-rail edit removed; kanban aligned; new-task **More** uses the same below-row pattern. [US-024](project-management/backlog/user-stories/US-024-task-details-inline-expand.md)
+- **Mobile Tasks shell** — Progressive search on small viewports; workflow help as a modal instead of heavy collapsible chrome on mobile; EN/FR strings. [US-025](project-management/backlog/user-stories/US-025-mobile-tasks-shell-improvements.md)
+- **Double-click to edit** — List rows and kanban cards open the same edit path as **Details**; controls excluded from double-click; shortcuts help updated. [US-026](project-management/backlog/user-stories/US-026-double-click-edit-task.md)
+
+### Defect Fixes
+
+- (none this release)
+
+### Technical Debt
+
+- (none this release)
+
+### Breaking Changes
+
+- (none this release)
+
+### Migration Notes
+
+- (none this release)
+
+---
+
 ## 2026-03-21
 
 ### New Features

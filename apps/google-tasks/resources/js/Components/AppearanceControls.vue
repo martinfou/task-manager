@@ -14,7 +14,7 @@ const { theme, density, toggleTheme, setDensity } = useAppearance();
     >
         <button
             type="button"
-            class="rounded-md border border-gray-200 bg-white p-2 text-gray-600 shadow-sm hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            class="rounded-md border border-gt-border bg-gt-raised p-2 text-gt-muted shadow-sm hover:bg-gt-field-muted dark:bg-gt-field-muted dark:hover:bg-gt-field"
             :title="theme === 'dark' ? t('appearance.switchToLight') : t('appearance.switchToDark')"
             :aria-label="theme === 'dark' ? t('appearance.switchToLight') : t('appearance.switchToDark')"
             @click="toggleTheme"
@@ -51,7 +51,7 @@ const { theme, density, toggleTheme, setDensity } = useAppearance();
             </svg>
         </button>
         <div
-            class="flex rounded-md border border-gray-200 p-0.5 dark:border-slate-600"
+            class="flex rounded-md border border-gt-border p-0.5"
             role="radiogroup"
             :aria-label="t('appearance.density')"
         >
@@ -60,8 +60,8 @@ const { theme, density, toggleTheme, setDensity } = useAppearance();
                 class="rounded px-2 py-1 text-xs font-medium"
                 :class="
                     density === 'comfortable'
-                        ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/50 dark:text-indigo-100'
-                        : 'text-gray-600 dark:text-slate-400'
+                        ? 'bg-gt-accent-tint/50 text-gt-accent dark:bg-gt-accent-tint/25 dark:text-gt-accent-hover'
+                        : 'text-gt-muted'
                 "
                 @click="setDensity('comfortable')"
             >
@@ -72,8 +72,8 @@ const { theme, density, toggleTheme, setDensity } = useAppearance();
                 class="rounded px-2 py-1 text-xs font-medium"
                 :class="
                     density === 'compact'
-                        ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/50 dark:text-indigo-100'
-                        : 'text-gray-600 dark:text-slate-400'
+                        ? 'bg-gt-accent-tint/50 text-gt-accent dark:bg-gt-accent-tint/25 dark:text-gt-accent-hover'
+                        : 'text-gt-muted'
                 "
                 @click="setDensity('compact')"
             >

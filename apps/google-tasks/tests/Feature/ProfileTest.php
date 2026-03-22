@@ -23,6 +23,38 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_tasks_preferences_undo_delay_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile/tasks-preferences', [
+                'undo_toast_delay_ms' => 10_000,
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertSame(10_000, $user->fresh()->undo_toast_delay_ms);
+    }
+
+    public function test_tasks_preferences_rejects_invalid_undo_delay(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile/tasks-preferences', [
+                'undo_toast_delay_ms' => 999,
+            ]);
+
+        $response->assertSessionHasErrors('undo_toast_delay_ms');
+        $this->assertNull($user->fresh()->undo_toast_delay_ms);
+    }
+
     public function test_profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();

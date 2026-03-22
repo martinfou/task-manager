@@ -43,3 +43,4 @@ Differentiates from basic Google UI; matches discovery request for semantic sear
 
 - 2026-03-21 - Created from discovery questionnaire
 - 2026-03-21 - Implemented: `task_embeddings` + OpenAI-compatible `EmbeddingClient`, `TaskEmbeddingIndexer`, `TaskSemanticSearcher`, `GET /tasks/data/search?mode=semantic`, `POST /tasks/data/search/reindex`, `google-tasks:reindex-embeddings`, UI mode + build-index CTA; [docs/SEMANTIC_SEARCH.md](../../../apps/google-tasks/docs/SEMANTIC_SEARCH.md)
+- 2026-03-22 - Backlog refinement ([session](../../sprints/backlog-refinement-session-2026-03-22.md)): light audit — story and links still accurate; no doc defect opened

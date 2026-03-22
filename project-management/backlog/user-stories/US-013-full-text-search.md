@@ -38,3 +38,4 @@ As a user, I want to find tasks by typing keywords, so that I can locate work qu
 
 - 2026-03-21 - Created from discovery questionnaire
 - 2026-03-21 - Implemented: `GET /tasks/data/search`, `TaskSearcher` service, Tasks header search UI, README limits; tests `TaskSearchTest.php`
+- 2026-03-22 - Backlog refinement ([session](../../sprints/backlog-refinement-session-2026-03-22.md)): light audit — story and links still accurate; no doc defect opened

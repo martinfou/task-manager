@@ -22,6 +22,8 @@ const emit = defineEmits([
     'selection-click',
     'toggle-complete',
     'drop-priority',
+    'inspect-task',
+    'card-dblclick',
 ]);
 
 const PRIOS = ['p1', 'p2', 'p3', 'p4'];
@@ -85,12 +87,12 @@ function priorityBadgeClass(priority) {
         <div
             v-for="prio in PRIOS"
             :key="prio"
-            class="flex min-h-0 min-w-0 flex-col rounded-lg border border-gray-200 bg-gray-50/80 dark:border-slate-700 dark:bg-slate-900/50"
+            class="flex min-h-0 min-w-0 flex-col rounded-lg border border-gt-border bg-gt-field-muted/80 dark:bg-gt-raised/50"
             @dragover="onDragOver"
             @drop="onDrop($event, prio)"
         >
             <div
-                class="shrink-0 border-b border-gray-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:border-slate-700 dark:text-slate-400"
+                class="shrink-0 border-b border-gt-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gt-muted"
             >
                 {{
                     t(`tasks.priorityBadge.${prio}`)
@@ -104,24 +106,36 @@ function priorityBadgeClass(priority) {
                     :key="taskKey(task)"
                     draggable="true"
                     :data-task-id="task.id"
-                    class="cursor-grab rounded-md border border-gray-200 bg-white p-2 shadow-sm active:cursor-grabbing dark:border-slate-600 dark:bg-slate-950"
+                    class="cursor-grab rounded-md border border-gt-border bg-gt-raised shadow-sm active:cursor-grabbing dark:bg-gt-field"
                     @dragstart="onDragStart($event, task)"
                     @click="emit('task-click', task, $event)"
+                    @dblclick="emit('card-dblclick', task, $event)"
                 >
-                    <div class="flex items-start gap-2">
+                    <div class="flex items-start gap-2 p-2">
                         <input
                             type="checkbox"
-                            class="mt-0.5 rounded border-gray-300 text-indigo-600 dark:border-slate-600 dark:bg-slate-950"
+                            class="mt-0.5 rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field"
                             :checked="isTaskSelected(task)"
                             :disabled="task._optimistic"
                             :aria-label="t('tasks.bulkSelectTask')"
+                            :title="t('tasks.bulkSelectTask')"
                             @click.prevent="emit('selection-click', task)"
                         />
                         <input
                             type="checkbox"
-                            class="mt-0.5 rounded border-gray-300 text-indigo-600 dark:border-slate-600 dark:bg-slate-950"
+                            class="mt-0.5 rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field"
                             :checked="task.status === 'completed'"
                             :disabled="task._optimistic"
+                            :aria-label="
+                                task.status === 'completed'
+                                    ? t('tasks.markTaskIncomplete')
+                                    : t('tasks.markTaskComplete')
+                            "
+                            :title="
+                                task.status === 'completed'
+                                    ? t('tasks.markTaskIncomplete')
+                                    : t('tasks.markTaskComplete')
+                            "
                             @click.stop
                             @change="emit('toggle-complete', task)"
                         />
@@ -143,19 +157,20 @@ function priorityBadgeClass(priority) {
                                 </span>
                                 <span
                                     v-if="
-                                        navMode === 'today' &&
+                                        (navMode === 'today' ||
+                                            navMode === 'all') &&
                                         task._taskListTitle
                                     "
-                                    class="truncate rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600 dark:bg-slate-800 dark:text-slate-300"
+                                    class="truncate rounded bg-gt-field-muted px-1.5 py-0.5 text-[10px] text-gt-muted"
                                 >
                                     {{ task._taskListTitle }}
                                 </span>
                             </div>
                             <p
                                 :class="[
-                                    'mt-0.5 text-sm font-medium text-gray-900 dark:text-slate-100',
+                                    'mt-0.5 text-sm font-medium text-gt-ink',
                                     task.status === 'completed'
-                                        ? 'line-through text-gray-400 dark:text-slate-500'
+                                        ? 'line-through text-gt-subtle'
                                         : '',
                                 ]"
                             >
@@ -163,12 +178,12 @@ function priorityBadgeClass(priority) {
                             </p>
                             <TaskNotesRichText
                                 v-if="task.notes"
-                                class="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-slate-400"
+                                class="mt-1 line-clamp-2 text-xs text-gt-muted"
                                 :text="task.notes"
                             />
                             <p
                                 v-if="task.due"
-                                class="mt-1 text-[10px] text-gray-500 dark:text-slate-500"
+                                class="mt-1 text-[10px] text-gt-muted"
                             >
                                 {{
                                     t('tasks.dueLabel', {
@@ -176,12 +191,24 @@ function priorityBadgeClass(priority) {
                                     })
                                 }}
                             </p>
+                            <button
+                                type="button"
+                                class="mt-2 text-[10px] font-medium text-gt-accent hover:underline"
+                                :disabled="task._optimistic"
+                                @click.stop="emit('inspect-task', task)"
+                            >
+                                {{ t('tasks.taskDetails') }}
+                            </button>
                         </div>
                     </div>
+                    <slot
+                        name="task-detail"
+                        :task="task"
+                    />
                 </div>
                 <p
                     v-if="(buckets[prio] ?? []).length === 0"
-                    class="px-1 py-4 text-center text-xs text-gray-400 dark:text-slate-500"
+                    class="px-1 py-4 text-center text-xs text-gt-subtle"
                 >
                     {{ t('tasks.kanbanEmptyColumn') }}
                 </p>
