@@ -83,6 +83,22 @@
         @apply p-4;
     }
 
+    /** US-027: comfortable = full placeholder; compact = icon + em dash (see TaskPriorityDueMeta.vue) */
+    .gt-meta-due-compact,
+    .gt-meta-priority-compact {
+        display: none;
+    }
+
+    html[data-density='compact'] .gt-meta-due-comfortable,
+    html[data-density='compact'] .gt-meta-priority-comfortable {
+        display: none;
+    }
+
+    html[data-density='compact'] .gt-meta-due-compact,
+    html[data-density='compact'] .gt-meta-priority-compact {
+        display: inline-flex;
+    }
+
     /** Raised panels (cards, main task shell) — ring matches theme */
     .gt-surface {
         @apply bg-gt-raised shadow-sm ring-1 ring-gt-border dark:shadow-none dark:shadow-[0_1px_0_0_rgb(255_255_255/0.04)];

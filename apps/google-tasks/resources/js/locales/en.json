@@ -163,10 +163,23 @@
             "dueFirst": "Due first",
             "priorityFirst": "Priority first",
             "hintLists": "Applies to all lists. Search ranking is unchanged.",
-            "hintKanban": "Applies to all views. Column order may differ from Google."
+            "hintKanban": "Applies to all views. Column order may differ from Google.",
+            "openSheet": "Change task order",
+            "sheetDone": "Done"
+        },
+        "onboarding": {
+            "title": "Welcome to Tasks",
+            "lead": "A quick tour of what you can do here:",
+            "bulletToday": "Today shows tasks due today and overdue. Use Inbox and Lists for everything else.",
+            "bulletSearch": "Search defaults to keywords; switch to semantic when you want meaning-based matching.",
+            "bulletPalette": "Press ⌘K (Mac) or Ctrl+K to open the command palette — navigate, search, and quick add.",
+            "bulletSwipe": "On your phone, swipe a task row for quick actions. Undo appears for destructive steps.",
+            "bulletSort": "Task order (Due first or Priority first) is shared across all lists and the board.",
+            "dismiss": "Got it"
         },
         "meta": {
-            "noDue": "No due"
+            "noDue": "No due",
+            "noPriority": "No priority"
         },
         "emptyTodayTitle": "Nothing due today or overdue",
         "emptyTodayBody": "Tasks without a due date appear in Inbox or a list — not here. Switch navigation to find them.",

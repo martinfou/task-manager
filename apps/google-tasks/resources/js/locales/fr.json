@@ -163,10 +163,23 @@
             "dueFirst": "Échéance d’abord",
             "priorityFirst": "Priorité d’abord",
             "hintLists": "S’applique à toutes les listes. Le classement de la recherche ne change pas.",
-            "hintKanban": "S’applique à toutes les vues. L’ordre des colonnes peut différer de Google."
+            "hintKanban": "S’applique à toutes les vues. L’ordre des colonnes peut différer de Google.",
+            "openSheet": "Modifier l’ordre des tâches",
+            "sheetDone": "OK"
+        },
+        "onboarding": {
+            "title": "Bienvenue dans Tâches",
+            "lead": "Voici l’essentiel :",
+            "bulletToday": "Aujourd’hui regroupe les tâches pour aujourd’hui et en retard. Utilisez la boîte de réception et les listes pour le reste.",
+            "bulletSearch": "La recherche utilise d’abord les mots-clés ; passez à la recherche sémantique pour un sens proche.",
+            "bulletPalette": "Appuyez sur ⌘K (Mac) ou Ctrl+K pour ouvrir la palette — navigation, recherche et ajout rapide.",
+            "bulletSwipe": "Sur téléphone, glissez une ligne de tâche pour des actions rapides. Annuler est proposé pour les actions destructives.",
+            "bulletSort": "L’ordre des tâches (échéance ou priorité d’abord) est partagé entre toutes les listes et le tableau.",
+            "dismiss": "Compris"
         },
         "meta": {
-            "noDue": "Sans échéance"
+            "noDue": "Sans échéance",
+            "noPriority": "Sans priorité"
         },
         "emptyTodayTitle": "Rien pour aujourd’hui ni en retard",
         "emptyTodayBody": "Les tâches sans date d’échéance sont dans la boîte de réception ou une liste — pas ici. Changez de vue pour les voir.",

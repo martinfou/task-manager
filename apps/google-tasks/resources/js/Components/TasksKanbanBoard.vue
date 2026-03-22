@@ -1,12 +1,10 @@
 <script setup>
 import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskNotesRichText from '@/Components/TaskNotesRichText.vue';
-import { useLocaleDate } from '@/composables/useLocaleDate';
+import TaskPriorityDueMeta from '@/Components/TaskPriorityDueMeta.vue';
 import { useI18n } from 'vue-i18n';
-import { isTaskDueToday, isTaskOverdue } from '@/utils/taskFilters';
 
 const { t } = useI18n();
-const { formatDateTime } = useLocaleDate();
 
 const props = defineProps({
     buckets: {
@@ -66,19 +64,6 @@ function onDrop(e, newPriority) {
     }
 }
 
-function priorityBadgeClass(priority) {
-    if (priority === 'p1') {
-        return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
-    }
-    if (priority === 'p2') {
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
-    }
-    if (priority === 'p4') {
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    }
-
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
-}
 </script>
 
 <template>
@@ -146,45 +131,10 @@ function priorityBadgeClass(priority) {
                             <div
                                 class="flex flex-wrap items-center gap-x-1 gap-y-0.5"
                             >
-                                <span
-                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
-                                    :class="
-                                        priorityBadgeClass(
-                                            task.priority ?? 'p3',
-                                        )
-                                    "
-                                >
-                                    {{
-                                        t(
-                                            `tasks.priorityBadge.${(task.priority ?? 'p3').toLowerCase()}`,
-                                        )
-                                    }}
-                                </span>
-                                <span
-                                    v-if="task.due"
-                                    :class="[
-                                        'text-[10px] leading-tight',
-                                        task.status === 'completed'
-                                            ? 'text-gt-muted'
-                                            : isTaskOverdue(task)
-                                              ? 'font-medium text-red-600 dark:text-red-400'
-                                              : isTaskDueToday(task)
-                                                ? 'font-medium text-gt-accent'
-                                                : 'text-gt-muted',
-                                    ]"
-                                >
-                                    {{
-                                        t('tasks.dueLabel', {
-                                            date: formatDateTime(task.due),
-                                        })
-                                    }}
-                                </span>
-                                <span
-                                    v-else
-                                    class="text-[10px] italic text-gt-muted"
-                                >
-                                    {{ t('tasks.meta.noDue') }}
-                                </span>
+                                <TaskPriorityDueMeta
+                                    :task="task"
+                                    variant="kanban"
+                                />
                                 <span
                                     v-if="
                                         (navMode === 'today' ||

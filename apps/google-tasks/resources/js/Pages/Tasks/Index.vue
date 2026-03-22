@@ -11,6 +11,7 @@ import TasksKanbanBoard from '@/Components/TasksKanbanBoard.vue';
 import TasksKeyboardShortcutsHelp from '@/Components/TasksKeyboardShortcutsHelp.vue';
 import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskListRowSwipe from '@/Components/TaskListRowSwipe.vue';
+import TaskPriorityDueMeta from '@/Components/TaskPriorityDueMeta.vue';
 import TasksCommandPalette from '@/Components/TasksCommandPalette.vue';
 import UndoToast from '@/Components/UndoToast.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -33,12 +34,7 @@ import {
     watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-    filterTasks,
-    groupTasksByPriority,
-    isTaskDueToday,
-    isTaskOverdue,
-} from '@/utils/taskFilters';
+import { filterTasks, groupTasksByPriority } from '@/utils/taskFilters';
 import {
     DEFAULT_GLOBAL_TASK_SORT_MODE,
     GLOBAL_TASK_SORT_STORAGE_KEY,
@@ -216,8 +212,56 @@ watch(globalSortMode, (v) => {
     }
 });
 
+const TASKS_ONBOARDING_KEY = 'gt-tasks-onboarding-v1-dismissed';
+const showTasksOnboarding = ref(false);
+const showGlobalSortSheet = ref(false);
+const tasksOnboardingDismissed = ref(false);
+let offeredTasksOnboardingThisMount = false;
+
+try {
+    if (typeof localStorage !== 'undefined') {
+        tasksOnboardingDismissed.value =
+            localStorage.getItem(TASKS_ONBOARDING_KEY) === '1';
+    }
+} catch {
+    /* ignore */
+}
+
+const globalSortModeCurrentLabel = computed(() =>
+    globalSortMode.value === 'priority_first'
+        ? t('tasks.sort.priorityFirst')
+        : t('tasks.sort.dueFirst'),
+);
+
+function dismissTasksOnboarding() {
+    showTasksOnboarding.value = false;
+    tasksOnboardingDismissed.value = true;
+    try {
+        localStorage.setItem(TASKS_ONBOARDING_KEY, '1');
+    } catch {
+        /* ignore */
+    }
+}
+
 const tasksDataAvailable = computed(
     () => props.connected && !googleTasksForbidden.value,
+);
+
+watch(
+    () => [tasksDataAvailable.value, taskLists.value.length],
+    () => {
+        if (
+            !tasksDataAvailable.value ||
+            tasksOnboardingDismissed.value ||
+            offeredTasksOnboardingThisMount
+        ) {
+            return;
+        }
+        if (taskLists.value.length > 0) {
+            offeredTasksOnboardingThisMount = true;
+            showTasksOnboarding.value = true;
+        }
+    },
 );
 
 function stopPollLoop() {
@@ -1639,20 +1683,6 @@ async function updatePriority(task, priority) {
     }
 }
 
-function priorityBadgeClass(priority) {
-    if (priority === 'p1') {
-        return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
-    }
-    if (priority === 'p2') {
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
-    }
-    if (priority === 'p4') {
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    }
-
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
-}
-
 async function toggleComplete(task) {
     const listId = listIdForTask(task);
     const prev = { ...task };
@@ -2422,38 +2452,10 @@ onUnmounted(() => {
                                 <div
                                     class="flex flex-wrap items-center gap-x-2 gap-y-0.5"
                                 >
-                                    <span
-                                        class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
-                                        :class="
-                                            priorityBadgeClass(
-                                                row.task.priority ?? 'p3',
-                                            )
-                                        "
-                                    >
-                                        {{
-                                            t(
-                                                `tasks.priorityBadge.${(row.task.priority ?? 'p3').toLowerCase()}`,
-                                            )
-                                        }}
-                                    </span>
-                                    <span
-                                        v-if="row.task.due"
-                                        class="text-[10px] text-gt-muted"
-                                    >
-                                        {{
-                                            t('tasks.dueLabel', {
-                                                date: formatDateTime(
-                                                    row.task.due,
-                                                ),
-                                            })
-                                        }}
-                                    </span>
-                                    <span
-                                        v-else
-                                        class="text-[10px] italic text-gt-muted"
-                                    >
-                                        {{ t('tasks.meta.noDue') }}
-                                    </span>
+                                    <TaskPriorityDueMeta
+                                        :task="row.task"
+                                        variant="search"
+                                    />
                                 </div>
                                 <span
                                     class="block font-medium text-gt-ink"
@@ -3120,37 +3122,96 @@ onUnmounted(() => {
                                 <div
                                     class="min-w-0 flex max-w-xl flex-1 flex-col gap-1"
                                 >
-                                    <label
-                                        for="global-task-sort"
-                                        class="text-xs font-medium text-gt-ink-secondary"
+                                    <div
+                                        class="hidden flex-col gap-1 sm:flex"
                                     >
-                                        {{ t('tasks.sort.label') }}
-                                    </label>
-                                    <select
-                                        id="global-task-sort"
-                                        v-model="globalSortMode"
-                                        class="block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
-                                        aria-describedby="global-sort-hint"
-                                    >
-                                        <option value="due_first">
-                                            {{ t('tasks.sort.dueFirst') }}
-                                        </option>
-                                        <option value="priority_first">
+                                        <label
+                                            for="global-task-sort"
+                                            class="text-xs font-medium text-gt-ink-secondary"
+                                        >
+                                            {{ t('tasks.sort.label') }}
+                                        </label>
+                                        <select
+                                            id="global-task-sort"
+                                            v-model="globalSortMode"
+                                            class="block w-full rounded-md border border-gt-border-strong bg-gt-field text-sm text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring"
+                                            aria-describedby="global-sort-hint"
+                                        >
+                                            <option value="due_first">
+                                                {{ t('tasks.sort.dueFirst') }}
+                                            </option>
+                                            <option value="priority_first">
+                                                {{
+                                                    t('tasks.sort.priorityFirst')
+                                                }}
+                                            </option>
+                                        </select>
+                                        <p
+                                            id="global-sort-hint"
+                                            class="text-xs leading-relaxed text-gt-muted"
+                                        >
                                             {{
-                                                t('tasks.sort.priorityFirst')
+                                                viewMode === 'board'
+                                                    ? t('tasks.sort.hintKanban')
+                                                    : t('tasks.sort.hintLists')
                                             }}
-                                        </option>
-                                    </select>
-                                    <p
-                                        id="global-sort-hint"
-                                        class="text-xs leading-relaxed text-gt-muted"
-                                    >
-                                        {{
-                                            viewMode === 'board'
-                                                ? t('tasks.sort.hintKanban')
-                                                : t('tasks.sort.hintLists')
-                                        }}
-                                    </p>
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col gap-2 sm:hidden">
+                                        <div
+                                            class="flex items-center justify-between gap-3"
+                                        >
+                                            <div class="min-w-0 flex-1">
+                                                <p
+                                                    class="text-xs font-medium text-gt-ink-secondary"
+                                                >
+                                                    {{ t('tasks.sort.label') }}
+                                                </p>
+                                                <p
+                                                    class="truncate text-sm font-medium text-gt-ink"
+                                                >
+                                                    {{
+                                                        globalSortModeCurrentLabel
+                                                    }}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm touch-manipulation focus:border-gt-accent focus:outline-none focus:ring-gt-accent-ring"
+                                                :aria-label="t('tasks.sort.openSheet')"
+                                                :aria-describedby="
+                                                    'global-sort-hint-mobile'
+                                                "
+                                                @click="showGlobalSortSheet = true"
+                                            >
+                                                <svg
+                                                    class="h-5 w-5"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke-width="1.5"
+                                                    stroke="currentColor"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M8.25 14.25l3.75 3.75 3.75-3.75M15.75 9.75l-3.75-3.75-3.75 3.75"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <p
+                                            id="global-sort-hint-mobile"
+                                            class="sr-only"
+                                        >
+                                            {{
+                                                viewMode === 'board'
+                                                    ? t('tasks.sort.hintKanban')
+                                                    : t('tasks.sort.hintLists')
+                                            }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             <p
@@ -3245,47 +3306,10 @@ onUnmounted(() => {
                                         <div
                                             class="flex flex-wrap items-center gap-x-2 gap-y-1"
                                         >
-                                            <span
-                                                class="rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
-                                                :class="
-                                                    priorityBadgeClass(
-                                                        task.priority ?? 'p3',
-                                                    )
-                                                "
-                                            >
-                                                {{
-                                                    t(
-                                                        `tasks.priorityBadge.${(task.priority ?? 'p3').toLowerCase()}`,
-                                                    )
-                                                }}
-                                            </span>
-                                            <span
-                                                v-if="task.due"
-                                                :class="[
-                                                    'text-xs',
-                                                    task.status === 'completed'
-                                                        ? 'text-gt-muted'
-                                                        : isTaskOverdue(task)
-                                                          ? 'font-medium text-red-600 dark:text-red-400'
-                                                          : isTaskDueToday(task)
-                                                            ? 'font-medium text-gt-accent'
-                                                            : 'text-gt-muted',
-                                                ]"
-                                            >
-                                                {{
-                                                    t('tasks.dueLabel', {
-                                                        date: formatDateTime(
-                                                            task.due,
-                                                        ),
-                                                    })
-                                                }}
-                                            </span>
-                                            <span
-                                                v-else
-                                                class="text-xs italic text-gt-muted"
-                                            >
-                                                {{ t('tasks.meta.noDue') }}
-                                            </span>
+                                            <TaskPriorityDueMeta
+                                                :task="task"
+                                                variant="list"
+                                            />
                                             <p
                                                 :class="[
                                                     'min-w-[8rem] flex-1 font-medium text-gt-ink',
@@ -3915,6 +3939,102 @@ onUnmounted(() => {
                         @click="showBulkResultModal = false"
                     >
                         {{ t('tasks.bulkResultClose') }}
+                    </PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal
+            :show="showGlobalSortSheet"
+            max-width="md"
+            @close="showGlobalSortSheet = false"
+        >
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gt-ink">
+                    {{ t('tasks.sort.label') }}
+                </h3>
+                <fieldset
+                    class="mt-4 space-y-3"
+                    aria-describedby="global-sort-sheet-hint"
+                >
+                    <legend class="sr-only">
+                        {{ t('tasks.sort.label') }}
+                    </legend>
+                    <label
+                        class="flex cursor-pointer items-start gap-3 rounded-md border border-gt-border px-3 py-2"
+                    >
+                        <input
+                            v-model="globalSortMode"
+                            type="radio"
+                            value="due_first"
+                            class="mt-1 text-gt-accent focus:ring-gt-accent-ring"
+                        />
+                        <span class="text-sm text-gt-ink">{{
+                            t('tasks.sort.dueFirst')
+                        }}</span>
+                    </label>
+                    <label
+                        class="flex cursor-pointer items-start gap-3 rounded-md border border-gt-border px-3 py-2"
+                    >
+                        <input
+                            v-model="globalSortMode"
+                            type="radio"
+                            value="priority_first"
+                            class="mt-1 text-gt-accent focus:ring-gt-accent-ring"
+                        />
+                        <span class="text-sm text-gt-ink">{{
+                            t('tasks.sort.priorityFirst')
+                        }}</span>
+                    </label>
+                </fieldset>
+                <p
+                    id="global-sort-sheet-hint"
+                    class="mt-4 text-xs leading-relaxed text-gt-muted"
+                >
+                    {{
+                        viewMode === 'board'
+                            ? t('tasks.sort.hintKanban')
+                            : t('tasks.sort.hintLists')
+                    }}
+                </p>
+                <div class="mt-6 flex justify-end">
+                    <PrimaryButton
+                        type="button"
+                        @click="showGlobalSortSheet = false"
+                    >
+                        {{ t('tasks.sort.sheetDone') }}
+                    </PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal
+            :show="showTasksOnboarding"
+            max-width="lg"
+            @close="dismissTasksOnboarding"
+        >
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gt-ink">
+                    {{ t('tasks.onboarding.title') }}
+                </h3>
+                <p class="mt-2 text-sm text-gt-ink-secondary">
+                    {{ t('tasks.onboarding.lead') }}
+                </p>
+                <ul
+                    class="mt-4 list-disc space-y-2 ps-5 text-sm text-gt-ink-secondary"
+                >
+                    <li>{{ t('tasks.onboarding.bulletToday') }}</li>
+                    <li>{{ t('tasks.onboarding.bulletSearch') }}</li>
+                    <li>{{ t('tasks.onboarding.bulletPalette') }}</li>
+                    <li>{{ t('tasks.onboarding.bulletSwipe') }}</li>
+                    <li>{{ t('tasks.onboarding.bulletSort') }}</li>
+                </ul>
+                <div class="mt-6 flex justify-end">
+                    <PrimaryButton
+                        type="button"
+                        @click="dismissTasksOnboarding"
+                    >
+                        {{ t('tasks.onboarding.dismiss') }}
                     </PrimaryButton>
                 </div>
             </div>
