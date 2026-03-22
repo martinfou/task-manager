@@ -68,11 +68,12 @@ jobs:
       - name: Unit tests (Vitest)
         run: npm run test:unit
 
-      - name: PHPUnit
-        run: php artisan test
-
+      # Inertia feature tests render views that use @vite(); manifest must exist first (see README).
       - name: Build frontend (Vite)
         run: npm run build
+
+      - name: PHPUnit
+        run: php artisan test
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
