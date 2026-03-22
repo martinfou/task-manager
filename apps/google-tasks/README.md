@@ -6,7 +6,7 @@ Laravel + Inertia + Vue 3 application (Breeze). Part of the monorepo `task-manag
 
 | Tool | Version |
 |------|---------|
-| PHP | ^8.3 (`composer.json`) |
+| PHP | ^8.4 (`composer.json`) |
 | Node | >=20 (`package.json` engines) |
 
 ## Local development
