@@ -2,9 +2,9 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-22 (US-038 added — due date / timezone display)
+**Last Updated**: 2026-03-22 (US-037 / US-038 assigned to Sprint 6)
 
-**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **active**. **Done in this sprint**: [US-029](user-stories/US-029-undo-toast-destructive-actions.md) ✅, [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) ✅, [US-030](user-stories/US-030-snooze-defer-presets.md) ✅, [US-031](user-stories/US-031-mobile-swipe-task-actions.md) ✅, [US-034](user-stories/US-034-enter-key-save-task-edit.md) ✅. **Still to do**: [US-027](user-stories/US-027-consistent-dates-priority-across-views.md), [US-032](user-stories/US-032-kanban-due-date-lanes.md)–[US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) — see sprint doc for scope risk and order. **Next suggested**: [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) or [US-032](user-stories/US-032-kanban-due-date-lanes.md).
+**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **active**. **All open user stories** in the product backlog table are assigned here (**US-027**–**US-038**). **Done in this sprint**: [US-029](user-stories/US-029-undo-toast-destructive-actions.md) ✅, [US-028](user-stories/US-028-command-palette-navigation-quick-add.md) ✅, [US-030](user-stories/US-030-snooze-defer-presets.md) ✅, [US-031](user-stories/US-031-mobile-swipe-task-actions.md) ✅, [US-034](user-stories/US-034-enter-key-save-task-edit.md) ✅. **Still to do**: [US-027](user-stories/US-027-consistent-dates-priority-across-views.md), [US-032](user-stories/US-032-kanban-due-date-lanes.md)–[US-038](user-stories/US-038-due-date-timezone-display.md) — see sprint doc for scope risk and order. **Next suggested**: [US-027](user-stories/US-027-consistent-dates-priority-across-views.md) or [US-032](user-stories/US-032-kanban-due-date-lanes.md).
 
 **Previous sprint**: [Sprint 5: Google Tasks — UX, Visibility, and Interaction](../sprints/sprint-05-google-tasks-ux-visibility.md) — **closed** 2026-03-22; [US-023](user-stories/US-023-all-tasks-all-lists.md)–[US-026](user-stories/US-026-double-click-edit-task.md) ✅. [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21. [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21. [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) and [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
@@ -14,8 +14,8 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
-| [US-038](user-stories/US-038-due-date-timezone-display.md) | Due Date/Time Display and Timezone | 🟠 High | 5 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
-| [US-037](user-stories/US-037-instant-list-switch-cache-first-sync.md) | Instant List Switch (Cache-First, Background Sync) | 🟠 High | 8 | ⭕ | Backlog | 2026-03-22 | 2026-03-22 |
+| [US-038](user-stories/US-038-due-date-timezone-display.md) | Due Date/Time Display and Timezone | 🟠 High | 5 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
+| [US-037](user-stories/US-037-instant-list-switch-cache-first-sync.md) | Instant List Switch (Cache-First, Background Sync) | 🟠 High | 8 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
 | [US-036](user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard Productivity Charts and Insights | 🟡 Medium | 13 | ⭕ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
 | [US-035](user-stories/US-035-server-backup-and-restore.md) | Server Backup and Easy Restore | 🟠 High | 8 | ⏳ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |
 | [US-034](user-stories/US-034-enter-key-save-task-edit.md) | Press Enter to Save While Editing a Task | 🟡 Medium | 2 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-22 |

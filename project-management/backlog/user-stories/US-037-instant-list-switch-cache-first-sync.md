@@ -14,7 +14,7 @@ requires: [markdown-support]
 **Story Points**: 8  
 **Created**: 2026-03-22  
 **Updated**: 2026-03-22  
-**Assigned Sprint**: Backlog
+**Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
 
@@ -83,3 +83,4 @@ List switching is a **high-frequency** action during triage. Perceived lag under
 ## History
 
 - 2026-03-22 - Created (product request: faster list switching; cache-first + background sync)
+- 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (full backlog pulled into active sprint)

@@ -1,6 +1,6 @@
 ---
 template_version: 1.1.0
-last_updated: 2026-03-21
+last_updated: 2026-03-22
 compatible_with: [product-backlog]
 ---
 
@@ -10,9 +10,9 @@ compatible_with: [product-backlog]
 
 **Sprint status**: **Active** — started 2026-03-22 after [Sprint 5](sprint-05-google-tasks-ux-visibility.md) closed.
 
-**Sprint Goal**: Ship the **usability pack** (undo, command palette, snooze/defer, mobile swipe) **and** complete **all remaining open product backlog stories** ([US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md)–[US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md)) in this sprint bucket.
+**Sprint Goal**: Ship the **usability pack** (undo, command palette, snooze/defer, mobile swipe) **and** complete **all remaining open product backlog stories** ([US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md)–[US-038](../backlog/user-stories/US-038-due-date-timezone-display.md)) in this sprint bucket.
 
-**Duration**: 2026-03-22 — 2026-04-05 (2 weeks) — *nominal end date; **91** story points committed (see below) — exceeds typical velocity (~18–24 pts/2w). **Replan**: extend sprint window, split into Sprint 6a/6b, or move lower-priority stories back to backlog after review.*
+**Duration**: 2026-03-22 — 2026-04-05 (2 weeks) — *nominal end date; **91** story points committed (US-027–US-038; see below) — exceeds typical velocity (~18–24 pts/2w). **Replan**: extend sprint window, split into Sprint 6a/6b, or move lower-priority stories back to backlog after review.*
 
 **Team Velocity (reference)**: **18** points ([Sprint 4](sprint-04-google-tasks-quality-and-v2.md)); **24** ([Sprint 5](sprint-05-google-tasks-ux-visibility.md)) ✅  
 **Sprint Planning Date**: 2026-03-22 (rolled from Sprint 5 close); **expanded scope** 2026-03-22 — all open backlog stories assigned here  
@@ -29,7 +29,7 @@ compatible_with: [product-backlog]
 |------|--------|
 | Backlog metrics | `./project-management/scripts/backlog-metrics.sh --stats` |
 | Definition of Ready | [Refinement session](backlog-refinement-session-2026-03-22.md); large stories groom before starting |
-| Capacity | **91** pts — **all** open stories (US-027–US-036); expect mid-sprint scope negotiation |
+| Capacity | **91** pts — **all** open stories (US-027–US-038); expect mid-sprint scope negotiation |
 | Branching | [ADR-002](../architecture-decision-records/ADR-002-branching-strategy.md) |
 
 ### Suggested implementation order
@@ -43,7 +43,9 @@ compatible_with: [product-backlog]
 7. [US-032](../backlog/user-stories/US-032-kanban-due-date-lanes.md) — **Kanban due lanes**.  
 8. [US-033](../backlog/user-stories/US-033-find-semantic-duplicate-tasks.md) — **Semantic duplicate finder**.  
 9. [US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md) — **Dashboard insights**.  
-10. [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) — **Backup / restore** (ops; may parallelize).
+10. [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) — **Backup / restore** (ops; may parallelize).  
+11. [US-038](../backlog/user-stories/US-038-due-date-timezone-display.md) — **Due date / timezone display** (pairs with US-027 where overlap).  
+12. [US-037](../backlog/user-stories/US-037-instant-list-switch-cache-first-sync.md) — **Instant list switch** (cache-first; may follow list performance work).
 
 **From Sprint 5 retro (carry-in)**: [RI-004](../backlog/retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md), [RI-005](../backlog/retrospective-improvements/RI-005-all-tasks-aggregate-429-runbook.md) — docs in Sprint 6.
 
@@ -73,8 +75,10 @@ compatible_with: [product-backlog]
 | [US-034](../backlog/user-stories/US-034-enter-key-save-task-edit.md) | Enter to save while editing | 2 | ✅ |
 | [US-035](../backlog/user-stories/US-035-server-backup-and-restore.md) | Server backup & restore | 8 | ⭕ |
 | [US-036](../backlog/user-stories/US-036-dashboard-productivity-charts-and-insights.md) | Dashboard productivity charts | 13 | ⭕ |
+| [US-037](../backlog/user-stories/US-037-instant-list-switch-cache-first-sync.md) | Instant list switch (cache-first) | 8 | ⭕ |
+| [US-038](../backlog/user-stories/US-038-due-date-timezone-display.md) | Due date / time display & timezone | 5 | ⭕ |
 
-**Total Story Points**: **91**
+**Total Story Points**: **91** (twelve stories: US-027–US-038)
 
 ---
 
@@ -140,7 +144,7 @@ compatible_with: [product-backlog]
 
 - 2026-03-22 — Planning draft created
 - 2026-03-22 — **Activated**: Sprint 5 closed; US-029 implementation started (undo toast)
-- 2026-03-22 — **Scope expansion**: all open backlog stories (US-027–US-036) assigned to Sprint 6; **91** pts total
+- 2026-03-22 — **Scope expansion**: all open backlog stories (US-027–US-038, including [US-037](../backlog/user-stories/US-037-instant-list-switch-cache-first-sync.md) + [US-038](../backlog/user-stories/US-038-due-date-timezone-display.md)) assigned to Sprint 6; **91** pts total
 - 2026-03-21 — **US-029** marked Done (AC verified; PHPUnit green)
 - 2026-03-21 — **US-028** marked Done (command palette + layout menu; build/tests green)
 - 2026-03-22 — **US-034** marked Done (Enter to save in task edit panel; keyboard help EN/FR)
