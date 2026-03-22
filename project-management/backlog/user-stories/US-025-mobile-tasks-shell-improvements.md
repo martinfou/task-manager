@@ -13,7 +13,7 @@ requires: [markdown-support]
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-21  
-**Updated**: 2026-03-23  
+**Updated**: 2026-03-24  
 **Assigned Sprint**: [Sprint 5](../../sprints/sprint-05-google-tasks-ux-visibility.md) (closed)
 
 ## Description
@@ -92,7 +92,7 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 Shipped after Sprint 5 closed; same **Tasks shell** (`Index.vue`), improves **perceived responsiveness** when Google round-trips are slow (e.g. **All lists**).
 
-- **Loading overlay** — On **Today / Inbox / All / list** navigation, **Add to list** change (reloads tasks), **completion filter** change (refetch), **search result → open task** (loads that list), or **Retry** after load error: the **task list / board** area shows a **spinner** and **`tasks.loadingTasks`** / **`Chargement des tâches…`** (EN/FR) until fetch completes. Ref-counted for overlapping requests.
+- **Loading overlay** — On **Today / Inbox / All / list** navigation, **Add to list** change (reloads tasks), **completion filter** change (refetch), **search result → open task** (loads that list), or **Retry** after load error: the **task list / board** area shows a **spinner** and **nav-aware** EN/FR copy (`tasks.loadingTasksToday` / Inbox / All / list / named list, with **`tasks.loadingTasks`** fallback) until fetch completes. Ref-counted for overlapping requests. Overlay uses a **short opacity transition**; **`prefers-reduced-motion: reduce`** disables it.
 
 ## History
 
@@ -102,3 +102,4 @@ Shipped after Sprint 5 closed; same **Tasks shell** (`Index.vue`), improves **pe
 - 2026-03-22 - Backlog refinement: DoR recorded; sequencing note vs US-031 added under Dependencies
 - 2026-03-22 - Sprint 5 sprint review: acceptance criteria and verification checklist marked complete
 - 2026-03-23 - Post–sprint: task list/board loading spinner on scope changes (see **Post–sprint follow-up**); traceability `US-025` in git
+- 2026-03-24 - Post–sprint: nav-specific loading strings + reduced-motion-safe fade on overlay (`US-025` commit)

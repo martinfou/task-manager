@@ -255,6 +255,27 @@ const pageTitle = computed(() => {
     return selectedListTitle.value || t('tasks.titleTasks');
 });
 
+/** Nav-aware loading line: warmer than a generic spinner (see `.impeccable.md`). */
+const tasksLoadingLabel = computed(() => {
+    switch (navMode.value) {
+        case 'today':
+            return t('tasks.loadingTasksToday');
+        case 'inbox':
+            return t('tasks.loadingTasksInbox');
+        case 'all':
+            return t('tasks.loadingTasksAll');
+        case 'list': {
+            const name = selectedListTitle.value?.trim();
+            if (name) {
+                return t('tasks.loadingTasksListNamed', { list: name });
+            }
+            return t('tasks.loadingTasksList');
+        }
+        default:
+            return t('tasks.loadingTasks');
+    }
+});
+
 function normalizeItems(payload) {
     return payload?.items ?? [];
 }
@@ -2423,6 +2444,7 @@ onUnmounted(() => {
                                 class="relative min-h-[8rem]"
                                 :aria-busy="tasksLoading ? 'true' : 'false'"
                             >
+                            <Transition name="gt-tasks-loading">
                             <div
                                 v-if="tasksLoading"
                                 class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-gt-raised/90 dark:bg-gt-raised/92"
@@ -2430,7 +2452,7 @@ onUnmounted(() => {
                                 aria-live="polite"
                             >
                                 <span class="sr-only">{{
-                                    t('tasks.loadingTasks')
+                                    tasksLoadingLabel
                                 }}</span>
                                 <svg
                                     class="h-9 w-9 motion-reduce:animate-none animate-spin text-gt-accent"
@@ -2456,9 +2478,10 @@ onUnmounted(() => {
                                 <span
                                     class="text-sm font-medium text-gt-muted"
                                     aria-hidden="true"
-                                    >{{ t('tasks.loadingTasks') }}</span
+                                    >{{ tasksLoadingLabel }}</span
                                 >
                             </div>
+                            </Transition>
                             <p
                                 v-if="viewMode === 'list'"
                                 class="hidden border-b border-gt-border px-4 py-2 text-xs leading-relaxed text-gt-muted sm:block sm:px-6"
@@ -3102,3 +3125,22 @@ onUnmounted(() => {
         </div>
     </Teleport>
 </template>
+
+<style scoped>
+@media (prefers-reduced-motion: no-preference) {
+    .gt-tasks-loading-enter-active,
+    .gt-tasks-loading-leave-active {
+        transition: opacity 0.2s ease-out;
+    }
+}
+.gt-tasks-loading-enter-from,
+.gt-tasks-loading-leave-to {
+    opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    .gt-tasks-loading-enter-active,
+    .gt-tasks-loading-leave-active {
+        transition: none;
+    }
+}
+</style>
