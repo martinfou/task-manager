@@ -121,11 +121,11 @@ const showingNavigationDropdown = ref(false);
                         <!-- Hamburger -->
                         <div class="-me-2 flex items-center sm:hidden">
                             <button
+                                class="inline-flex items-center justify-center rounded-md p-2 text-gt-subtle transition duration-150 ease-in-out hover:bg-gt-field-muted hover:text-gt-muted focus:bg-gt-field-muted focus:text-gt-muted focus:outline-none dark:hover:text-gt-ink"
                                 @click="
                                     showingNavigationDropdown =
                                         !showingNavigationDropdown
                                 "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gt-subtle transition duration-150 ease-in-out hover:bg-gt-field-muted hover:text-gt-muted focus:bg-gt-field-muted focus:text-gt-muted focus:outline-none dark:hover:text-gt-ink"
                             >
                                 <svg
                                     class="h-6 w-6"
@@ -233,8 +233,8 @@ const showingNavigationDropdown = ref(false);
 
             <!-- Page Heading -->
             <header
-                class="border-b border-gt-nav-border bg-gt-nav shadow-sm dark:shadow-none"
                 v-if="$slots.header"
+                class="border-b border-gt-nav-border bg-gt-nav shadow-sm dark:shadow-none"
             >
                 <div
                     class="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6"
