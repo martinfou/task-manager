@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done
 **Priority**: 🟡 Medium  
 **Story Points**: 13 *(re-estimate if extended metrics + offline caching expand engineering effort)*  
 **Created**: 2026-03-22  
@@ -261,8 +261,8 @@ Target information architecture: **insight cards first** (answer “am I closing
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
@@ -270,6 +270,7 @@ Target information architecture: **insight cards first** (answer “am I closing
 - 2026-03-22 - Added dashboard ASCII wireframes under Notes (layout for MVP + stretch + trust/empty states)
 - 2026-03-22 - Recorded clarifying decisions: `Task.created` preference + fallback, profile TZ default America/Toronto, best-effort completion times, offline last-stats + disclaimer, extended metrics in scope, low-guilt consistency (active days primary)
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-22 - Implementation: `DashboardStatsService` (daily bucketing, insights, weekday, lead time, due discipline), `DashboardController` (page + stats endpoint with cache fallback), `dashboard_stats_cache` table, `timezone` column on users, Dashboard.vue overhaul (range selector, insight cards, SVG throughput chart, secondary accordions, trust strip, empty/stale states), i18n EN/FR, 9 feature tests — marked Done
 
 ---
 

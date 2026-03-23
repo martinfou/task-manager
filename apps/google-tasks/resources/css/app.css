@@ -71,6 +71,13 @@
         @apply py-3;
     }
 
+    /** On mobile touch, ensure minimum 44px row height for comfortable tapping */
+    @media (pointer: coarse) {
+        .density-task-row {
+            min-height: 3rem;
+        }
+    }
+
     html[data-density='compact'] .density-task-row {
         @apply py-2;
     }
@@ -97,6 +104,14 @@
     html[data-density='compact'] .gt-meta-due-compact,
     html[data-density='compact'] .gt-meta-priority-compact {
         display: inline-flex;
+    }
+
+    /** US-039: On mobile touch, hide "no priority" / "no due" placeholders to reduce clutter */
+    @media (max-width: 639px) and (pointer: coarse) {
+        .gt-meta-priority-comfortable,
+        .gt-meta-priority-compact {
+            display: none;
+        }
     }
 
     /** Raised panels (cards, main task shell) — ring matches theme */

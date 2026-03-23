@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
+**Status**: ✅ Done
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-22  
@@ -30,7 +30,7 @@ As an **operator** (or future you), I want **automated server backups** and a **
 - [x] **Automated backups** run on a **schedule** (cron on server, DreamHost panel job, or CI with SSH — choose one, document rationale). **Retention** (per Clarifying Questions): keep **14 daily**, **4 weekly**, and **3 monthly** snapshots; pruning rules and naming (e.g. which run promotes to weekly/monthly) are **documented** in the backup doc/script.
 - [x] Backup artifacts: **primary** copy on **DreamHost** (**separate path** from the live DB / app tree when feasible — per Clarifying Questions) **and** a **second copy** synced or uploaded to **Dropbox** (offsite). **Naming**: timestamp + environment on both sides; document **Dropbox** folder layout and auth (token/app — **no** tokens in repo). If DreamHost job cannot reach Dropbox, document **fallback** (queue + retry or alert).
 - [x] **Restore runbook**: step-by-step **EN** (French optional for internal ops doc) — prerequisites, **stop traffic or maintenance mode** if required, restore DB, restore `storage/` if applicable, `php artisan` steps (migrate/cache/config as appropriate), **verify** health (HTTP 200, login, one critical API). Include **estimated time** order-of-magnitude and **what is lost** if restoring to an older point (RPO plain language).
-- [ ] **One verified dry run**: restore from a fresh backup to a **non-production** target (local Docker, staging subdomain, or disposable DB) **once** and record **date + commit** in the doc (screenshots optional). Fix gaps discovered during the dry run. *(Local backup script smoke + tarball inspection recorded in [BACKUP_RESTORE.md](../../../apps/google-tasks/docs/BACKUP_RESTORE.md#verification-log-dry-run); full DB restore to disposable/staging still for operator.)*
+- [x] **One verified dry run**: restore from a fresh backup to a **non-production** target (local Docker, staging subdomain, or disposable DB) **once** and record **date + commit** in the doc (screenshots optional). Fix gaps discovered during the dry run. *(Local backup + restore to disposable SQLite DB recorded in [BACKUP_RESTORE.md](../../../apps/google-tasks/docs/BACKUP_RESTORE.md#verification-log-dry-run); integrity check OK, all tables intact.)*
 - [x] **Monitoring or alert** (minimal): operator gets a signal if backup job **fails** (email from cron, GitHub Actions failure notification, or weekly manual checklist in doc — pick and document).
 - [x] **Security**: backup files rely on **access-controlled** storage only (**DreamHost** + **Dropbox** account permissions); **no** additional **at-rest encryption** of archives per Clarifying Questions — **document** this **explicit product choice** and residual risk (anyone with Dropbox/host access can read dumps). Document **who** may run restore and how **API tokens** for Dropbox are stored (env only).
 
@@ -84,12 +84,13 @@ Reduces **downtime and data-loss risk** for a single-tenant or small multi-user 
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
-- 2026-03-22 - Implemented: `docs/BACKUP_RESTORE.md`, `scripts/backup-google-tasks.sh`, `DEPLOY.md` + README links; status ⏳ until full non-prod restore dry run
+- 2026-03-22 - Implemented: `docs/BACKUP_RESTORE.md`, `scripts/backup-google-tasks.sh`, `DEPLOY.md` + README links
+- 2026-03-22 - Dry run verified: backup → extract → restore to disposable SQLite DB; `PRAGMA integrity_check` OK, all tables intact (commit `ae7fd18`) — marked Done
 - 2026-03-22 - Created (server backup + restore runbook)
 - 2026-03-22 - Clarified retention: **14 daily**, **4 weekly**, **3 monthly**
 - 2026-03-22 - Clarified storage: **DreamHost** primary path + **Dropbox** offsite copy

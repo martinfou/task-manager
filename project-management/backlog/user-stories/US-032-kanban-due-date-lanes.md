@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-21  
@@ -155,8 +155,8 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 **Complete before marking status as Done.** Verify each acceptance criterion is met, then mark with `[x]`.
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
@@ -166,3 +166,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Clarified: **Overdue** drop → due set to **yesterday** (local)
 - 2026-03-22 - Backlog refinement: DoR recorded
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-22 - Implementation: due-lane grouping (`dueLaneForTask`, `groupTasksByDueLane`, `dueLaneDateMapping`), board grouping toggle (Priority / By due date), drop-to-reschedule with undo toast, i18n EN/FR, 15 new unit tests, localStorage persistence — marked Done

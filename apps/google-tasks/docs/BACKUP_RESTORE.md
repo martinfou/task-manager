@@ -216,8 +216,8 @@ If DreamHost disk is lost: download the same `google-tasks_*.tar.gz` from `Googl
 
 | Environment | Date (UTC) | Commit | Result |
 |-------------|------------|--------|--------|
-| Local smoke: backup script, SQLite DB, tarball contents | 2026-03-22 | Record `git rev-parse HEAD` after merging US-035 | Archive contains `MANIFEST.txt`, DB file, `storage/` without `logs/`; script exit 0 |
-| Full restore to staging/disposable DB | *Operator TBD* | | *Fill after dry run* |
+| Local smoke: backup script, SQLite DB, tarball contents | 2026-03-22 | `ae7fd18` | Archive contains `MANIFEST.txt`, DB file, `storage/` without `logs/`; script exit 0 |
+| Restore to disposable SQLite DB | 2026-03-22 | `ae7fd18` | Extracted archive → copied DB to `/tmp` path → `PRAGMA integrity_check` OK; all tables present (users, task_embeddings, dashboard_stats_cache, migrations, etc.); 1 user row intact; no data corruption |
 
 ---
 

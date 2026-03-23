@@ -17,7 +17,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { formatDateTime } = useLocaleDate();
+const { formatDueDate } = useLocaleDate();
 
 const explicit = computed(() => isPriorityExplicit(props.task));
 
@@ -109,7 +109,7 @@ const prio = computed(() => (props.task.priority ?? 'p3').toLowerCase());
     >
         {{
             t('tasks.dueLabel', {
-                date: formatDateTime(task.due),
+                date: formatDueDate(task.due),
             })
         }}
     </span>

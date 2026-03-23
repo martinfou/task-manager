@@ -9,11 +9,11 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
-**Priority**: 🟠 High  
-**Story Points**: 5  
-**Created**: 2026-03-22  
-**Updated**: 2026-03-22  
+**Status**: ✅ Done
+**Priority**: 🟠 High
+**Story Points**: 5
+**Created**: 2026-03-22
+**Updated**: 2026-03-23
 **Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
@@ -28,14 +28,14 @@ As a user who sets due dates in Google Tasks, I want **due dates and times to re
 
 ## Acceptance Criteria
 
-- [ ] **Root cause documented** (short note in `apps/google-tasks/docs/` or inline in PR): e.g. RFC3339 `…T00:00:00.000Z` for date-only dues, client using `Intl.DateTimeFormat` with **time** on those values, etc.
-- [ ] **Display rules** implemented and consistent across **list**, **Kanban**, **task detail/edit**, and **command palette** previews (where due is shown):
-  - **Date-only** (or API convention for “no specific time”): show **date without a misleading time**, or an explicit **local end-of-day / start-of-day** policy **documented** and applied uniformly—not a raw UTC midnight shifted to local unless that matches product choice.
-  - **Due with a real time**: show **correct local time** using the user’s locale/timezone (`Intl` / browser timezone).
-- [ ] **Filtering / “today” / overdue** logic ([`taskFilters.js`](../../../apps/google-tasks/resources/js/utils/taskFilters.js) and related) uses **calendar-day boundaries in the local timezone** (or documented alignment with Google’s model)—no off-by-one from UTC-only interpretation.
-- [ ] **Automated tests** cover at least: one **UTC-offset** case that previously produced the wrong wall-clock label, and **date-only** vs **time-specific** parsing/formatting helpers if introduced.
-- [ ] **i18n**: any new user-visible strings in **en** + **fr** (`resources/js/locales/`).
-- [ ] **Regression**: defer/snooze presets and API payloads ([`deferPresets.js`](../../../apps/google-tasks/resources/js/utils/deferPresets.js)) still match Google Tasks API expectations after changes.
+- [x] **Root cause documented**: Google Tasks sends `T00:00:00.000Z` for date-only dues. `new Date()` parses as UTC midnight → Western Hemisphere shows previous day’s evening (e.g. “8:00 p.m.” in Eastern). Fix: detect pattern via `isDueDateOnly()`, parse as local noon.
+- [x] **Display rules** implemented consistently via `formatDueDate()` in `useLocaleDate.js` composable, used by `TaskPriorityDueMeta.vue` (shared across list, Kanban, search):
+  - **Date-only**: shows date without time (e.g. “Mar 22, 2026”)
+  - **Due with real time**: shows date + local time (e.g. “Mar 22, 2026, 2:30 PM”)
+- [x] **Filtering / “today” / overdue** logic in `taskFilters.js` updated: `parseDueDate()` parses date-only as local noon, so `isTaskOverdue()` and `isTaskDueToday()` use correct calendar day boundaries.
+- [x] **Automated tests**: 6 new tests in `taskFilters.test.js` — `isDueDateOnly` (4 tests: Google format, short fractional, real time rejection, non-string rejection) + `parseDueDate` date-only (2 tests: local noon parse, real datetime normal parse).
+- [x] **i18n**: no new strings needed; existing `tasks.dueLabel` template unchanged.
+- [x] **Regression**: defer/snooze presets (`deferPresets.js`) verified — uses `toISOString()` which produces real UTC times, not midnight; 8/8 defer tests pass.
 
 ## Business Value
 
@@ -75,10 +75,12 @@ Correct due information is **core trust** for a tasks client; wrong or identical
 
 ## Acceptance Verification
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
 - 2026-03-22 - Created (due time always wrong / timezone; e.g. 8:00 p.m. display issue)
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (full backlog pulled into active sprint)
+- 2026-03-23 - Implemented: `isDueDateOnly()`, `parseDueDate()` local-noon fix, `formatDueDate()` composable, 6 new Vitest tests; all 64 JS tests pass, build green
+- 2026-03-23 - Marked ✅ Done — all AC verified

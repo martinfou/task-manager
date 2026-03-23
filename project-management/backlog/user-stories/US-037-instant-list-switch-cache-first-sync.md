@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done
 **Priority**: 🟠 High  
 **Story Points**: 8  
 **Created**: 2026-03-22  
@@ -28,12 +28,12 @@ As a user who jumps between several Google task lists, I want the UI to **show e
 
 ## Acceptance Criteria
 
-- [ ] **Instant paint on revisit**: After a list has been loaded at least once in the session (or within a defined cache window), selecting that list again shows **the last known tasks immediately** (no empty list flash solely due to network latency).
-- [ ] **Background reconciliation**: A **fresh fetch from Google** runs after showing cached data (or in parallel where safe), and the UI **updates** when newer data arrives **without** surprising jumps (e.g. preserve scroll/selection where reasonable, or document deliberate reset).
-- [ ] **First visit / cold cache**: When there is **no** cache for a list, the UI shows a **clear loading state** and completes load as today—or faster if prefetch is implemented—without blocking other lists’ cached views.
-- [ ] **Errors and rate limits**: Failed refresh or **429** / partial failure is handled with messaging or retry patterns **consistent** with existing Tasks error UX ([US-019](US-019-api-error-retry-ux.md)); cached data may remain visible with an **explicit “couldn’t refresh”** or subtle indicator (product choice documented).
-- [ ] **Trust boundaries**: On **disconnect / purge / token loss**, cached task data for that user is **not** wrongly shown (aligned with [US-021](US-021-disconnect-purge-logging.md)); behavior is documented briefly in app or ops notes if non-obvious.
-- [ ] **Today, Inbox, All lists**: Behavior is **defined** for aggregate views ([US-009](US-009-views-today-inbox-lists.md), [US-023](US-023-all-tasks-all-lists.md))—either same cache-first pattern, or a short rationale if a view always requires live aggregation.
+- [x] **Instant paint on revisit**: After a list has been loaded at least once in the session (or within a defined cache window), selecting that list again shows **the last known tasks immediately** (no empty list flash solely due to network latency).
+- [x] **Background reconciliation**: A **fresh fetch from Google** runs after showing cached data (or in parallel where safe), and the UI **updates** when newer data arrives **without** surprising jumps (e.g. preserve scroll/selection where reasonable, or document deliberate reset).
+- [x] **First visit / cold cache**: When there is **no** cache for a list, the UI shows a **clear loading state** and completes load as today—or faster if prefetch is implemented—without blocking other lists’ cached views.
+- [x] **Errors and rate limits**: Failed refresh or **429** / partial failure is handled with messaging or retry patterns **consistent** with existing Tasks error UX ([US-019](US-019-api-error-retry-ux.md)); cached data may remain visible with an **explicit “couldn’t refresh”** or subtle indicator (product choice documented).
+- [x] **Trust boundaries**: On **disconnect / purge / token loss**, cached task data for that user is **not** wrongly shown (aligned with [US-021](US-021-disconnect-purge-logging.md)); behavior is documented briefly in app or ops notes if non-obvious.
+- [x] **Today, Inbox, All lists**: Behavior is **defined** for aggregate views ([US-009](US-009-views-today-inbox-lists.md), [US-023](US-023-all-tasks-all-lists.md))—either same cache-first pattern, or a short rationale if a view always requires live aggregation.
 
 ## Business Value
 
@@ -77,10 +77,11 @@ List switching is a **high-frequency** action during triage. Perceived lag under
 
 **Complete before marking status as Done.** Verify each acceptance criterion is met, then mark with `[x]`.
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
 - 2026-03-22 - Created (product request: faster list switching; cache-first + background sync)
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (full backlog pulled into active sprint)
+- 2026-03-23 - Implementation: `useTaskCache` composable (in-memory Map, keyed by nav context), cache-first `setNav`/`selectList`/`onComposerListChange` with background refresh, cache write on every fetch, flush on disconnect/403, 8 Vitest unit tests — marked Done

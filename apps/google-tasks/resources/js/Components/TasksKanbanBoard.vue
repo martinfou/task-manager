@@ -2,6 +2,7 @@
 import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskNotesRichText from '@/Components/TaskNotesRichText.vue';
 import TaskPriorityDueMeta from '@/Components/TaskPriorityDueMeta.vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -11,6 +12,8 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    /** 'priority' (P1–P4) or 'due' (Overdue / Today / This week / Later) */
+    groupMode: { type: String, default: 'priority' },
     navMode: { type: String, required: true },
     isTaskSelected: { type: Function, required: true },
     taskKey: { type: Function, required: true },
@@ -22,12 +25,25 @@ const emit = defineEmits([
     'selection-click',
     'toggle-complete',
     'drop-priority',
+    'drop-due',
     'inspect-task',
     'card-dblclick',
     'defer-preset',
 ]);
 
 const PRIOS = ['p1', 'p2', 'p3', 'p4'];
+const DUE_LANES = ['overdue', 'today', 'thisWeek', 'laterNoDate'];
+
+const columns = computed(() =>
+    props.groupMode === 'due' ? DUE_LANES : PRIOS,
+);
+
+function columnLabel(col) {
+    if (props.groupMode === 'due') {
+        return t(`tasks.kanbanDueLane.${col}`);
+    }
+    return t(`tasks.priorityBadge.${col}`);
+}
 
 function onDragStart(e, task) {
     const payload = {
@@ -43,7 +59,7 @@ function onDragOver(e) {
     e.dataTransfer.dropEffect = 'move';
 }
 
-function onDrop(e, newPriority) {
+function onDrop(e, col) {
     e.preventDefault();
     let raw = e.dataTransfer.getData('application/json');
     if (!raw) {
@@ -54,11 +70,19 @@ function onDrop(e, newPriority) {
         if (!data?.id || !data?.listId) {
             return;
         }
-        emit('drop-priority', {
-            taskId: data.id,
-            listId: data.listId,
-            newPriority,
-        });
+        if (props.groupMode === 'due') {
+            emit('drop-due', {
+                taskId: data.id,
+                listId: data.listId,
+                newLane: col,
+            });
+        } else {
+            emit('drop-priority', {
+                taskId: data.id,
+                listId: data.listId,
+                newPriority: col,
+            });
+        }
     } catch {
         /* ignore */
     }
@@ -73,24 +97,22 @@ function onDrop(e, newPriority) {
         :aria-label="t('tasks.kanbanRegion')"
     >
         <div
-            v-for="prio in PRIOS"
-            :key="prio"
+            v-for="col in columns"
+            :key="col"
             class="flex min-h-0 min-w-0 flex-col rounded-lg border border-gt-border bg-gt-field-muted/80 dark:bg-gt-raised/50"
             @dragover="onDragOver"
-            @drop="onDrop($event, prio)"
+            @drop="onDrop($event, col)"
         >
             <div
                 class="shrink-0 border-b border-gt-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gt-muted"
             >
-                {{
-                    t(`tasks.priorityBadge.${prio}`)
-                }}
+                {{ columnLabel(col) }}
             </div>
             <div
                 class="max-h-[70vh] min-h-[8rem] flex-1 space-y-2 overflow-y-auto p-2"
             >
                 <div
-                    v-for="task in buckets[prio] ?? []"
+                    v-for="task in buckets[col] ?? []"
                     :key="taskKey(task)"
                     draggable="true"
                     :data-task-id="task.id"
@@ -191,7 +213,7 @@ function onDrop(e, newPriority) {
                     />
                 </div>
                 <p
-                    v-if="(buckets[prio] ?? []).length === 0"
+                    v-if="(buckets[col] ?? []).length === 0"
                     class="px-1 py-4 text-center text-xs text-gt-subtle"
                 >
                     {{ t('tasks.kanbanEmptyColumn') }}

@@ -13,11 +13,74 @@
     "dashboard": {
         "title": "Dashboard",
         "loggedIn": "You're logged in!",
-        "welcomeTitle": "Welcome",
+        "welcomeTitle": "Personal productivity",
+        "subtitle": "Based on tasks you use in this app + synced Google Tasks data.",
         "connectedLead": "Google Tasks is connected. Open Tasks for Today, Inbox, your lists, filters, board view, and keyboard shortcuts (?).",
         "disconnectedLead": "Connect Google once to load your lists. Edits you make here stay in sync with Google Tasks.",
         "openTasks": "Open Tasks",
-        "manageConnection": "Profile & connection"
+        "manageConnection": "Profile & connection",
+        "howMetrics": "How metrics work",
+        "howMetricsBody": "Created counts use the Google Tasks creation date when available, otherwise the date this app first saw the task. Completed counts use the completion timestamp from Google. Days are bucketed in your profile timezone ({tz}). Tasks completed only in other clients appear after sync.",
+        "range7": "7 d",
+        "range14": "14 d",
+        "range30": "30 d",
+        "range90": "90 d",
+        "rangeLabel": "Time window",
+        "tzLabel": "TZ: {tz}",
+        "loading": "Computing dashboard…",
+        "emptyNoConnection": "Connect Google Tasks to start",
+        "emptyNoData": "Not enough history yet — check back in a few days.",
+        "staleDisclaimer": "Last computed {date}. Data may not reflect other clients until reconnect.",
+        "insights": {
+            "periodTitle": "Period summary",
+            "created": "Created",
+            "completed": "Completed",
+            "netFlowTitle": "Net flow",
+            "netFlowPositive": "Closing faster than capturing",
+            "netFlowNegative": "Capturing faster than closing",
+            "netFlowNeutral": "Balanced capture and completion",
+            "consistencyTitle": "Consistency",
+            "activeDays": "{count} / {total} active days",
+            "activeDaysExplain": "Days with at least one completion",
+            "priorTitle": "vs prior {days} d",
+            "priorCompletions": "Completions",
+            "priorCreated": "Created",
+            "deltaUp": "+{pct}%",
+            "deltaDown": "{pct}%",
+            "noPrior": "Not enough prior data"
+        },
+        "chart": {
+            "title": "Throughput",
+            "legendCreated": "Created",
+            "legendCompleted": "Completed",
+            "showTable": "Show data table",
+            "hideTable": "Hide data table",
+            "colDate": "Date",
+            "colCreated": "Created",
+            "colCompleted": "Completed",
+            "srSummary": "Throughput chart: {created} tasks created, {completed} completed over {days} days."
+        },
+        "weekday": {
+            "title": "Weekday rhythm",
+            "peakCallout": "Most completions: {day}",
+            "noPeak": "No completions in this period"
+        },
+        "leadTime": {
+            "title": "Lead time",
+            "median": "Median",
+            "p90": "p90",
+            "days": "{n} d",
+            "longTail": "{count} tasks > 30 d",
+            "noData": "No completed tasks with creation dates in this range"
+        },
+        "dueDiscipline": {
+            "title": "Due discipline",
+            "onTime": "On time",
+            "overdue": "Overdue",
+            "noDue": "No due date",
+            "noData": "No completions in this range"
+        },
+        "trustStrip": "Counts reflect tasks seen through this app. Other clients may sync later."
     },
     "auth": {
         "login": "Log in",
@@ -109,7 +172,7 @@
         "helpBullet3": "New tasks from Today, Inbox, or All lists are created in that default list.",
         "helpBulletAll": "All lists merges every task from every Google list in one view; the chip on each row is its home list. Use the list filter to focus on one list without leaving this view.",
         "helpBulletBulk": "Bulk: use the first checkbox on each row, or Ctrl/Cmd+click to toggle and Shift+click for a range. On narrow screens, use the checkboxes — there is no touch multi-select gesture.",
-        "helpBulletFilters": "Filters and board view apply on top of the current navigation (Today / Inbox / list). Board columns are P1–P4 by priority; drag a card to another column to change priority, or use Details to edit priority and more.",
+        "helpBulletFilters": "Filters and board view apply on top of the current navigation (Today / Inbox / list). Board columns group by priority (P1–P4) or due date; drag a card to change priority or reschedule, or use Details to edit.",
         "retry": "Retry",
         "errors": {
             "rateLimited": "Google rate limited (429). Polling slowed; try again shortly.",
@@ -134,6 +197,7 @@
         "listFieldLabel": "List",
         "pollLine": "Poll: {current} ms · target {target} ms",
         "newTask": "New task",
+        "addTaskPrompt": "Add a task…",
         "titlePlaceholder": "Title",
         "add": "Add",
         "dueOptional": "Due (optional)",
@@ -255,9 +319,19 @@
         "filtersToggle": "Filters & view",
         "noFilterMatchTitle": "No tasks match",
         "noFilterMatchBody": "Try adjusting or resetting filters to see more tasks.",
-        "kanbanRegion": "Priority board",
+        "kanbanRegion": "Task board",
         "kanbanEmptyColumn": "Drop tasks here",
         "kanbanHint": "Columns are P1–P4 (decoded from task titles). Drag a card to another column to change priority.",
+        "boardGroupLabel": "Board",
+        "boardGroupPriority": "Priority",
+        "boardGroupDue": "By due date",
+        "kanbanHintDue": "Columns by due horizon. Drag a card to another column to reschedule.",
+        "kanbanDueLane": {
+            "overdue": "Overdue",
+            "today": "Today",
+            "thisWeek": "This week",
+            "laterNoDate": "Later / No date"
+        },
         "defer": {
             "menuSummary": "Snooze / defer",
             "menuAria": "Defer due date presets",
@@ -268,7 +342,7 @@
             "summaryTooltip": "Tomorrow: next calendar day (9:00 if the task had no due; otherwise same clock time). Next week: Monday 00:00 at the start of the ISO week after this one. Weekend: next Saturday 09:00 local (today at 09:00 if it is Saturday morning)."
         },
         "swipe": {
-            "rowHint": "Swipe right on a row to complete, or left for more actions. Long-press a row to open the same menu. Wider screens and mouse/trackpad keep the row buttons.",
+            "rowHint": "Swipe right → done · left → more · long-press → menu",
             "markComplete": "Mark task complete",
             "markIncomplete": "Mark task incomplete",
             "moreActions": "More actions: defer, move, delete",
@@ -296,6 +370,24 @@
             "cmdAll": "Go to All lists",
             "quickAddHint": "Uses the same target list as the new-task row (Add to list / view default).",
             "back": "Back"
+        },
+        "duplicates": {
+            "menuLabel": "Find duplicates…",
+            "title": "Possible duplicates",
+            "scanning": "Scanning for similar tasks…",
+            "empty": "No similar tasks found. Your lists look clean.",
+            "indexEmpty": "Semantic index is empty. Build it first (search area) to scan for duplicates.",
+            "pairLabel": "Likely duplicate",
+            "listLabel": "List: {list}",
+            "keeperHint": "The task with more notes may be the better keeper.",
+            "keepLabel": "Keep",
+            "mergeAction": "Remove other",
+            "mergeConfirmTitle": "Remove duplicate?",
+            "mergeConfirmBody": "This will mark \"{title}\" as complete in Google Tasks. The task you chose to keep is unchanged.",
+            "mergeConfirmCancel": "Cancel",
+            "mergeConfirmOk": "Remove duplicate",
+            "close": "Done",
+            "error": "Could not load duplicates."
         },
         "undo": {
             "completed": "Task completed.",

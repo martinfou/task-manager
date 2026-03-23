@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleOAuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PwaController;
@@ -39,11 +40,10 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard', [
-        'hasGoogleTasksConnection' => auth()->user()?->hasGoogleTasksConnection() ?? false,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tasks', [TasksController::class, 'index'])->name('tasks.index');
@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/task-lists', [TasksController::class, 'taskLists'])->name('tasks.data.task-lists');
         Route::get('/search', [TasksController::class, 'search'])->name('tasks.data.search');
         Route::post('/search/reindex', [TasksController::class, 'reindexSearchEmbeddings'])->name('tasks.data.search.reindex');
+        Route::get('/duplicates', [TasksController::class, 'duplicates'])->name('tasks.data.duplicates');
         Route::get('/views/today', [TasksController::class, 'todayView'])->name('tasks.data.views.today');
         Route::get('/views/inbox', [TasksController::class, 'inboxView'])->name('tasks.data.views.inbox');
         Route::get('/views/all', [TasksController::class, 'allListsView'])->name('tasks.data.views.all');

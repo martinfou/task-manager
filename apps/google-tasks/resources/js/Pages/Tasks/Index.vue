@@ -34,7 +34,12 @@ import {
     watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { filterTasks, groupTasksByPriority } from '@/utils/taskFilters';
+import {
+    filterTasks,
+    groupTasksByPriority,
+    groupTasksByDueLane,
+    dueLaneDateMapping,
+} from '@/utils/taskFilters';
 import {
     DEFAULT_GLOBAL_TASK_SORT_MODE,
     GLOBAL_TASK_SORT_STORAGE_KEY,
@@ -47,6 +52,7 @@ import {
 } from '@/utils/googleTaskError';
 import { computeDeferDueIso } from '@/utils/deferPresets';
 import { useUndoToast } from '@/composables/useUndoToast';
+import { useTaskCache } from '@/composables/useTaskCache';
 
 const VIEW_MODE_KEY = 'gt-task-view-mode';
 const FILTER_STATE_KEY = 'gt-task-filters';
@@ -134,6 +140,7 @@ const searchReindexLoading = ref(false);
 const showKeyboardHelp = ref(false);
 const showWorkflowHelpModal = ref(false);
 const showMobileSearch = ref(false);
+const mobileComposerOpen = ref(false);
 const showCommandPalette = ref(false);
 /** Collapsible filter bar on small screens; forced open at lg+ */
 const filtersDetailsRef = ref(null);
@@ -164,6 +171,8 @@ const swipeMoveTask = ref(null);
 let pollTimer = null;
 let searchDebounce = null;
 let pollOnceInFlight = false;
+/** US-037: in-memory task cache for instant list switching. */
+const taskCache = useTaskCache();
 /** Skip one-shot filter watcher while restoring localStorage (avoids racing pollOnce). */
 const suppressCompletionSyncFetch = ref(false);
 /** Google Tasks data API returned 403 (disconnected / stale Inertia props). */
@@ -171,6 +180,9 @@ const googleTasksForbidden = ref(false);
 
 /** @type {import('vue').Ref<'list'|'board'>} */
 const viewMode = ref('list');
+/** @type {import('vue').Ref<'priority'|'due'>} US-032: board grouping mode */
+const boardGroupMode = ref('priority');
+const BOARD_GROUP_KEY = 'gt-board-group-mode';
 const filterCompletion = ref('needsAction');
 const filterDue = ref('any');
 const filterPriority = ref('all');
@@ -215,6 +227,14 @@ watch(globalSortMode, (v) => {
 const TASKS_ONBOARDING_KEY = 'gt-tasks-onboarding-v1-dismissed';
 const showTasksOnboarding = ref(false);
 const showGlobalSortSheet = ref(false);
+
+/** US-033: duplicate detection state */
+const showDuplicatesModal = ref(false);
+const duplicatesLoading = ref(false);
+const duplicatePairs = ref([]);
+const duplicatesIndexEmpty = ref(false);
+const duplicatesError = ref('');
+const duplicateMergeConfirm = ref(null); // { pair, keepSide: 'A'|'B' }
 const tasksOnboardingDismissed = ref(false);
 let offeredTasksOnboardingThisMount = false;
 
@@ -232,6 +252,78 @@ const globalSortModeCurrentLabel = computed(() =>
         ? t('tasks.sort.priorityFirst')
         : t('tasks.sort.dueFirst'),
 );
+
+/** US-033: load duplicate candidates from server */
+async function openDuplicatesModal() {
+    showDuplicatesModal.value = true;
+    duplicatesLoading.value = true;
+    duplicatePairs.value = [];
+    duplicatesIndexEmpty.value = false;
+    duplicatesError.value = '';
+    duplicateMergeConfirm.value = null;
+    try {
+        const { data } = await axios.get(route('tasks.data.duplicates'));
+        duplicatePairs.value = data.pairs ?? [];
+        duplicatesIndexEmpty.value = data.index_empty ?? false;
+    } catch {
+        duplicatesError.value = t('tasks.duplicates.error');
+    } finally {
+        duplicatesLoading.value = false;
+    }
+}
+
+function startMerge(pair, keepSide) {
+    duplicateMergeConfirm.value = { pair, keepSide };
+}
+
+async function confirmMerge() {
+    const { pair, keepSide } = duplicateMergeConfirm.value;
+    const removeTask = keepSide === 'A' ? pair.taskB : pair.taskA;
+    duplicateMergeConfirm.value = null;
+
+    try {
+        await axios.patch(
+            route('tasks.data.tasks.update', {
+                taskList: removeTask.taskListId,
+                task: removeTask.taskId,
+            }),
+            { status: 'completed' },
+        );
+        // Remove the pair from the list
+        duplicatePairs.value = duplicatePairs.value.filter((p) => p !== pair);
+        // Refresh local task data
+        void pollOnce();
+        void showUndoToast({
+            message: t('tasks.undo.completed'),
+            onUndo: async () => {
+                try {
+                    await axios.patch(
+                        route('tasks.data.tasks.update', {
+                            taskList: removeTask.taskListId,
+                            task: removeTask.taskId,
+                        }),
+                        { status: 'needsAction' },
+                    );
+                    void pollOnce();
+                } catch (err) {
+                    loadError.value = messageFromAxiosError(
+                        err,
+                        t,
+                        te,
+                        'tasks.errors.updateFailed',
+                    );
+                }
+            },
+        });
+    } catch (e) {
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.updateFailed',
+        );
+    }
+}
 
 function dismissTasksOnboarding() {
     showTasksOnboarding.value = false;
@@ -303,6 +395,7 @@ function consumeGoogleTasksForbidden(e) {
     }
     googleTasksForbidden.value = true;
     stopPollLoop();
+    taskCache.flush(); /* US-037: clear cache on disconnect */
     return true;
 }
 
@@ -314,14 +407,23 @@ function reloadTasksPage() {
 }
 
 const kanbanBuckets = computed(() => {
-    const raw = groupTasksByPriority(filteredTasks.value);
     const loc = typeof locale.value === 'string' ? locale.value : 'en';
-    const mode = globalSortMode.value;
+    const sortMode = globalSortMode.value;
+    if (boardGroupMode.value === 'due') {
+        const raw = groupTasksByDueLane(filteredTasks.value);
+        return {
+            overdue: sortTasksGlobally(raw.overdue, sortMode, loc),
+            today: sortTasksGlobally(raw.today, sortMode, loc),
+            thisWeek: sortTasksGlobally(raw.thisWeek, sortMode, loc),
+            laterNoDate: sortTasksGlobally(raw.laterNoDate, sortMode, loc),
+        };
+    }
+    const raw = groupTasksByPriority(filteredTasks.value);
     return {
-        p1: sortTasksGlobally(raw.p1, mode, loc),
-        p2: sortTasksGlobally(raw.p2, mode, loc),
-        p3: sortTasksGlobally(raw.p3, mode, loc),
-        p4: sortTasksGlobally(raw.p4, mode, loc),
+        p1: sortTasksGlobally(raw.p1, sortMode, loc),
+        p2: sortTasksGlobally(raw.p2, sortMode, loc),
+        p3: sortTasksGlobally(raw.p3, sortMode, loc),
+        p4: sortTasksGlobally(raw.p4, sortMode, loc),
     };
 });
 
@@ -1024,14 +1126,17 @@ async function fetchTasksForList() {
         tasks.value = [];
         return;
     }
+    const listId = selectedListId.value;
     const { data } = await axios.get(
-        route('tasks.data.tasks', { taskList: selectedListId.value }),
+        route('tasks.data.tasks', { taskList: listId }),
         { params: { showCompleted: true } },
     );
-    tasks.value = normalizeItems(data).map((t) => {
+    const result = normalizeItems(data).map((t) => {
         const { _taskListId, _taskListTitle, ...rest } = t;
         return rest;
     });
+    tasks.value = result;
+    taskCache.set('list', listId, result);
 }
 
 async function fetchToday() {
@@ -1039,11 +1144,13 @@ async function fetchToday() {
         return;
     }
     const { data } = await axios.get(route('tasks.data.views.today'));
-    tasks.value = (data.items ?? []).map((row) => ({
+    const result = (data.items ?? []).map((row) => ({
         ...row.task,
         _taskListId: row.taskListId,
         _taskListTitle: row.taskListTitle,
     }));
+    tasks.value = result;
+    taskCache.set('today', null, result);
 }
 
 async function fetchInbox() {
@@ -1056,10 +1163,12 @@ async function fetchInbox() {
     if (data.taskList?.id) {
         selectedListId.value = data.taskList.id;
     }
-    tasks.value = (data.items ?? []).map((t) => ({
+    const result = (data.items ?? []).map((t) => ({
         ...t,
         _taskListId: data.taskList?.id,
     }));
+    tasks.value = result;
+    taskCache.set('inbox', null, result);
 }
 
 async function fetchAll() {
@@ -1069,11 +1178,13 @@ async function fetchAll() {
     const { data } = await axios.get(route('tasks.data.views.all'), {
         params: { showCompleted: wantsCompletedFromApi() },
     });
-    tasks.value = (data.items ?? []).map((row) => ({
+    const result = (data.items ?? []).map((row) => ({
         ...row.task,
         _taskListId: row.taskListId,
         _taskListTitle: row.taskListTitle,
     }));
+    tasks.value = result;
+    taskCache.set('all', null, result);
 }
 
 async function pollOnce() {
@@ -1167,6 +1278,17 @@ async function setNav(mode) {
     if (!tasksDataAvailable.value) {
         return;
     }
+    /* US-037: show cached tasks immediately if available */
+    const listId = mode === 'list' ? selectedListId.value : null;
+    const cached = taskCache.get(mode, listId);
+    if (cached) {
+        tasks.value = cached;
+        /* Background refresh — no loading spinner */
+        loadError.value = '';
+        fetchNavBackground(mode);
+        return;
+    }
+    /* Cold cache: full loading state */
     await withTasksLoad(async () => {
         loadError.value = '';
         try {
@@ -1188,6 +1310,27 @@ async function setNav(mode) {
     });
 }
 
+/** US-037: background refresh for cache-first navigation (no loading spinner). */
+async function fetchNavBackground(mode) {
+    try {
+        await withReadRetry(async () => {
+            if (mode === 'today') {
+                await fetchToday();
+            } else if (mode === 'inbox') {
+                await fetchInbox();
+            } else if (mode === 'all') {
+                await fetchAll();
+            } else {
+                await fetchTasksForList();
+            }
+        });
+    } catch (e) {
+        if (!consumeGoogleTasksForbidden(e)) {
+            loadError.value = messageFromAxiosError(e, t, te);
+        }
+    }
+}
+
 async function selectList(list) {
     showMobileSearch.value = false;
     navMode.value = 'list';
@@ -1196,6 +1339,15 @@ async function selectList(list) {
     if (!tasksDataAvailable.value) {
         return;
     }
+    /* US-037: show cached tasks immediately if available */
+    const cached = taskCache.get('list', list.id);
+    if (cached) {
+        tasks.value = cached;
+        loadError.value = '';
+        fetchNavBackground('list');
+        return;
+    }
+    /* Cold cache: full loading state */
     await withTasksLoad(async () => {
         loadError.value = '';
         try {
@@ -1221,15 +1373,23 @@ async function onComposerListChange() {
         return;
     }
     selectedListId.value = newTaskListId.value;
-    await withTasksLoad(async () => {
+    /* US-037: cache-first for composer list change */
+    const cached = taskCache.get('list', newTaskListId.value);
+    if (cached) {
+        tasks.value = cached;
         loadError.value = '';
-        try {
-            await withReadRetry(() => fetchTasksForList());
-        } catch (e) {
-            consumeGoogleTasksForbidden(e);
-            loadError.value = messageFromAxiosError(e, t, te);
-        }
-    });
+        fetchNavBackground('list');
+    } else {
+        await withTasksLoad(async () => {
+            loadError.value = '';
+            try {
+                await withReadRetry(() => fetchTasksForList());
+            } catch (e) {
+                consumeGoogleTasksForbidden(e);
+                loadError.value = messageFromAxiosError(e, t, te);
+            }
+        });
+    }
 }
 
 async function executeSearchQuery() {
@@ -1918,6 +2078,10 @@ function loadPersistedTaskUi() {
         if (vm === 'list' || vm === 'board') {
             viewMode.value = vm;
         }
+        const bgm = localStorage.getItem(BOARD_GROUP_KEY);
+        if (bgm === 'priority' || bgm === 'due') {
+            boardGroupMode.value = bgm;
+        }
         const raw = localStorage.getItem(FILTER_STATE_KEY);
         if (raw) {
             const o = JSON.parse(raw);
@@ -1980,6 +2144,7 @@ function persistTaskUi() {
         return;
     }
     localStorage.setItem(VIEW_MODE_KEY, viewMode.value);
+    localStorage.setItem(BOARD_GROUP_KEY, boardGroupMode.value);
     localStorage.setItem(
         FILTER_STATE_KEY,
         JSON.stringify({
@@ -2028,6 +2193,85 @@ function onKanbanDropPriority({ taskId, listId, newPriority }) {
         return;
     }
     updatePriority(task, newPriority);
+}
+
+/** US-032: drop-to-reschedule on due-date board */
+async function onKanbanDropDue({ taskId, listId, newLane }) {
+    const task = tasks.value.find(
+        (t) => t.id === taskId && listIdForTask(t) === listId,
+    );
+    if (!task || task._optimistic) {
+        return;
+    }
+    const dueIso = dueLaneDateMapping(newLane);
+    const editKey = taskKey(task);
+    const prev = { ...task };
+    tasks.value = tasks.value.map((t) =>
+        t.id === task.id ? { ...t, due: dueIso } : t,
+    );
+    syncInspectorDueIfOpen(editKey, dueIso);
+    try {
+        const { data } = await axios.patch(
+            route('tasks.data.tasks.update', {
+                taskList: listId,
+                task: task.id,
+            }),
+            { due: dueIso },
+        );
+        const merged = { ...data };
+        if (task._taskListId) {
+            merged._taskListId = task._taskListId;
+            merged._taskListTitle = task._taskListTitle;
+        }
+        tasks.value = tasks.value.map((t) =>
+            t.id === task.id ? merged : t,
+        );
+        syncInspectorDueIfOpen(editKey, merged.due);
+        void pollOnce();
+        const prevDue = prev.due;
+        void showUndoToast({
+            message: t('tasks.undo.dueUpdated'),
+            onUndo: async () => {
+                try {
+                    const { data: d2 } = await axios.patch(
+                        route('tasks.data.tasks.update', {
+                            taskList: listId,
+                            task: merged.id,
+                        }),
+                        { due: prevDue ?? null },
+                    );
+                    const restored = { ...d2 };
+                    if (merged._taskListId) {
+                        restored._taskListId = merged._taskListId;
+                        restored._taskListTitle = merged._taskListTitle;
+                    }
+                    tasks.value = tasks.value.map((x) =>
+                        x.id === merged.id ? restored : x,
+                    );
+                    syncInspectorDueIfOpen(editKey, restored.due);
+                    void pollOnce();
+                } catch (err) {
+                    loadError.value = messageFromAxiosError(
+                        err,
+                        t,
+                        te,
+                        'tasks.errors.updateFailed',
+                    );
+                }
+            },
+        });
+    } catch (e) {
+        tasks.value = tasks.value.map((t) =>
+            t.id === task.id ? prev : t,
+        );
+        syncInspectorDueIfOpen(editKey, prev.due);
+        loadError.value = messageFromAxiosError(
+            e,
+            t,
+            te,
+            'tasks.errors.updateFailed',
+        );
+    }
 }
 
 function onKanbanTaskClick(task, e) {
@@ -2169,6 +2413,7 @@ watch(filterCompletion, async () => {
 watch(
     [
         viewMode,
+        boardGroupMode,
         filterCompletion,
         filterDue,
         filterPriority,
@@ -2257,6 +2502,7 @@ watch(
     async (ok, wasOk) => {
         if (!ok) {
             googleTasksForbidden.value = false;
+            taskCache.flush(); /* US-037: clear cache on disconnect */
         } else if (wasOk === false) {
             googleTasksForbidden.value = false;
         }
@@ -2643,69 +2889,90 @@ onUnmounted(() => {
                         <div
                             class="flex w-full min-w-0 flex-col overflow-hidden gt-surface sm:rounded-lg"
                         >
+                            <!-- Mobile: compact add-task bar; Desktop: full composer -->
                             <div
-                                class="border-b border-gt-border px-4 py-2 sm:px-6 sm:py-3"
+                                class="border-b border-gt-border"
                             >
-                                <div
-                                    v-if="taskLists.length > 0"
-                                    class="mb-2"
+                                <!-- Mobile compact prompt (hidden on sm+) -->
+                                <button
+                                    v-if="!mobileComposerOpen"
+                                    type="button"
+                                    class="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gt-muted touch-manipulation active:bg-gt-field-muted sm:hidden"
+                                    @click="mobileComposerOpen = true"
                                 >
-                                    <InputLabel
-                                        for="composer-list"
-                                        :value="t('tasks.addToList')"
-                                    />
-                                    <select
-                                        id="composer-list"
-                                        v-model="newTaskListId"
-                                        class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
-                                        @change="onComposerListChange"
+                                    <svg class="h-4 w-4 shrink-0 text-gt-accent" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                    {{ t('tasks.addTaskPrompt') }}
+                                </button>
+                                <!-- Full composer (always on sm+, toggled on mobile) -->
+                                <div
+                                    :class="[
+                                        'px-4 py-2 sm:px-6 sm:py-3',
+                                        mobileComposerOpen ? '' : 'hidden sm:block',
+                                    ]"
+                                >
+                                    <div
+                                        v-if="taskLists.length > 0"
+                                        class="mb-2"
                                     >
-                                        <option
-                                            v-for="list in taskLists"
-                                            :key="`cl-${list.id}`"
-                                            :value="list.id"
+                                        <InputLabel
+                                            for="composer-list"
+                                            :value="t('tasks.addToList')"
+                                        />
+                                        <select
+                                            id="composer-list"
+                                            v-model="newTaskListId"
+                                            class="mt-1 block min-h-11 w-full rounded-md border border-gt-border-strong bg-gt-field text-base text-gt-ink shadow-sm focus:border-gt-accent focus:ring-gt-accent-ring sm:text-sm"
+                                            @change="onComposerListChange"
                                         >
-                                            {{ list.title }}
-                                        </option>
-                                    </select>
-                                </div>
-                                <InputLabel
-                                    for="title"
-                                    :value="t('tasks.newTask')"
-                                />
-                                <div
-                                    class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center"
-                                >
-                                    <TextInput
-                                        id="title"
-                                        ref="newTaskTitleRef"
-                                        v-model="newTitle"
-                                        type="text"
-                                        class="block min-h-11 min-w-0 w-full flex-1 text-base sm:text-sm"
-                                        :placeholder="t('tasks.titlePlaceholder')"
-                                        @keyup.enter="submitNewTask"
+                                            <option
+                                                v-for="list in taskLists"
+                                                :key="`cl-${list.id}`"
+                                                :value="list.id"
+                                            >
+                                                {{ list.title }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <InputLabel
+                                        for="title"
+                                        :value="t('tasks.newTask')"
                                     />
                                     <div
-                                        class="flex shrink-0 flex-wrap gap-2"
+                                        class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center"
                                     >
-                                        <PrimaryButton
-                                            type="button"
-                                            @click="submitNewTask"
+                                        <TextInput
+                                            id="title"
+                                            ref="newTaskTitleRef"
+                                            v-model="newTitle"
+                                            type="text"
+                                            class="block min-h-11 min-w-0 w-full flex-1 text-base sm:text-sm"
+                                            :placeholder="t('tasks.titlePlaceholder')"
+                                            @keyup.enter="submitNewTask"
+                                        />
+                                        <div
+                                            class="flex shrink-0 flex-wrap gap-2"
                                         >
-                                            {{ t('tasks.add') }}
-                                        </PrimaryButton>
-                                        <SecondaryButton
-                                            type="button"
-                                            @click="openInspectorNew"
-                                        >
-                                            {{ t('tasks.moreFields') }}
-                                        </SecondaryButton>
+                                            <PrimaryButton
+                                                type="button"
+                                                @click="submitNewTask"
+                                            >
+                                                {{ t('tasks.add') }}
+                                            </PrimaryButton>
+                                            <SecondaryButton
+                                                type="button"
+                                                @click="openInspectorNew"
+                                            >
+                                                {{ t('tasks.moreFields') }}
+                                            </SecondaryButton>
+                                        </div>
                                     </div>
+                                    <InputError
+                                        class="mt-2"
+                                        :message="formError"
+                                    />
                                 </div>
-                                <InputError
-                                    class="mt-2"
-                                    :message="formError"
-                                />
                             </div>
                             <div
                                 v-if="inspectorMode === 'new'"
@@ -2836,7 +3103,7 @@ onUnmounted(() => {
                                 </div>
                             </div>
                             <div
-                                class="border-b border-gt-border px-4 py-2 text-xs text-gt-muted sm:px-6 sm:py-2 sm:text-sm"
+                                class="border-b border-gt-border bg-gt-field-muted/40 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-gt-muted sm:bg-transparent sm:px-6 sm:py-2 sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal dark:bg-gt-field/20 sm:dark:bg-transparent"
                                 :class="
                                     navMode === 'list' ? 'max-lg:hidden' : ''
                                 "
@@ -3117,7 +3384,7 @@ onUnmounted(() => {
                                         viewMode === 'board') &&
                                     taskLists.length > 0
                                 "
-                                class="flex flex-col gap-2 border-b border-gt-border bg-gt-field-muted/25 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:bg-gt-field/15"
+                                class="flex flex-col gap-2 border-b border-gt-border bg-gt-field-muted/25 px-4 py-1.5 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-3 dark:bg-gt-field/15"
                             >
                                 <div
                                     class="min-w-0 flex max-w-xl flex-1 flex-col gap-1"
@@ -3157,32 +3424,45 @@ onUnmounted(() => {
                                             }}
                                         </p>
                                     </div>
-                                    <div class="flex flex-col gap-2 sm:hidden">
+                                    <div class="flex flex-col gap-1 sm:hidden">
                                         <div
-                                            class="flex items-center justify-between gap-3"
+                                            class="flex items-center justify-between gap-2"
                                         >
-                                            <div class="min-w-0 flex-1">
-                                                <p
-                                                    class="text-xs font-medium text-gt-ink-secondary"
-                                                >
-                                                    {{ t('tasks.sort.label') }}
-                                                </p>
-                                                <p
-                                                    class="truncate text-sm font-medium text-gt-ink"
-                                                >
-                                                    {{
-                                                        globalSortModeCurrentLabel
-                                                    }}
-                                                </p>
-                                            </div>
+                                            <p class="min-w-0 flex-1 truncate text-xs text-gt-muted">
+                                                <span class="font-medium text-gt-ink-secondary">{{ t('tasks.sort.label') }}:</span>
+                                                {{ globalSortModeCurrentLabel }}
+                                            </p>
                                             <button
                                                 type="button"
-                                                class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm touch-manipulation focus:border-gt-accent focus:outline-none focus:ring-gt-accent-ring"
+                                                class="inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm touch-manipulation focus:border-gt-accent focus:outline-none focus:ring-gt-accent-ring"
                                                 :aria-label="t('tasks.sort.openSheet')"
                                                 :aria-describedby="
                                                     'global-sort-hint-mobile'
                                                 "
                                                 @click="showGlobalSortSheet = true"
+                                            >
+                                                <svg
+                                                    class="h-4 w-4"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke-width="1.5"
+                                                    stroke="currentColor"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M8.25 14.25l3.75 3.75 3.75-3.75M15.75 9.75l-3.75-3.75-3.75 3.75"
+                                                    />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                v-if="props.semanticSearchAvailable"
+                                                type="button"
+                                                class="inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field text-gt-ink shadow-sm touch-manipulation focus:border-gt-accent focus:outline-none focus:ring-gt-accent-ring"
+                                                :aria-label="t('tasks.duplicates.menuLabel')"
+                                                @click="openDuplicatesModal"
                                             >
                                                 <svg
                                                     class="h-5 w-5"
@@ -3196,7 +3476,7 @@ onUnmounted(() => {
                                                     <path
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
-                                                        d="M8.25 14.25l3.75 3.75 3.75-3.75M15.75 9.75l-3.75-3.75-3.75 3.75"
+                                                        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m0 0a2.625 2.625 0 115.25 0"
                                                     />
                                                 </svg>
                                             </button>
@@ -3282,8 +3562,9 @@ onUnmounted(() => {
                                         @dblclick="onTaskRowDoubleClick(task, $event)"
                                     >
                                     <input
+                                        v-show="!swipeRowsEnabled"
                                         type="checkbox"
-                                        class="mt-1 rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field"
+                                        class="mt-0.5 h-[1.125rem] w-[1.125rem] rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field sm:mt-1 sm:h-4 sm:w-4"
                                         :checked="isTaskSelected(task)"
                                         :disabled="task._optimistic"
                                         :aria-label="t('tasks.bulkSelectTask')"
@@ -3296,49 +3577,49 @@ onUnmounted(() => {
                                     />
                                     <input
                                         type="checkbox"
-                                        class="mt-1 rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field"
+                                        class="mt-0.5 h-[1.125rem] w-[1.125rem] rounded border-gt-border-strong text-gt-accent focus:ring-gt-accent-ring dark:bg-gt-field sm:mt-1 sm:h-4 sm:w-4"
                                         :checked="task.status === 'completed'"
                                         :disabled="task._optimistic"
                                         @click.stop
                                         @change="toggleComplete(task)"
                                     />
                                     <div class="min-w-0 flex-1">
+                                        <p
+                                            :class="[
+                                                'text-[0.9375rem] font-medium leading-snug text-gt-ink sm:text-sm',
+                                                task.status === 'completed'
+                                                    ? 'line-through text-gt-subtle'
+                                                    : '',
+                                            ]"
+                                        >
+                                            {{ task.title }}
+                                        </p>
                                         <div
-                                            class="flex flex-wrap items-center gap-x-2 gap-y-1"
+                                            class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5"
                                         >
                                             <TaskPriorityDueMeta
                                                 :task="task"
                                                 variant="list"
                                             />
-                                            <p
-                                                :class="[
-                                                    'min-w-[8rem] flex-1 font-medium text-gt-ink',
-                                                    task.status === 'completed'
-                                                        ? 'line-through text-gt-subtle'
-                                                        : '',
-                                                ]"
-                                            >
-                                                {{ task.title }}
-                                            </p>
                                             <span
                                                 v-if="
                                                     (navMode === 'today' ||
                                                         navMode === 'all') &&
                                                     task._taskListTitle
                                                 "
-                                                class="rounded bg-gt-field-muted px-2 py-0.5 text-xs text-gt-muted"
+                                                class="rounded bg-gt-field-muted px-1.5 py-0.5 text-[11px] text-gt-muted sm:text-xs"
                                             >
                                                 {{ task._taskListTitle }}
                                             </span>
                                         </div>
                                         <TaskNotesRichText
                                             v-if="task.notes"
-                                            class="mt-1 text-sm text-gt-muted"
+                                            class="mt-1 line-clamp-2 text-[13px] leading-relaxed text-gt-muted sm:text-sm"
                                             :text="task.notes"
                                         />
                                         <p
                                             v-if="task.recurrence?.length"
-                                            class="mt-1 text-xs text-gt-muted"
+                                            class="mt-0.5 text-[11px] text-gt-muted sm:text-xs"
                                         >
                                             {{ task.recurrence.join(', ') }}
                                         </p>
@@ -3480,18 +3761,42 @@ onUnmounted(() => {
                                         >
                                         {{ t('tasks.checkboxRowHint') }}
                                     </p>
-                                    <p
-                                        class="mb-3 text-xs text-gt-muted"
-                                    >
-                                        {{ t('tasks.kanbanHint') }}
-                                    </p>
+                                    <div class="mb-3 flex flex-wrap items-center gap-3">
+                                        <div
+                                            class="inline-flex gap-0.5 rounded-lg bg-gt-field-muted p-0.5"
+                                            role="group"
+                                            :aria-label="t('tasks.boardGroupLabel')"
+                                        >
+                                            <button
+                                                type="button"
+                                                class="min-h-9 touch-manipulation rounded-md px-3 py-1 text-xs font-medium transition"
+                                                :class="viewModeToggleClass(boardGroupMode === 'priority')"
+                                                @click="boardGroupMode = 'priority'"
+                                            >
+                                                {{ t('tasks.boardGroupPriority') }}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="min-h-9 touch-manipulation rounded-md px-3 py-1 text-xs font-medium transition"
+                                                :class="viewModeToggleClass(boardGroupMode === 'due')"
+                                                @click="boardGroupMode = 'due'"
+                                            >
+                                                {{ t('tasks.boardGroupDue') }}
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gt-muted">
+                                            {{ boardGroupMode === 'due' ? t('tasks.kanbanHintDue') : t('tasks.kanbanHint') }}
+                                        </p>
+                                    </div>
                                     <TasksKanbanBoard
                                         :buckets="kanbanBuckets"
+                                        :group-mode="boardGroupMode"
                                         :nav-mode="navMode"
                                         :is-task-selected="isTaskSelected"
                                         :task-key="taskKey"
                                         :list-id-for-task="listIdForTask"
                                         @drop-priority="onKanbanDropPriority"
+                                        @drop-due="onKanbanDropDue"
                                         @task-click="onKanbanTaskClick"
                                         @selection-click="onKanbanSelectionClick"
                                         @toggle-complete="toggleComplete"
@@ -4040,6 +4345,164 @@ onUnmounted(() => {
             </div>
         </Modal>
     </AuthenticatedLayout>
+
+    <!-- US-033: Duplicates modal -->
+    <Modal
+        :show="showDuplicatesModal"
+        max-width="2xl"
+        @close="showDuplicatesModal = false"
+    >
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gt-ink">
+                {{ t('tasks.duplicates.title') }}
+            </h3>
+
+            <p
+                v-if="duplicatesLoading"
+                class="mt-4 text-sm text-gt-muted"
+            >
+                {{ t('tasks.duplicates.scanning') }}
+            </p>
+
+            <p
+                v-else-if="duplicatesError"
+                class="mt-4 text-sm text-red-600"
+            >
+                {{ duplicatesError }}
+            </p>
+
+            <p
+                v-else-if="duplicatesIndexEmpty"
+                class="mt-4 text-sm text-gt-muted"
+            >
+                {{ t('tasks.duplicates.indexEmpty') }}
+            </p>
+
+            <p
+                v-else-if="duplicatePairs.length === 0"
+                class="mt-4 text-sm text-gt-muted"
+            >
+                {{ t('tasks.duplicates.empty') }}
+            </p>
+
+            <div
+                v-else
+                class="mt-4 max-h-[60vh] space-y-4 overflow-y-auto"
+            >
+                <div
+                    v-for="(pair, idx) in duplicatePairs"
+                    :key="idx"
+                    class="rounded-lg border border-gt-border bg-gt-field-muted/50 p-4"
+                >
+                    <div class="mb-2 flex items-center gap-2">
+                        <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            {{ t('tasks.duplicates.pairLabel') }}
+                        </span>
+                        <span class="text-xs text-gt-muted">
+                            {{ Math.round(pair.score * 100) }}%
+                        </span>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-md border border-gt-border bg-gt-raised p-3">
+                            <p class="text-sm font-medium text-gt-ink">{{ pair.taskA.title }}</p>
+                            <p class="mt-1 text-xs text-gt-muted">
+                                {{ t('tasks.duplicates.listLabel', { list: pair.taskA.taskListTitle }) }}
+                            </p>
+                            <p
+                                v-if="pair.taskA.notes"
+                                class="mt-1 line-clamp-2 text-xs text-gt-subtle"
+                            >
+                                {{ pair.taskA.notes }}
+                            </p>
+                            <button
+                                type="button"
+                                class="mt-2 rounded bg-gt-accent px-3 py-1 text-xs font-medium text-white hover:bg-gt-accent-hover"
+                                @click="startMerge(pair, 'A')"
+                            >
+                                {{ t('tasks.duplicates.keepLabel') }}
+                            </button>
+                        </div>
+                        <div class="rounded-md border border-gt-border bg-gt-raised p-3">
+                            <p class="text-sm font-medium text-gt-ink">{{ pair.taskB.title }}</p>
+                            <p class="mt-1 text-xs text-gt-muted">
+                                {{ t('tasks.duplicates.listLabel', { list: pair.taskB.taskListTitle }) }}
+                            </p>
+                            <p
+                                v-if="pair.taskB.notes"
+                                class="mt-1 line-clamp-2 text-xs text-gt-subtle"
+                            >
+                                {{ pair.taskB.notes }}
+                            </p>
+                            <button
+                                type="button"
+                                class="mt-2 rounded bg-gt-accent px-3 py-1 text-xs font-medium text-white hover:bg-gt-accent-hover"
+                                @click="startMerge(pair, 'B')"
+                            >
+                                {{ t('tasks.duplicates.keepLabel') }}
+                            </button>
+                        </div>
+                    </div>
+                    <p
+                        v-if="pair.keeperHint"
+                        class="mt-2 text-xs italic text-gt-muted"
+                    >
+                        {{ t('tasks.duplicates.keeperHint') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <PrimaryButton
+                    type="button"
+                    @click="showDuplicatesModal = false"
+                >
+                    {{ t('tasks.duplicates.close') }}
+                </PrimaryButton>
+            </div>
+        </div>
+    </Modal>
+
+    <!-- US-033: Merge confirmation -->
+    <Modal
+        :show="duplicateMergeConfirm !== null"
+        max-width="md"
+        @close="duplicateMergeConfirm = null"
+    >
+        <div
+            v-if="duplicateMergeConfirm"
+            class="p-6"
+        >
+            <h3 class="text-lg font-semibold text-gt-ink">
+                {{ t('tasks.duplicates.mergeConfirmTitle') }}
+            </h3>
+            <p class="mt-2 text-sm text-gt-ink-secondary">
+                {{
+                    t('tasks.duplicates.mergeConfirmBody', {
+                        title: duplicateMergeConfirm.keepSide === 'A'
+                            ? duplicateMergeConfirm.pair.taskB.title
+                            : duplicateMergeConfirm.pair.taskA.title,
+                    })
+                }}
+            </p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button
+                    type="button"
+                    class="rounded-md px-4 py-2 text-sm font-medium text-gt-ink-secondary hover:bg-gt-field-muted"
+                    @click="duplicateMergeConfirm = null"
+                >
+                    {{ t('tasks.duplicates.mergeConfirmCancel') }}
+                </button>
+                <button
+                    type="button"
+                    class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                    @click="confirmMerge"
+                >
+                    {{ t('tasks.duplicates.mergeConfirmOk') }}
+                </button>
+            </div>
+        </div>
+    </Modal>
 
     <TasksCommandPalette
         :show="showCommandPalette"

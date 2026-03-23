@@ -12,6 +12,7 @@ use App\Services\Google\TaskSearcher;
 use App\Services\Google\TaskViewAggregator;
 use App\Services\Semantic\EmbeddingClient;
 use App\Services\Semantic\TaskEmbeddingIndexer;
+use App\Services\Semantic\TaskDuplicateDetector;
 use App\Services\Semantic\TaskSemanticSearcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -116,6 +117,28 @@ class TasksController extends Controller
                 'ok' => true,
                 'indexed' => $count,
             ]);
+        });
+    }
+
+    public function duplicates(Request $request, TaskDuplicateDetector $detector): JsonResponse
+    {
+        if (! app(EmbeddingClient::class)->isConfigured()) {
+            return response()->json([
+                'message' => 'Semantic search is not configured.',
+                'code' => 'semantic_unavailable',
+            ], 422);
+        }
+
+        return $this->run(function () use ($request, $detector) {
+            $result = $detector->detect($request->user());
+
+            // Decode priority from title for display
+            foreach ($result['pairs'] as &$pair) {
+                $pair['taskA'] = $this->decodeDuplicateTask($pair['taskA']);
+                $pair['taskB'] = $this->decodeDuplicateTask($pair['taskB']);
+            }
+
+            return response()->json($result);
         });
     }
 
@@ -378,5 +401,25 @@ class TasksController extends Controller
 
             return $row;
         }, $rows);
+    }
+
+    /**
+     * Decode priority from a duplicate candidate task row.
+     *
+     * @param  array<string, mixed>  $task
+     * @return array<string, mixed>
+     */
+    private function decodeDuplicateTask(array $task): array
+    {
+        $decoded = $this->priorityCodec->decodeTask([
+            'id' => $task['taskId'] ?? '',
+            'title' => $task['title'] ?? '',
+            'notes' => $task['notes'] ?? '',
+            'status' => $task['status'] ?? 'needsAction',
+        ]);
+        $task['title'] = $decoded['title'] ?? $task['title'];
+        $task['priority'] = $decoded['priority'] ?? null;
+
+        return $task;
     }
 }

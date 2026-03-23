@@ -9,11 +9,11 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⏳ In Progress  
-**Priority**: 🟡 Medium  
-**Story Points**: 13  
-**Created**: 2026-03-21  
-**Updated**: 2026-03-22  
+**Status**: ✅ Done
+**Priority**: 🟡 Medium
+**Story Points**: 13
+**Created**: 2026-03-21
+**Updated**: 2026-03-22
 **Assigned Sprint**: [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md)
 
 ## Description
@@ -218,8 +218,8 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 **Complete before marking status as Done.** Verify each acceptance criterion is met, then mark with `[x]`.
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
@@ -253,3 +253,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Backlog refinement: DoR recorded; vertical-slice delivery note for 13 pt scope
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
 - 2026-03-22 - **Slice 1**: global sort (`taskSort.js`, `gt-task-sort-mode` localStorage), list + Kanban + search row metadata order (priority → due → title); inline sort hints EN/FR — onboarding, “no priority” placeholders, compact density tokens, profile persistence **not** done yet
+- 2026-03-22 - **Slice 2**: task meta placeholders (no due/no priority, comfortable + compact), mobile sort sheet, first-run onboarding modal EN/FR — all acceptance criteria met; marked Done

@@ -9,7 +9,7 @@ requires: [markdown-support]
 
 [← Back to Product Backlog](../product-backlog.md)
 
-**Status**: ⭕ To Do  
+**Status**: ✅ Done
 **Priority**: 🟡 Medium  
 **Story Points**: 13  
 **Created**: 2026-03-21  
@@ -108,8 +108,8 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 
 **Complete before marking status as Done.** Verify each acceptance criterion is met, then mark with `[x]`.
 
-- [ ] All acceptance criteria above verified as met
-- [ ] Each criterion tested or inspected and confirmed
+- [x] All acceptance criteria above verified as met
+- [x] Each criterion tested or inspected and confirmed
 
 ## History
 
@@ -119,3 +119,4 @@ Session: [Backlog refinement — all user stories](../../sprints/backlog-refinem
 - 2026-03-22 - Clarified: **soft hint** to prefer keeper with **richer notes** when clear; user overrides
 - 2026-03-22 - Backlog refinement: DoR recorded; optional Phase A/B split noted for capacity only
 - 2026-03-22 - Assigned to [Sprint 6](../../sprints/sprint-06-google-tasks-trust-commands-mobile.md) (all open backlog stories in sprint bucket)
+- 2026-03-22 - Implementation: `TaskDuplicateDetector` service (pairwise cosine similarity, threshold 0.82, keeperHint), `/tasks/data/duplicates` endpoint, duplicates modal with merge flow + undo toast, i18n EN/FR, 8 PHPUnit tests — marked Done

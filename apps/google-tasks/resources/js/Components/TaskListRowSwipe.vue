@@ -222,13 +222,14 @@ function onMoreZoneClick() {
         v-else
         class="relative overflow-hidden touch-pan-y"
     >
+        <!-- Right-swipe zone: Complete / Incomplete -->
         <div
-            class="absolute inset-y-0 left-0 z-0 flex w-[5.5rem] items-stretch bg-emerald-600 text-white dark:bg-emerald-700"
+            class="absolute inset-y-0 left-0 z-0 flex w-[5.5rem] items-stretch bg-emerald-500/90 dark:bg-emerald-600/80"
             :aria-hidden="translateXPx <= 0 ? 'true' : 'false'"
         >
             <button
                 type="button"
-                class="flex h-full min-h-[3rem] w-full items-center justify-center px-2 text-center text-xs font-semibold leading-tight text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                class="flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center gap-0.5 px-2 text-center text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 :aria-label="
                     isCompleted
                         ? t('tasks.swipe.markIncomplete')
@@ -236,29 +237,40 @@ function onMoreZoneClick() {
                 "
                 @click.stop="onCompleteZoneClick"
             >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span class="text-[10px] font-semibold uppercase tracking-wide">
                 {{
                     isCompleted
                         ? t('tasks.swipe.incompleteShort')
                         : t('tasks.swipe.completeShort')
                 }}
+                </span>
             </button>
         </div>
+        <!-- Left-swipe zone: More actions -->
         <div
-            class="absolute inset-y-0 right-0 z-0 flex w-[5.5rem] items-stretch bg-gt-field-muted dark:bg-gt-raised"
+            class="absolute inset-y-0 right-0 z-0 flex w-[5.5rem] items-stretch bg-slate-200/90 dark:bg-slate-700/80"
             :aria-hidden="translateXPx >= 0 ? 'true' : 'false'"
         >
             <button
                 type="button"
-                class="flex h-full min-h-[3rem] w-full items-center justify-center px-2 text-center text-xs font-semibold leading-tight text-gt-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-gt-accent-ring"
+                class="flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center gap-0.5 px-2 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gt-accent-ring"
                 :aria-label="t('tasks.swipe.moreActions')"
                 @click.stop="onMoreZoneClick"
             >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                </svg>
+                <span class="text-[10px] font-semibold uppercase tracking-wide">
                 {{ t('tasks.swipe.moreShort') }}
+                </span>
             </button>
         </div>
         <div
             ref="paneRef"
-            class="relative z-[1]"
+            class="relative z-[1] bg-gt-raised dark:bg-gt-raised"
             :class="settling ? 'transition-transform duration-200 ease-out' : ''"
             :style="{
                 transform: `translate3d(${translateXPx}px,0,0)`,

@@ -13,11 +13,74 @@
     "dashboard": {
         "title": "Tableau de bord",
         "loggedIn": "Vous êtes connecté·e !",
-        "welcomeTitle": "Bienvenue",
+        "welcomeTitle": "Productivité personnelle",
+        "subtitle": "Basé sur les tâches que vous utilisez dans cette appli + les données Google Tasks synchronisées.",
         "connectedLead": "Google Tasks est connecté. Ouvrez Tâches pour Aujourd’hui, la boîte de réception, vos listes, filtres, tableau et raccourcis clavier (?).",
         "disconnectedLead": "Connectez Google une fois pour charger vos listes. Les modifications se synchronisent avec Google Tasks.",
         "openTasks": "Ouvrir Tâches",
-        "manageConnection": "Profil et connexion"
+        "manageConnection": "Profil et connexion",
+        "howMetrics": "Comment les métriques fonctionnent",
+        "howMetricsBody": "Les compteurs de création utilisent la date de création Google Tasks si disponible, sinon la date à laquelle cette appli a vu la tâche pour la première fois. Les compteurs de complétion utilisent l’horodatage de complétion de Google. Les jours sont regroupés selon le fuseau horaire de votre profil ({tz}). Les tâches complétées uniquement dans d’autres clients apparaissent après synchronisation.",
+        "range7": "7 j",
+        "range14": "14 j",
+        "range30": "30 j",
+        "range90": "90 j",
+        "rangeLabel": "Période",
+        "tzLabel": "FH : {tz}",
+        "loading": "Calcul du tableau de bord…",
+        "emptyNoConnection": "Connectez Google Tasks pour commencer",
+        "emptyNoData": "Pas encore assez d’historique — revenez dans quelques jours.",
+        "staleDisclaimer": "Dernier calcul : {date}. Les données peuvent ne pas refléter d’autres clients jusqu’à la reconnexion.",
+        "insights": {
+            "periodTitle": "Résumé de la période",
+            "created": "Créées",
+            "completed": "Terminées",
+            "netFlowTitle": "Flux net",
+            "netFlowPositive": "Vous terminez plus vite que vous ne capturez",
+            "netFlowNegative": "Vous capturez plus vite que vous ne terminez",
+            "netFlowNeutral": "Capture et complétion équilibrées",
+            "consistencyTitle": "Régularité",
+            "activeDays": "{count} / {total} jours actifs",
+            "activeDaysExplain": "Jours avec au moins une tâche terminée",
+            "priorTitle": "vs {days} j précédents",
+            "priorCompletions": "Complétions",
+            "priorCreated": "Créées",
+            "deltaUp": "+{pct} %",
+            "deltaDown": "{pct} %",
+            "noPrior": "Pas assez de données antérieures"
+        },
+        "chart": {
+            "title": "Débit",
+            "legendCreated": "Créées",
+            "legendCompleted": "Terminées",
+            "showTable": "Afficher le tableau",
+            "hideTable": "Masquer le tableau",
+            "colDate": "Date",
+            "colCreated": "Créées",
+            "colCompleted": "Terminées",
+            "srSummary": "Graphique de débit : {created} tâches créées, {completed} terminées sur {days} jours."
+        },
+        "weekday": {
+            "title": "Rythme hebdomadaire",
+            "peakCallout": "Le plus de complétions : {day}",
+            "noPeak": "Aucune complétion sur cette période"
+        },
+        "leadTime": {
+            "title": "Délai de traitement",
+            "median": "Médiane",
+            "p90": "p90",
+            "days": "{n} j",
+            "longTail": "{count} tâches > 30 j",
+            "noData": "Aucune tâche terminée avec date de création dans cette plage"
+        },
+        "dueDiscipline": {
+            "title": "Respect des échéances",
+            "onTime": "À l’heure",
+            "overdue": "En retard",
+            "noDue": "Sans échéance",
+            "noData": "Aucune complétion sur cette plage"
+        },
+        "trustStrip": "Les compteurs reflètent les tâches vues par cette appli. D’autres clients peuvent se synchroniser plus tard."
     },
     "auth": {
         "login": "Connexion",
@@ -109,7 +172,7 @@
         "helpBullet3": "Les nouvelles tâches créées depuis Aujourd’hui, la boîte de réception ou Toutes les listes le sont dans cette liste par défaut.",
         "helpBulletAll": "Toutes les listes regroupe chaque tâche de chaque liste Google ; le libellé sur la ligne indique la liste d’origine. Le filtre « Liste » permet de se concentrer sur une liste sans changer de vue.",
         "helpBulletBulk": "Actions groupées : utilisez la première case à cocher sur chaque ligne, ou Ctrl/Cmd+clic pour basculer et Maj+clic pour une plage. Sur petit écran, utilisez les cases — pas de multi-sélection tactile.",
-        "helpBulletFilters": "Filtres et tableau : ils s’appliquent à la vue actuelle (Aujourd’hui / Boîte / liste). Les colonnes sont P1–P4 selon la priorité ; glissez une carte vers une autre colonne pour changer la priorité, ou utilisez Détails pour la priorité et le reste.",
+        "helpBulletFilters": "Filtres et tableau : ils s’appliquent à la vue actuelle (Aujourd’hui / Boîte / liste). Les colonnes groupent par priorité (P1–P4) ou par échéance ; glissez une carte pour changer la priorité ou replanifier, ou utilisez Détails.",
         "retry": "Réessayer",
         "errors": {
             "rateLimited": "Google limite le débit (429). Le rafraîchissement est ralenti ; réessayez bientôt.",
@@ -134,6 +197,7 @@
         "listFieldLabel": "Liste",
         "pollLine": "Rafraîchissement : {current} ms · cible {target} ms",
         "newTask": "Nouvelle tâche",
+        "addTaskPrompt": "Ajouter une tâche…",
         "titlePlaceholder": "Titre",
         "add": "Ajouter",
         "dueOptional": "Échéance (facultatif)",
@@ -255,9 +319,19 @@
         "filtersToggle": "Filtres et affichage",
         "noFilterMatchTitle": "Aucune tâche ne correspond",
         "noFilterMatchBody": "Modifiez ou réinitialisez les filtres pour afficher plus de tâches.",
-        "kanbanRegion": "Tableau par priorité",
+        "kanbanRegion": "Tableau de tâches",
         "kanbanEmptyColumn": "Déposer des tâches ici",
         "kanbanHint": "Colonnes P1–P4 (priorité décodée du titre). Glissez une carte pour changer la priorité.",
+        "boardGroupLabel": "Tableau",
+        "boardGroupPriority": "Priorité",
+        "boardGroupDue": "Par échéance",
+        "kanbanHintDue": "Colonnes par horizon d'échéance. Glissez une carte vers une autre colonne pour replanifier.",
+        "kanbanDueLane": {
+            "overdue": "En retard",
+            "today": "Aujourd'hui",
+            "thisWeek": "Cette semaine",
+            "laterNoDate": "Plus tard / Sans date"
+        },
         "defer": {
             "menuSummary": "Reporter",
             "menuAria": "Raccourcis de date d’échéance",
@@ -268,7 +342,7 @@
             "summaryTooltip": "Demain : jour calendaire suivant (9 h si pas d’échéance ; sinon même heure). Semaine prochaine : lundi 00 h au début de la semaine ISO suivante. Week-end : prochain samedi 9 h locale (aujourd’hui 9 h si nous sommes samedi matin)."
         },
         "swipe": {
-            "rowHint": "Glissez vers la droite pour terminer, vers la gauche pour plus d’actions. Appui long sur une ligne pour le même menu. Sur écran large ou à la souris, les boutons de ligne restent visibles.",
+            "rowHint": "Glisser droite → terminé · gauche → plus · appui long → menu",
             "markComplete": "Marquer la tâche terminée",
             "markIncomplete": "Marquer la tâche non terminée",
             "moreActions": "Plus d’actions : reporter, déplacer, supprimer",
@@ -296,6 +370,24 @@
             "cmdAll": "Aller à Toutes les listes",
             "quickAddHint": "Utilise la même liste cible que la ligne « Nouvelle tâche » (Ajouter à la liste / défaut de la vue).",
             "back": "Retour"
+        },
+        "duplicates": {
+            "menuLabel": "Chercher les doublons…",
+            "title": "Doublons possibles",
+            "scanning": "Recherche de tâches similaires…",
+            "empty": "Aucune tâche similaire trouvée. Vos listes sont propres.",
+            "indexEmpty": "L'index sémantique est vide. Construisez-le d'abord (zone de recherche) pour rechercher les doublons.",
+            "pairLabel": "Doublon probable",
+            "listLabel": "Liste : {list}",
+            "keeperHint": "La tâche avec plus de notes est souvent le meilleur choix à garder.",
+            "keepLabel": "Garder",
+            "mergeAction": "Supprimer l'autre",
+            "mergeConfirmTitle": "Supprimer le doublon ?",
+            "mergeConfirmBody": "Cela marquera « {title} » comme terminée dans Google Tasks. La tâche que vous avez choisie reste inchangée.",
+            "mergeConfirmCancel": "Annuler",
+            "mergeConfirmOk": "Supprimer le doublon",
+            "close": "OK",
+            "error": "Impossible de charger les doublons."
         },
         "undo": {
             "completed": "Tâche terminée.",
