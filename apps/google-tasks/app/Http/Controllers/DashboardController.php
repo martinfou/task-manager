@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if (! $user->hasGoogleTasksConnection()) {
-            $cached = $service->getCached($user);
+            $cached = $service->getCached($user, $rangeDays);
             if ($cached) {
                 return response()->json($cached);
             }
@@ -47,6 +47,29 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Cache-first: return cached stats immediately if fresh
+        $cached = $service->getCachedIfFresh($user, $rangeDays);
+        if ($cached && ! $cached['stale']) {
+            return response()->json($cached);
+        }
+
+        // Stale cache exists: return it immediately and refresh in the background
+        if ($cached && $cached['stale']) {
+            defer(function () use ($user, $service, $rangeDays) {
+                try {
+                    $this->refreshStats($user, $service, $rangeDays);
+                } catch (\Throwable $e) {
+                    Log::warning('dashboard_deferred_refresh_failed', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            });
+
+            return response()->json($cached);
+        }
+
+        // No cache: live computation (first visit or new range)
         try {
             return $this->fetchStats($user, $service, $rangeDays);
         } catch (GoogleTasksRateLimitedException $e) {
@@ -55,8 +78,7 @@ class DashboardController extends Controller
                 'retry_after' => $e->retryAfterSeconds,
             ]);
 
-            // Fall back to cache
-            $cached = $service->getCached($user);
+            $cached = $service->getCached($user, $rangeDays);
             if ($cached) {
                 return response()->json([...$cached, 'rateLimited' => true]);
             }
@@ -73,8 +95,7 @@ class DashboardController extends Controller
                 'code' => $e->errorCode,
             ]);
 
-            // Fall back to cache on API errors
-            $cached = $service->getCached($user);
+            $cached = $service->getCached($user, $rangeDays);
             if ($cached) {
                 return response()->json([...$cached, 'apiError' => true]);
             }
@@ -94,5 +115,11 @@ class DashboardController extends Controller
         $stats = $service->compute($user, $client, $rangeDays);
 
         return response()->json($stats);
+    }
+
+    private function refreshStats($user, DashboardStatsService $service, int $rangeDays): void
+    {
+        $client = new GoogleTasksClient($user, app(GoogleOAuthTokenService::class));
+        $service->compute($user, $client, $rangeDays);
     }
 }

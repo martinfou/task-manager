@@ -4,7 +4,7 @@
  * @typedef {'all' | 'needsAction' | 'completed'} CompletionFilter
  * @typedef {'any' | 'overdue' | 'today' | 'hasDue' | 'noDue'} DueFilter
  * @typedef {'all' | 'p1' | 'p2' | 'p3' | 'p4'} PriorityFilter
- * @typedef {{ completion: CompletionFilter, due: DueFilter, priority: PriorityFilter, listId: string | null }} TaskFilterState
+ * @typedef {{ completion: CompletionFilter, due: DueFilter, priority: PriorityFilter, listId: string | null, date: string | null, weekday: string | null }} TaskFilterState
  */
 
 /**
@@ -107,6 +107,24 @@ export function taskMatchesFilters(task, f) {
     }
 
     const due = parseDueDate(task.due);
+
+    // US-042: Drill-down filters from dashboard
+    if (f.date) {
+        if (!due) return false;
+        // Compare YYYY-MM-DD
+        const dStr = due.toISOString().split('T')[0];
+        if (dStr !== f.date) {
+            return false;
+        }
+    }
+
+    if (f.weekday) {
+        if (!due) return false;
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        if (days[due.getDay()] !== f.weekday.toLowerCase()) {
+            return false;
+        }
+    }
 
     if (f.due === 'noDue') {
         if (due) {

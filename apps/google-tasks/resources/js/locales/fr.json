@@ -1,4 +1,40 @@
 {
+    "landing": {
+        "pageTitle": "Google Tasks — Réinventé",
+        "brand": "Google Tasks Client",
+        "heroTitle": "Une meilleure façon de gérer vos Google Tasks",
+        "heroSubtitle": "Niveaux de priorité, tableaux Kanban, recherche intelligente, statistiques de productivité et actions par glissement — le tout synchronisé avec votre compte Google.",
+        "featuresTitle": "Tout ce qu'il faut pour rester au sommet de vos tâches",
+        "ctaSignUp": "Commencer gratuitement",
+        "ctaLogIn": "Se connecter",
+        "ctaLoggedIn": "Accéder à mes tâches",
+        "goToTasks": "Mes tâches",
+        "logIn": "Connexion",
+        "signUp": "Inscription",
+        "googleCallout": "Vos tâches restent dans Google. Cette application lit et écrit dans Google Tasks via l'API officielle — vos données ne sont jamais stockées sur nos serveurs au-delà de la session.",
+        "feature": {
+            "priority": {
+                "title": "Niveaux de priorité",
+                "desc": "Classez vos tâches P1–P4 et triez par urgence. La priorité est encodée dans Google Tasks et vous suit partout."
+            },
+            "kanban": {
+                "title": "Tableau Kanban",
+                "desc": "Déplacez vos tâches entre les colonnes de priorité ou d'échéance. Replanifiez en glissant dans un nouveau créneau."
+            },
+            "search": {
+                "title": "Recherche intelligente",
+                "desc": "Recherche plein texte et sémantique dans toutes vos listes. Détectez les doublons grâce à la similarité par IA."
+            },
+            "dashboard": {
+                "title": "Statistiques de productivité",
+                "desc": "Graphiques de débit, délai de traitement, discipline d'échéance et tendances par jour. Comprenez où va votre temps."
+            },
+            "mobile": {
+                "title": "Actions mobiles",
+                "desc": "Glissez pour terminer, appuyez longuement pour plus, reportez en un geste. Conçu pour votre téléphone."
+            }
+        }
+    },
     "nav": {
         "dashboard": "Tableau de bord",
         "tasks": "Tâches",
@@ -39,6 +75,9 @@
             "netFlowPositive": "Vous terminez plus vite que vous ne capturez",
             "netFlowNegative": "Vous capturez plus vite que vous ne terminez",
             "netFlowNeutral": "Capture et complétion équilibrées",
+            "backlogGrowing": "Augmentation du retard",
+            "focusScore": "Indice de focus",
+            "focusScoreDesc": "Complétions vs créations",
             "consistencyTitle": "Régularité",
             "activeDays": "{count} / {total} jours actifs",
             "activeDaysExplain": "Jours avec au moins une tâche terminée",
@@ -62,6 +101,8 @@
         },
         "weekday": {
             "title": "Rythme hebdomadaire",
+            "legendCreated": "Créées",
+            "legendCompleted": "Terminées",
             "peakCallout": "Le plus de complétions : {day}",
             "noPeak": "Aucune complétion sur cette période"
         },
@@ -70,14 +111,17 @@
             "median": "Médiane",
             "p90": "p90",
             "days": "{n} j",
+            "lessThanDay": "< 1 j",
             "longTail": "{count} tâches > 30 j",
-            "noData": "Aucune tâche terminée avec date de création dans cette plage"
+            "noData": "Aucune tâche terminée avec date de création dans cette plage",
+            "distribution": "Distribution"
         },
         "dueDiscipline": {
             "title": "Respect des échéances",
             "onTime": "À l’heure",
             "overdue": "En retard",
             "noDue": "Sans échéance",
+            "fixNoDue": "Ajouter dates",
             "noData": "Aucune complétion sur cette plage"
         },
         "trustStrip": "Les compteurs reflètent les tâches vues par cette appli. D’autres clients peuvent se synchroniser plus tard."

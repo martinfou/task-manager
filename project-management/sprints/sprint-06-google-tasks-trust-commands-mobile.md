@@ -8,7 +8,7 @@ compatible_with: [product-backlog]
 
 [← Back to Product Backlog](../backlog/product-backlog.md)
 
-**Sprint status**: **Active** — started 2026-03-22 after [Sprint 5](sprint-05-google-tasks-ux-visibility.md) closed.
+**Sprint status**: **Closed** — started 2026-03-22; all 12 stories completed 2026-03-23; review + retro 2026-03-23.
 
 **Sprint Goal**: Ship the **usability pack** (undo, command palette, snooze/defer, mobile swipe) **and** complete **all remaining open product backlog stories** ([US-027](../backlog/user-stories/US-027-consistent-dates-priority-across-views.md)–[US-038](../backlog/user-stories/US-038-due-date-timezone-display.md)) in this sprint bucket.
 
@@ -191,11 +191,63 @@ compatible_with: [product-backlog]
 
 ## Sprint Summary
 
-**Sprint Burndown**: *Update as stories complete.*
+**Sprint Burndown**: 91/91 pts completed ✅ (plus US-039, 5 pts, from backlog)
 
-**Sprint Review Notes**: *TBD*
+**Velocity**: **91** pts (Sprint 5: 24, Sprint 4: 18)
 
-**Sprint Retrospective Notes**: *TBD*
+**Sprint Review Date**: 2026-03-23
+**Sprint Retrospective Date**: 2026-03-23
+
+### Sprint Review Notes
+
+**Demonstrated**: All 12 stories (US-027–US-038) demoed and verified:
+- **Undo toast** (US-029): complete/delete/move undo with auto-revert timer
+- **Command palette** (US-028): ⌘K modal with navigation, quick-add, mobile menu entry
+- **Snooze/defer** (US-030): preset date picker (tomorrow, next week, weekend, custom)
+- **Mobile swipe** (US-031): bidirectional gesture with long-press fallback
+- **Enter to save** (US-034): Enter/Ctrl+Enter handlers in task edit panel
+- **Consistent dates & priority** (US-027): global sort, meta placeholders, onboarding, mobile sort sheet
+- **Kanban due lanes** (US-032): due-date grouping, drop-to-reschedule, board group toggle
+- **Semantic duplicates** (US-033): cosine similarity detector, merge modal, undo
+- **Dashboard insights** (US-036): SVG charts, 4 insight cards, 3 secondary reports, cache for offline
+- **Backup/restore** (US-035): backup script, retention policy, dry-run verified
+- **Instant list switch** (US-037): in-memory cache-first with background refresh
+- **Due date timezone** (US-038): date-only detection, local noon parse, formatDueDate
+
+**Also shipped** (from backlog, not in sprint commitment):
+- **Mobile visual polish** (US-039): swipe zone bg fix, hide selection checkbox, collapsible composer, compact sort bar, no-priority hide on mobile, stronger section headers
+
+**Feedback**: Dashboard load time needs improvement (addressed by new US-040). Homepage is still default Laravel (addressed by new US-041).
+
+**New backlog items created**:
+- US-040: Dashboard pre-compute cache (5 pts)
+- US-041: Branded landing page (5 pts)
+
+### Sprint Retrospective Notes
+
+**What went well**:
+1. **Massive throughput**: 91 pts delivered in one sprint — 4× Sprint 4 velocity. AI-assisted development scales well for this project shape.
+2. **Test coverage**: Every feature shipped with automated tests (Vitest + PHPUnit). 64 JS tests, 9 PHP feature tests, 8 unit tests for duplicates.
+3. **Composable architecture**: `useTaskCache`, `useLocaleDate`, `useUndoToast` — clean separation made features easy to wire into Index.vue.
+4. **Cache-first pattern** (US-037): instant list switching is a noticeable UX improvement.
+5. **CI catches real issues**: Pint lint caught style issues before they reached production.
+
+**What could be improved**:
+1. **Index.vue is too large** (~4,000 lines): every feature adds to the monolith. Extract pages or composables before it becomes unmanageable. (RI-004 still open)
+2. **RI-004 / RI-005 not completed**: Documentation improvements carried from Sprint 5 retro were deprioritized in favor of feature work. Need to schedule them.
+3. **91 pts is unsustainable as a norm**: This sprint was a deliberate "clear the backlog" push. Future sprints should target 20–30 pts with higher polish per story.
+4. **No E2E tests**: Playwright tests are in CI but no new E2E scenarios were added this sprint. Coverage gap for swipe, command palette, dashboard.
+5. **Dashboard is slow on first load**: Live computation from Google API on every visit. US-040 addresses this.
+
+**Retrospective improvements**:
+
+| ID | Improvement | Owner | Due |
+|----|-------------|-------|-----|
+| RI-004 | Index.vue integration playbook (carry-forward) | Team | Sprint 7 |
+| RI-005 | All-tasks aggregate 429 runbook (carry-forward) | Team | Sprint 7 |
+| RI-006 | Add Playwright E2E for at least swipe, command palette, dashboard | Team | Sprint 7 |
+
+**Process changes**: Target 20–30 pts for Sprint 7; focus on polish and docs alongside features.
 
 ---
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DashboardStatsCache;
 use App\Services\Google\GoogleOAuthTokenService;
 use App\Services\Google\GoogleTasksApiException;
 use App\Services\Google\GoogleTasksClient;
@@ -253,6 +254,7 @@ class TasksController extends Controller
             }
 
             $created = $client->insertTask($taskList, $body, []);
+            DashboardStatsCache::markStaleForUser($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($created));
         });
@@ -299,6 +301,7 @@ class TasksController extends Controller
             }
 
             $updated = $client->patchTask($taskList, $task, $body);
+            DashboardStatsCache::markStaleForUser($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($updated));
         });
@@ -316,6 +319,7 @@ class TasksController extends Controller
             $moved = $client->moveTask($taskList, $task, [
                 'destinationTasklist' => $validated['destinationTasklist'],
             ]);
+            DashboardStatsCache::markStaleForUser($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($moved));
         });
@@ -326,6 +330,7 @@ class TasksController extends Controller
         return $this->run(function () use ($request, $taskList, $task) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $client->deleteTask($taskList, $task);
+            DashboardStatsCache::markStaleForUser($request->user()->id);
 
             return response()->json(['ok' => true]);
         });

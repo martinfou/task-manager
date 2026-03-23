@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 
@@ -19,8 +19,10 @@ const error = ref(null);
 const showHowMetrics = ref(false);
 const showDataTable = ref(false);
 const weekdayOpen = ref(false);
-const leadTimeOpen = ref(false);
-const dueDisciplineOpen = ref(false);
+const leadTimeOpen = ref(true);
+const dueDisciplineOpen = ref(true);
+
+const tooltip = ref({ visible: false, x: 0, y: 0, title: '', body: '' });
 
 const RANGES = [7, 14, 30, 90];
 
@@ -73,6 +75,18 @@ const netFlowLabel = computed(() => {
     return t('dashboard.insights.netFlowNeutral');
 });
 
+const isBacklogGrowing = computed(() => {
+    if (!insights.value) return false;
+    return insights.value.netFlow < 0 || (insights.value.creationDelta > insights.value.completionDelta);
+});
+
+const focusScore = computed(() => {
+    if (!insights.value) return 0;
+    const { totalCreated, totalCompleted } = insights.value;
+    if (totalCreated + totalCompleted === 0) return 0;
+    return Math.round((totalCompleted / (totalCreated + totalCompleted)) * 100);
+});
+
 // Chart helpers
 const chartMax = computed(() => {
     if (!daily.value.length) return 1;
@@ -84,7 +98,7 @@ const chartMax = computed(() => {
 });
 
 function barHeight(val) {
-    return Math.max(1, (val / chartMax.value) * 120);
+    return Math.max(0.5, (val / chartMax.value) * 120);
 }
 
 function shortDate(dateStr) {
@@ -95,11 +109,11 @@ function shortDate(dateStr) {
 // Weekday bar helpers
 const weekdayMax = computed(() => {
     if (!weekday.value?.days) return 1;
-    return Math.max(1, ...weekday.value.days.map(d => d.count));
+    return Math.max(1, ...weekday.value.days.flatMap(d => [d.completed, d.created]));
 });
 
 function weekdayBarWidth(count) {
-    return Math.max(2, (count / weekdayMax.value) * 100);
+    return Math.max(1, (count / weekdayMax.value) * 100);
 }
 
 const dueDisciplineTotal = computed(() => dueDiscipline.value?.total ?? 0);
@@ -107,6 +121,39 @@ const dueDisciplineTotal = computed(() => dueDiscipline.value?.total ?? 0);
 function duePct(val) {
     if (!dueDisciplineTotal.value) return 0;
     return Math.round((val / dueDisciplineTotal.value) * 100);
+}
+
+// Interactivity handlers
+function updateTooltip(e, title, body) {
+    tooltip.value = {
+        visible: true,
+        x: e.clientX,
+        y: e.clientY + 10,
+        title,
+        body
+    };
+}
+
+function hideTooltip() {
+    tooltip.value.visible = false;
+}
+
+function onBarClick(date, status) {
+    router.visit(route('tasks.index'), {
+        data: {
+            date,
+            status: status === 'completed' ? 'completed' : 'needsAction'
+        }
+    });
+}
+
+function onWeekdayClick(dayName, status) {
+    router.visit(route('tasks.index'), {
+        data: {
+            weekday: dayName.toLowerCase(),
+            status: status === 'completed' ? 'completed' : 'needsAction'
+        }
+    });
 }
 
 const primaryLinkClass =
@@ -135,8 +182,8 @@ const secondaryLinkClass =
             </div>
         </template>
 
-        <div class="py-6 sm:py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="py-4 sm:py-8">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
 
                 <!-- How metrics work (collapsible) -->
                 <div
@@ -148,28 +195,32 @@ const secondaryLinkClass =
 
                 <!-- Header row: subtitle + range selector -->
                 <div class="gt-surface rounded-lg p-4">
-                    <p class="text-sm text-gt-muted mb-3">
-                        {{ t('dashboard.subtitle') }}
-                    </p>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <span class="text-xs font-medium text-gt-ink-secondary">{{ t('dashboard.rangeLabel') }}</span>
-                        <div class="inline-flex rounded-md border border-gt-border" role="radiogroup" :aria-label="t('dashboard.rangeLabel')">
-                            <button
-                                v-for="r in RANGES"
-                                :key="r"
-                                type="button"
-                                role="radio"
-                                :aria-checked="rangeDays === r"
-                                class="px-3 py-1.5 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md"
-                                :class="rangeDays === r
-                                    ? 'bg-gt-accent-strong text-white'
-                                    : 'bg-gt-raised text-gt-ink-secondary hover:bg-gt-field-muted'"
-                                @click="rangeDays = r"
-                            >
-                                {{ t(`dashboard.range${r}`) }}
-                            </button>
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                        <div class="grow min-w-[200px]">
+                            <p class="text-xs text-gt-muted">
+                                {{ t('dashboard.subtitle') }}
+                            </p>
                         </div>
-                        <span class="ml-auto text-xs text-gt-muted">{{ t('dashboard.tzLabel', { tz: userTimezone }) }}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-medium text-gt-ink-secondary">{{ t('dashboard.rangeLabel') }}</span>
+                            <div class="inline-flex rounded-md border border-gt-border" role="radiogroup" :aria-label="t('dashboard.rangeLabel')">
+                                <button
+                                    v-for="r in RANGES"
+                                    :key="r"
+                                    type="button"
+                                    role="radio"
+                                    :aria-checked="rangeDays === r"
+                                    class="px-2.5 py-1 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md"
+                                    :class="rangeDays === r
+                                        ? 'bg-gt-accent-strong text-white'
+                                        : 'bg-gt-raised text-gt-ink-secondary hover:bg-gt-field-muted'"
+                                    @click="rangeDays = r"
+                                >
+                                    {{ t(`dashboard.range${r}`) }}
+                                </button>
+                            </div>
+                            <span class="text-[10px] text-gt-muted whitespace-nowrap">{{ t('dashboard.tzLabel', { tz: userTimezone }) }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -207,86 +258,190 @@ const secondaryLinkClass =
                 <template v-else-if="stats && !isEmpty">
 
                     <!-- Stale disclaimer -->
-                    <div v-if="isCached" class="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-xs text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300">
+                    <div v-if="isCached" class="rounded-lg border border-yellow-300 bg-yellow-50 p-2 text-xs text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300">
                         {{ t('dashboard.staleDisclaimer', { date: new Date(stats.cachedAt).toLocaleString() }) }}
                     </div>
 
                     <!-- Insight cards -->
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                         <!-- Period summary -->
-                        <div class="gt-surface rounded-lg p-4 space-y-2">
-                            <h3 class="text-xs font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.periodTitle') }}</h3>
-                            <div class="flex items-baseline gap-4">
+                        <div class="gt-surface rounded-lg p-3 space-y-1 glassmorphism">
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.periodTitle') }}</h3>
+                            <div class="flex items-baseline gap-3">
                                 <div>
-                                    <span class="text-2xl font-bold text-gt-ink">{{ insights.totalCreated }}</span>
-                                    <span class="ml-1 text-xs text-gt-muted">{{ t('dashboard.insights.created') }}</span>
+                                    <span class="text-xl font-bold text-gt-ink">{{ insights.totalCreated }}</span>
+                                    <span class="ml-1 text-[10px] text-gt-muted">{{ t('dashboard.insights.created') }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-2xl font-bold text-gt-ink">{{ insights.totalCompleted }}</span>
-                                    <span class="ml-1 text-xs text-gt-muted">{{ t('dashboard.insights.completed') }}</span>
+                                    <span class="text-xl font-bold text-gt-ink">{{ insights.totalCompleted }}</span>
+                                    <span class="ml-1 text-[10px] text-gt-muted">{{ t('dashboard.insights.completed') }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Net flow -->
-                        <div class="gt-surface rounded-lg p-4 space-y-2">
-                            <h3 class="text-xs font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.netFlowTitle') }}</h3>
-                            <p class="text-2xl font-bold" :class="insights.netFlow > 0 ? 'text-green-600 dark:text-green-400' : insights.netFlow < 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gt-ink'">
-                                {{ insights.netFlow > 0 ? '+' : '' }}{{ insights.netFlow }}
-                            </p>
-                            <p class="text-xs text-gt-muted">{{ netFlowLabel }}</p>
+                        <div class="gt-surface rounded-lg p-3 space-y-1 glassmorphism">
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.netFlowTitle') }}</h3>
+                            <div class="flex items-baseline justify-between overflow-hidden">
+                                <p class="text-xl font-bold" :class="insights.netFlow > 0 ? 'text-green-600 dark:text-green-400' : insights.netFlow < 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gt-ink'">
+                                    {{ insights.netFlow > 0 ? '+' : '' }}{{ insights.netFlow }}
+                                </p>
+                                <span v-if="isBacklogGrowing" class="text-[8px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold uppercase tracking-tight shrink-0 ml-2 animate-pulse">
+                                    {{ t('dashboard.insights.backlogGrowing') }}
+                                </span>
+                            </div>
+                            <p class="text-[10px] text-gt-muted leading-tight line-clamp-1">{{ netFlowLabel }}</p>
                         </div>
 
+                        <!-- Lead Time -->
+                        <div
+                            v-if="leadTime && leadTime.median !== null"
+                            class="gt-surface rounded-lg p-3 space-y-1 glassmorphism group relative overflow-hidden"
+                        >
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.leadTime.title') }}</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-xl font-bold text-gt-ink">
+                                    {{ leadTime.median === 0 ? t('dashboard.leadTime.lessThanDay') : leadTime.median + 'd' }}
+                                </span>
+                                <span class="text-[10px] font-semibold text-gt-muted uppercase">Median</span>
+                            </div>
+                            <div class="text-[10px] text-gt-muted">
+                                p90: {{ leadTime.p90 === 0 ? t('dashboard.leadTime.lessThanDay') : leadTime.p90 + 'd' }}
+                            </div>
+                            <!-- Micro Hist -->
+                            <div v-if="leadTime.buckets" class="flex items-end gap-0.5 h-4 opacity-50 group-hover:opacity-100 transition-opacity mt-1">
+                                <div
+                                    v-for="(count, bucket) in leadTime.buckets"
+                                    :key="bucket"
+                                    class="flex-1 bg-gt-accent/60 rounded-t-[1px]"
+                                    :style="{ height: Math.max(10, (count / Math.max(1, ...Object.values(leadTime.buckets))) * 100) + '%' }"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <!-- Focus Score -->
+                        <div class="gt-surface rounded-lg p-3 space-y-1 glassmorphism relative overflow-hidden group">
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.focusScore') }}</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-xl font-bold text-gt-ink">{{ focusScore }}%</span>
+                                <span class="w-1.5 h-1.5 rounded-full" :class="focusScore >= 70 ? 'bg-green-500' : 'bg-amber-500'"></span>
+                            </div>
+                            <p class="text-[10px] text-gt-muted leading-tight">{{ t('dashboard.insights.focusScoreDesc') }}</p>
+                            <div class="absolute bottom-0 left-0 h-1 bg-gt-accent transition-all duration-500" :style="{ width: focusScore + '%' }"></div>
+                        </div>
                         <!-- Consistency -->
-                        <div class="gt-surface rounded-lg p-4 space-y-2">
-                            <h3 class="text-xs font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.consistencyTitle') }}</h3>
-                            <p class="text-2xl font-bold text-gt-ink">
+                        <div class="gt-surface rounded-lg p-3 space-y-1 glassmorphism">
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.consistencyTitle') }}</h3>
+                            <p class="text-xl font-bold text-gt-ink tabular-nums">
                                 {{ t('dashboard.insights.activeDays', { count: insights.activeDays, total: insights.totalDays }) }}
                             </p>
-                            <p class="text-xs text-gt-muted">{{ t('dashboard.insights.activeDaysExplain') }}</p>
+                            <p class="text-[10px] text-gt-muted leading-tight line-clamp-1">{{ t('dashboard.insights.activeDaysExplain') }}</p>
                         </div>
 
                         <!-- vs Prior -->
-                        <div class="gt-surface rounded-lg p-4 space-y-2">
-                            <h3 class="text-xs font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.priorTitle', { days: rangeDays }) }}</h3>
+                        <div class="gt-surface rounded-lg p-3 space-y-1 glassmorphism">
+                            <h3 class="text-[10px] font-semibold uppercase tracking-wider text-gt-muted">{{ t('dashboard.insights.priorTitle', { days: rangeDays }) }}</h3>
                             <template v-if="insights.hasPrior">
-                                <div class="space-y-1">
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-xs text-gt-muted">{{ t('dashboard.insights.priorCompletions') }}</span>
+                                <div class="space-y-0.5">
+                                    <div class="flex items-baseline justify-between">
+                                        <span class="text-[10px] text-gt-muted">{{ t('dashboard.insights.priorCompletions') }}</span>
                                         <span
-                                            class="text-sm font-semibold"
+                                            class="text-[11px] font-bold"
                                             :class="(insights.completionDelta ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'"
                                         >
                                             {{ insights.completionDelta !== null
                                                 ? (insights.completionDelta >= 0
                                                     ? t('dashboard.insights.deltaUp', { pct: insights.completionDelta })
-                                                    : t('dashboard.insights.deltaDown', { pct: insights.completionDelta }))
+                                                    : t('dashboard.insights.deltaDown', { pct: Math.abs(insights.completionDelta) }))
                                                 : '—' }}
                                         </span>
                                     </div>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-xs text-gt-muted">{{ t('dashboard.insights.priorCreated') }}</span>
+                                    <div class="flex items-baseline justify-between">
+                                        <span class="text-[10px] text-gt-muted">{{ t('dashboard.insights.priorCreated') }}</span>
                                         <span
-                                            class="text-sm font-semibold text-gt-ink"
+                                            class="text-[11px] font-bold text-gt-ink"
                                         >
                                             {{ insights.creationDelta !== null
                                                 ? (insights.creationDelta >= 0
                                                     ? t('dashboard.insights.deltaUp', { pct: insights.creationDelta })
-                                                    : t('dashboard.insights.deltaDown', { pct: insights.creationDelta }))
+                                                    : t('dashboard.insights.deltaDown', { pct: Math.abs(insights.creationDelta) }))
                                                 : '—' }}
                                         </span>
                                     </div>
                                 </div>
                             </template>
-                            <p v-else class="text-xs text-gt-muted">{{ t('dashboard.insights.noPrior') }}</p>
+                            <p v-else class="text-[10px] text-gt-muted">{{ t('dashboard.insights.noPrior') }}</p>
                         </div>
                     </div>
 
-                    <!-- Throughput chart -->
+                    <!-- Due discipline (Promoted to top) -->
                     <div class="gt-surface rounded-lg p-4 space-y-3">
                         <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gt-ink">{{ t('dashboard.dueDiscipline.title') }}</h3>
+                            <div class="flex items-center gap-4 text-[10px] text-gt-muted">
+                                <span class="flex items-center gap-1">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-green-500" aria-hidden="true"></span>
+                                    {{ t('dashboard.dueDiscipline.onTime') }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                    {{ t('dashboard.dueDiscipline.overdue') }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></span>
+                                    {{ t('dashboard.dueDiscipline.noDue') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <template v-if="dueDisciplineTotal > 0">
+                            <!-- Stacked bar -->
+                            <div class="flex h-6 w-full overflow-hidden rounded-md text-[10px] font-bold">
+                                <div
+                                    v-if="dueDiscipline.onTime"
+                                    class="flex items-center justify-center bg-green-500 text-white border-r border-white/20 last:border-0"
+                                    :style="{ width: duePct(dueDiscipline.onTime) + '%' }"
+                                >
+                                    {{ dueDiscipline.onTime }}
+                                </div>
+                                <div
+                                    v-if="dueDiscipline.overdue"
+                                    class="flex items-center justify-center bg-amber-500 text-white border-r border-white/20 last:border-0"
+                                    :style="{ width: duePct(dueDiscipline.overdue) + '%' }"
+                                >
+                                    {{ dueDiscipline.overdue }}
+                                </div>
+                                <div
+                                    v-if="dueDiscipline.noDue"
+                                    class="flex items-center justify-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                    :style="{ width: duePct(dueDiscipline.noDue) + '%' }"
+                                >
+                                    {{ dueDiscipline.noDue }}
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-gt-muted">
+                                    {{ t('dashboard.dueDiscipline.onTime') }}: <strong>{{ duePct(dueDiscipline.onTime) }}%</strong>
+                                </span>
+                                <div v-if="dueDiscipline.noDue > 0" class="flex gap-2 items-center">
+                                    <span class="text-gt-muted">{{ t('dashboard.dueDiscipline.noDue') }}: {{ dueDiscipline.noDue }}</span>
+                                    <Link
+                                        :href="route('tasks.index', { filter: 'no-due' })"
+                                        class="text-gt-accent hover:underline font-medium"
+                                    >
+                                        {{ t('dashboard.dueDiscipline.fixNoDue') }} →
+                                    </Link>
+                                </div>
+                            </div>
+                        </template>
+                        <p v-else class="text-xs text-gt-muted">{{ t('dashboard.dueDiscipline.noData') }}</p>
+                    </div>
+
+                    <!-- Throughput chart -->
+                    <div class="gt-surface rounded-lg p-4 space-y-4">
+                        <div class="flex items-center justify-between">
                             <h3 class="text-sm font-semibold text-gt-ink">{{ t('dashboard.chart.title') }}</h3>
-                            <div class="flex items-center gap-4 text-xs text-gt-muted">
+                            <div class="flex items-center gap-3 text-[10px] text-gt-muted">
                                 <span class="flex items-center gap-1">
                                     <span class="inline-block h-2.5 w-2.5 rounded-sm bg-blue-400" aria-hidden="true"></span>
                                     {{ t('dashboard.chart.legendCreated') }}
@@ -308,10 +463,12 @@ const secondaryLinkClass =
                         </p>
 
                         <!-- SVG bar chart -->
-                        <div class="overflow-x-auto -mx-4 px-4">
+                        <div class="w-full">
                             <svg
-                                :width="Math.max(daily.length * 18, 300)"
+                                width="100%"
                                 height="150"
+                                :viewBox="`0 0 ${daily.length * 18} 150`"
+                                preserveAspectRatio="xMinYMin meet"
                                 role="img"
                                 class="block"
                                 aria-hidden="true"
@@ -323,22 +480,24 @@ const secondaryLinkClass =
                                         :y="130 - barHeight(d.created)"
                                         width="6"
                                         :height="barHeight(d.created)"
-                                        class="fill-blue-400"
-                                        rx="1"
-                                    >
-                                        <title>{{ d.date }}: {{ d.created }} {{ t('dashboard.chart.legendCreated') }}</title>
-                                    </rect>
+                                        class="fill-blue-400/60 hover:fill-blue-400 transition-all duration-300 cursor-pointer chart-bar"
+                                        rx="1.5"
+                                        @click="onBarClick(d.date, 'created')"
+                                        @mouseenter="updateTooltip($event, shortDate(d.date), `${d.created} ${t('dashboard.chart.legendCreated')}`)"
+                                        @mouseleave="hideTooltip"
+                                    />
                                     <!-- Completed bar -->
                                     <rect
                                         :x="i * 18 + 9"
                                         :y="130 - barHeight(d.completed)"
                                         width="6"
                                         :height="barHeight(d.completed)"
-                                        class="fill-green-500"
-                                        rx="1"
-                                    >
-                                        <title>{{ d.date }}: {{ d.completed }} {{ t('dashboard.chart.legendCompleted') }}</title>
-                                    </rect>
+                                        class="fill-green-500/60 hover:fill-green-500 transition-all duration-300 cursor-pointer chart-bar"
+                                        rx="1.5"
+                                        @click="onBarClick(d.date, 'completed')"
+                                        @mouseenter="updateTooltip($event, shortDate(d.date), `${d.completed} ${t('dashboard.chart.legendCompleted')}`)"
+                                        @mouseleave="hideTooltip"
+                                    />
                                     <!-- Date label (every Nth) -->
                                     <text
                                         v-if="daily.length <= 14 || i % Math.ceil(daily.length / 10) === 0"
@@ -382,121 +541,55 @@ const secondaryLinkClass =
                         </div>
                     </div>
 
-                    <!-- Secondary reports (accordions) -->
-                    <div class="space-y-3">
-
+                    <!-- Secondary reports -->
+                    <div class="space-y-4">
                         <!-- Weekday rhythm -->
-                        <div class="gt-surface rounded-lg">
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-gt-ink"
-                                :aria-expanded="weekdayOpen"
-                                @click="weekdayOpen = !weekdayOpen"
+                        <div class="gt-surface rounded-lg overflow-hidden">
+                            <div
+                                class="flex items-center justify-between p-4 text-sm font-semibold text-gt-ink bg-gt-field-muted/30"
                             >
                                 <span>{{ t('dashboard.weekday.title') }}</span>
-                                <span class="text-xs text-gt-muted" aria-hidden="true">{{ weekdayOpen ? '▲' : '▼' }}</span>
-                            </button>
-                            <div v-if="weekdayOpen" class="px-4 pb-4 space-y-2">
+                                <div class="flex items-center gap-3 text-[10px] text-gt-muted font-normal">
+                                    <span class="flex items-center gap-1">
+                                        <span class="inline-block h-2 w-2 rounded-sm bg-blue-400"></span>
+                                        {{ t('dashboard.weekday.legendCreated') }}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="inline-block h-2 w-2 rounded-sm bg-green-500"></span>
+                                        {{ t('dashboard.weekday.legendCompleted') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="p-4 space-y-3">
                                 <template v-if="weekday && weekday.days">
-                                    <div v-for="d in weekday.days" :key="d.day" class="flex items-center gap-2 text-xs">
-                                        <span class="w-8 text-gt-muted">{{ d.name }}</span>
-                                        <div class="h-3 rounded-sm bg-green-500/80" :style="{ width: weekdayBarWidth(d.count) + '%' }"></div>
-                                        <span class="text-gt-ink-secondary">{{ d.count }}</span>
+                                    <div v-for="d in weekday.days" :key="d.day" class="space-y-1">
+                                        <div class="flex items-center justify-between text-[10px] text-gt-muted">
+                                            <span>{{ d.name }}</span>
+                                            <span>{{ d.completed }} / {{ d.created }}</span>
+                                        </div>
+                                        <div class="flex flex-col gap-0.5">
+                                            <div
+                                                v-if="d.created > 0"
+                                                class="h-1.5 rounded-r-sm bg-blue-400/70 hover:bg-blue-400 transition-all cursor-pointer"
+                                                :style="{ width: weekdayBarWidth(d.created) + '%' }"
+                                                @click="onWeekdayClick(d.name, 'created')"
+                                                @mouseenter="updateTooltip($event, d.name, `${d.created} ${t('dashboard.weekday.legendCreated')}`)"
+                                                @mouseleave="hideTooltip"
+                                            ></div>
+                                            <div
+                                                v-if="d.completed > 0"
+                                                class="h-1.5 rounded-r-sm bg-green-500/70 hover:bg-green-500 transition-all cursor-pointer"
+                                                :style="{ width: weekdayBarWidth(d.completed) + '%' }"
+                                                @click="onWeekdayClick(d.name, 'completed')"
+                                                @mouseenter="updateTooltip($event, d.name, `${d.completed} ${t('dashboard.weekday.legendCompleted')}`)"
+                                                @mouseleave="hideTooltip"
+                                            ></div>
+                                        </div>
                                     </div>
-                                    <p v-if="weekday.peakDay" class="text-xs text-gt-muted mt-1">
+                                    <p v-if="weekday.peakDay" class="text-xs text-gt-muted mt-2 pt-2 border-t border-gt-border/50">
                                         {{ t('dashboard.weekday.peakCallout', { day: weekday.peakDay }) }}
                                     </p>
-                                    <p v-else class="text-xs text-gt-muted mt-1">
-                                        {{ t('dashboard.weekday.noPeak') }}
-                                    </p>
                                 </template>
-                            </div>
-                        </div>
-
-                        <!-- Lead time -->
-                        <div class="gt-surface rounded-lg">
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-gt-ink"
-                                :aria-expanded="leadTimeOpen"
-                                @click="leadTimeOpen = !leadTimeOpen"
-                            >
-                                <span>{{ t('dashboard.leadTime.title') }}</span>
-                                <span class="text-xs text-gt-muted" aria-hidden="true">{{ leadTimeOpen ? '▲' : '▼' }}</span>
-                            </button>
-                            <div v-if="leadTimeOpen" class="px-4 pb-4">
-                                <template v-if="leadTime && leadTime.median !== null">
-                                    <div class="flex items-baseline gap-6">
-                                        <div>
-                                            <span class="text-xs text-gt-muted">{{ t('dashboard.leadTime.median') }}</span>
-                                            <span class="ml-1 text-lg font-bold text-gt-ink">{{ t('dashboard.leadTime.days', { n: leadTime.median }) }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="text-xs text-gt-muted">{{ t('dashboard.leadTime.p90') }}</span>
-                                            <span class="ml-1 text-lg font-bold text-gt-ink">{{ t('dashboard.leadTime.days', { n: leadTime.p90 }) }}</span>
-                                        </div>
-                                    </div>
-                                    <p v-if="leadTime.longTail > 0" class="text-xs text-gt-muted mt-1">
-                                        {{ t('dashboard.leadTime.longTail', { count: leadTime.longTail }) }}
-                                    </p>
-                                </template>
-                                <p v-else class="text-xs text-gt-muted">{{ t('dashboard.leadTime.noData') }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Due discipline -->
-                        <div class="gt-surface rounded-lg">
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-gt-ink"
-                                :aria-expanded="dueDisciplineOpen"
-                                @click="dueDisciplineOpen = !dueDisciplineOpen"
-                            >
-                                <span>{{ t('dashboard.dueDiscipline.title') }}</span>
-                                <span class="text-xs text-gt-muted" aria-hidden="true">{{ dueDisciplineOpen ? '▲' : '▼' }}</span>
-                            </button>
-                            <div v-if="dueDisciplineOpen" class="px-4 pb-4">
-                                <template v-if="dueDisciplineTotal > 0">
-                                    <!-- Stacked bar -->
-                                    <div class="flex h-5 w-full overflow-hidden rounded-full text-[10px] font-medium">
-                                        <div
-                                            v-if="dueDiscipline.onTime"
-                                            class="flex items-center justify-center bg-green-500 text-white"
-                                            :style="{ width: duePct(dueDiscipline.onTime) + '%' }"
-                                        >
-                                            {{ duePct(dueDiscipline.onTime) }}%
-                                        </div>
-                                        <div
-                                            v-if="dueDiscipline.overdue"
-                                            class="flex items-center justify-center bg-amber-500 text-white"
-                                            :style="{ width: duePct(dueDiscipline.overdue) + '%' }"
-                                        >
-                                            {{ duePct(dueDiscipline.overdue) }}%
-                                        </div>
-                                        <div
-                                            v-if="dueDiscipline.noDue"
-                                            class="flex items-center justify-center bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-200"
-                                            :style="{ width: duePct(dueDiscipline.noDue) + '%' }"
-                                        >
-                                            {{ duePct(dueDiscipline.noDue) }}%
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap gap-4 text-xs text-gt-muted">
-                                        <span class="flex items-center gap-1">
-                                            <span class="inline-block h-2 w-2 rounded-full bg-green-500" aria-hidden="true"></span>
-                                            {{ t('dashboard.dueDiscipline.onTime') }} ({{ dueDiscipline.onTime }})
-                                        </span>
-                                        <span class="flex items-center gap-1">
-                                            <span class="inline-block h-2 w-2 rounded-full bg-amber-500" aria-hidden="true"></span>
-                                            {{ t('dashboard.dueDiscipline.overdue') }} ({{ dueDiscipline.overdue }})
-                                        </span>
-                                        <span class="flex items-center gap-1">
-                                            <span class="inline-block h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></span>
-                                            {{ t('dashboard.dueDiscipline.noDue') }} ({{ dueDiscipline.noDue }})
-                                        </span>
-                                    </div>
-                                </template>
-                                <p v-else class="text-xs text-gt-muted">{{ t('dashboard.dueDiscipline.noData') }}</p>
                             </div>
                         </div>
                     </div>
@@ -521,5 +614,46 @@ const secondaryLinkClass =
                 </template>
             </div>
         </div>
+
+        <!-- Custom Tooltip -->
+        <div
+            v-if="tooltip.visible"
+            class="fixed z-[100] pointer-events-none px-3 py-2 bg-gt-ink text-gt-canvas text-[11px] rounded-lg shadow-2xl border border-gt-canvas/10 -translate-x-1/2 -translate-y-full mb-4 transition-all duration-200"
+            :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+        >
+            <div class="font-bold border-b border-gt-canvas/10 pb-1 mb-1">{{ tooltip.title }}</div>
+            <div>{{ tooltip.body }}</div>
+        </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.glassmorphism {
+    backdrop-filter: blur(8px);
+    background: rgba(var(--gt-card-rgb, 255, 255, 255), 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .glassmorphism {
+    --gt-card-rgb: 30, 30, 30;
+    background: rgba(30,30,30, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chart-bar {
+    transform-origin: bottom;
+    animation: bar-grow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bar-grow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>

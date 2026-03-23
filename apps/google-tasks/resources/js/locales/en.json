@@ -1,4 +1,40 @@
 {
+    "landing": {
+        "pageTitle": "Google Tasks — Reimagined",
+        "brand": "Google Tasks Client",
+        "heroTitle": "A better way to manage your Google Tasks",
+        "heroSubtitle": "Priority levels, Kanban boards, smart search, productivity insights, and mobile swipe actions — all synced with your Google account.",
+        "featuresTitle": "Everything you need to stay on top of your tasks",
+        "ctaSignUp": "Get started free",
+        "ctaLogIn": "Log in",
+        "ctaLoggedIn": "Go to my tasks",
+        "goToTasks": "Go to Tasks",
+        "logIn": "Log in",
+        "signUp": "Sign up",
+        "googleCallout": "Your tasks stay in Google. This app reads and writes to Google Tasks via the official API — your data is never stored on our servers beyond what's needed for the session.",
+        "feature": {
+            "priority": {
+                "title": "Priority levels",
+                "desc": "Tag tasks P1–P4 and sort by urgency. Priority is encoded into Google Tasks so it follows you everywhere."
+            },
+            "kanban": {
+                "title": "Kanban board",
+                "desc": "Drag tasks between priority columns or due-date lanes. Reschedule by dropping into a new time bucket."
+            },
+            "search": {
+                "title": "Smart search",
+                "desc": "Full-text and semantic search across all your lists. Find duplicates with AI-powered similarity detection."
+            },
+            "dashboard": {
+                "title": "Productivity insights",
+                "desc": "See throughput charts, lead time, due discipline, and weekday patterns. Know where your time goes."
+            },
+            "mobile": {
+                "title": "Mobile-first actions",
+                "desc": "Swipe to complete, long-press for more, snooze with one tap. Designed for your phone."
+            }
+        }
+    },
     "nav": {
         "dashboard": "Dashboard",
         "tasks": "Tasks",
@@ -39,6 +75,9 @@
             "netFlowPositive": "Closing faster than capturing",
             "netFlowNegative": "Capturing faster than closing",
             "netFlowNeutral": "Balanced capture and completion",
+            "backlogGrowing": "Backlog growing",
+            "focusScore": "Focus score",
+            "focusScoreDesc": "Completions vs. creations",
             "consistencyTitle": "Consistency",
             "activeDays": "{count} / {total} active days",
             "activeDaysExplain": "Days with at least one completion",
@@ -62,6 +101,8 @@
         },
         "weekday": {
             "title": "Weekday rhythm",
+            "legendCreated": "Created",
+            "legendCompleted": "Completed",
             "peakCallout": "Most completions: {day}",
             "noPeak": "No completions in this period"
         },
@@ -70,14 +111,17 @@
             "median": "Median",
             "p90": "p90",
             "days": "{n} d",
+            "lessThanDay": "< 1 day",
             "longTail": "{count} tasks > 30 d",
-            "noData": "No completed tasks with creation dates in this range"
+            "noData": "No completed tasks with creation dates in this range",
+            "distribution": "Distribution"
         },
         "dueDiscipline": {
             "title": "Due discipline",
             "onTime": "On time",
             "overdue": "Overdue",
             "noDue": "No due date",
+            "fixNoDue": "Add dates",
             "noData": "No completions in this range"
         },
         "trustStrip": "Counts reflect tasks seen through this app. Other clients may sync later."

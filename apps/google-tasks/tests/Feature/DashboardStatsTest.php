@@ -162,6 +162,8 @@ class DashboardStatsTest extends TestCase
 
         $this->assertArrayHasKey('weekday', $stats);
         $this->assertCount(7, $stats['weekday']['days']);
+        $this->assertArrayHasKey('created', $stats['weekday']['days'][0]);
+        $this->assertArrayHasKey('completed', $stats['weekday']['days'][0]);
     }
 
     public function test_lead_time_computed(): void
@@ -256,7 +258,7 @@ class DashboardStatsTest extends TestCase
 
         $service->compute($user, $client, 7);
 
-        $cached = $service->getCached($user);
+        $cached = $service->getCached($user, 7);
         $this->assertNotNull($cached);
         $this->assertTrue($cached['cached']);
     }

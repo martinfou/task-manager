@@ -25,7 +25,7 @@ class DashboardStatsService
         $rangeStart = $now->startOfDay()->subDays($rangeDays - 1);
         $priorStart = $rangeStart->subDays($rangeDays);
 
-        $allTasks = $this->fetchAllTasks($client);
+        $allTasks = $this->fetchAllTasks($client, $priorStart);
 
         $daily = $this->bucketDaily($allTasks, $rangeStart, $now, $tz);
         $priorDaily = $this->bucketDaily($allTasks, $priorStart, $rangeStart->subDay(), $tz);
@@ -46,21 +46,24 @@ class DashboardStatsService
             'computedAt' => $now->toIso8601String(),
         ];
 
-        // Cache for offline access
+        // Cache per range for instant load
         DashboardStatsCache::updateOrCreate(
-            ['user_id' => $user->id],
-            ['stats' => $stats, 'computed_at' => now()],
+            ['user_id' => $user->id, 'range_days' => $rangeDays],
+            ['stats' => $stats, 'computed_at' => now(), 'stale_at' => null],
         );
 
         return $stats;
     }
 
     /**
-     * Get cached stats for disconnected state.
+     * Get cached stats for a specific range.
      */
-    public function getCached(User $user): ?array
+    public function getCached(User $user, int $rangeDays = 30): ?array
     {
-        $cache = DashboardStatsCache::where('user_id', $user->id)->first();
+        $cache = DashboardStatsCache::where('user_id', $user->id)
+            ->where('range_days', $rangeDays)
+            ->first();
+
         if (! $cache) {
             return null;
         }
@@ -68,6 +71,29 @@ class DashboardStatsService
         return [
             ...$cache->stats,
             'cached' => true,
+            'stale' => ! $cache->isFresh(),
+            'cachedAt' => $cache->computed_at->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Get cached stats if fresh, or return stale cache with a flag.
+     * Returns null only if no cache exists at all.
+     */
+    public function getCachedIfFresh(User $user, int $rangeDays = 30): ?array
+    {
+        $cache = DashboardStatsCache::where('user_id', $user->id)
+            ->where('range_days', $rangeDays)
+            ->first();
+
+        if (! $cache) {
+            return null;
+        }
+
+        return [
+            ...$cache->stats,
+            'cached' => true,
+            'stale' => ! $cache->isFresh(),
             'cachedAt' => $cache->computed_at->toIso8601String(),
         ];
     }
@@ -75,12 +101,12 @@ class DashboardStatsService
     /**
      * Fetch all tasks from all lists (including completed).
      *
-     * @return list<array{task: array, listTitle: string}>
+     * @return array<string, array{task: array, listTitle: string}>
      */
-    private function fetchAllTasks(GoogleTasksClient $client): array
+    private function fetchAllTasks(GoogleTasksClient $client, ?CarbonImmutable $updatedMin = null): array
     {
         $lists = $client->listTaskLists();
-        $out = [];
+        $out = []; // keyed by task ID to de-duplicate
 
         foreach ($lists['items'] ?? [] as $list) {
             $id = $list['id'] ?? '';
@@ -88,17 +114,43 @@ class DashboardStatsService
                 continue;
             }
             $listTitle = (string) ($list['title'] ?? '');
-            $tasks = $client->listTasks($id, [
-                'showCompleted' => true,
-                'showDeleted' => false,
+
+            // 1. Fetch all open tasks (may be old but still relevant for Due Discipline)
+            $this->fetchPaginated($client, $id, $listTitle, [
+                'showCompleted' => false,
                 'showHidden' => true,
-            ]);
-            foreach ($tasks['items'] ?? [] as $task) {
-                $out[] = ['task' => $task, 'listTitle' => $listTitle];
+            ], $out);
+
+            // 2. Fetch recently updated completed tasks
+            $query = [
+                'showCompleted' => true,
+                'showHidden' => true,
+            ];
+            if ($updatedMin) {
+                $query['updatedMin'] = $updatedMin->toRfc3339String();
             }
+            $this->fetchPaginated($client, $id, $listTitle, $query, $out);
         }
 
         return $out;
+    }
+
+    /**
+     * Helper to fetch all pages for a given query.
+     */
+    private function fetchPaginated(GoogleTasksClient $client, string $listId, string $listTitle, array $query, array &$out): void
+    {
+        $pageToken = null;
+        do {
+            if ($pageToken) {
+                $query['pageToken'] = $pageToken;
+            }
+            $res = $client->listTasks($listId, $query);
+            foreach ($res['items'] ?? [] as $task) {
+                $out[$task['id']] = ['task' => $task, 'listTitle' => $listTitle];
+            }
+            $pageToken = $res['nextPageToken'] ?? null;
+        } while ($pageToken);
     }
 
     /**
@@ -189,21 +241,27 @@ class DashboardStatsService
      */
     private function computeWeekday(array $daily): array
     {
-        $byDow = array_fill(0, 7, 0); // 0=Sun .. 6=Sat
+        $byDow = array_fill(0, 7, ['created' => 0, 'completed' => 0]); // 0=Sun .. 6=Sat
         $dowNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         foreach ($daily as $d) {
             $dow = Carbon::parse($d['date'])->dayOfWeek;
-            $byDow[$dow] += $d['completed'];
+            $byDow[$dow]['created'] += $d['created'];
+            $byDow[$dow]['completed'] += $d['completed'];
         }
 
         $days = [];
-        foreach ($byDow as $i => $count) {
-            $days[] = ['day' => $i, 'name' => $dowNames[$i], 'count' => $count];
+        foreach ($byDow as $i => $counts) {
+            $days[] = [
+                'day' => $i,
+                'name' => $dowNames[$i],
+                'completed' => $counts['completed'],
+                'created' => $counts['created'],
+            ];
         }
 
-        $max = max($byDow);
-        $peakDay = $max > 0 ? $dowNames[array_search($max, $byDow)] : null;
+        $maxCompleted = max(array_column($byDow, 'completed'));
+        $peakDay = $maxCompleted > 0 ? $dowNames[array_search($maxCompleted, array_column($byDow, 'completed'))] : null;
 
         return ['days' => $days, 'peakDay' => $peakDay];
     }
@@ -214,6 +272,13 @@ class DashboardStatsService
     private function computeLeadTime(array $allTasks, CarbonImmutable $start, CarbonImmutable $end, string $tz): array
     {
         $leadTimes = [];
+        $buckets = [
+            '0d' => 0,
+            '1d' => 0,
+            '2d' => 0,
+            '3-7d' => 0,
+            '7d+' => 0,
+        ];
 
         foreach ($allTasks as $row) {
             $task = $row['task'];
@@ -230,12 +295,30 @@ class DashboardStatsService
                 continue;
             }
 
-            $days = $createdAt->startOfDay()->diffInDays($completedAt->startOfDay());
-            $leadTimes[] = (int) $days;
+            $days = (int) $createdAt->startOfDay()->diffInDays($completedAt->startOfDay());
+            $leadTimes[] = $days;
+
+            if ($days === 0) {
+                $buckets['0d']++;
+            } elseif ($days === 1) {
+                $buckets['1d']++;
+            } elseif ($days === 2) {
+                $buckets['2d']++;
+            } elseif ($days <= 7) {
+                $buckets['3-7d']++;
+            } else {
+                $buckets['7d+']++;
+            }
         }
 
         if (empty($leadTimes)) {
-            return ['median' => null, 'p90' => null, 'count' => 0, 'longTail' => 0];
+            return [
+                'median' => null,
+                'p90' => null,
+                'count' => 0,
+                'longTail' => 0,
+                'buckets' => $buckets,
+            ];
         }
 
         sort($leadTimes);
@@ -249,6 +332,7 @@ class DashboardStatsService
             'p90' => $p90,
             'count' => $count,
             'longTail' => $longTail,
+            'buckets' => $buckets,
         ];
     }
 

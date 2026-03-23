@@ -85,10 +85,11 @@ An [MCP server](../mcp-project-management/README.md) exposes this project-manage
 ## Related
 
 - [Backlog refinement session — all user stories (2026-03-22)](sprints/backlog-refinement-session-2026-03-22.md) — DoR sweep, inventory US-001–US-034
-- [Sprint 6 — Trust, commands, mobile (active)](sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **US-027–US-038** in sprint (**91** pts); **US-028**–**US-031** ✅, **US-034** ✅; next **US-027** / **US-032** per sprint order; see sprint doc for capacity / replan note
+- [Sprint 7 — Polish and Performance (active)](sprints/sprint-07-google-tasks-polish-and-performance.md) — **US-040** (dashboard cache) + **US-041** (landing page), **10** pts; RI-004, RI-005, RI-006 carry-forward
 - **Production branch**: `main` (Google Tasks DreamHost deploy + CI on push; see `apps/google-tasks/docs/DEPLOY.md`)
-- [Sprint 5 — Tasks UX (closed)](sprints/sprint-05-google-tasks-ux-visibility.md) — US-023–US-026 ✅; sprint review + retrospective **2026-03-22**
-- [Product backlog](backlog/product-backlog.md) — **Active sprint**: [Sprint 6](sprints/sprint-06-google-tasks-trust-commands-mobile.md)
+- [Sprint 6 — Trust, commands, mobile (closed)](sprints/sprint-06-google-tasks-trust-commands-mobile.md) — US-027–US-038 ✅ (91 pts); review + retro 2026-03-23
+- [Sprint 5 — Tasks UX (closed)](sprints/sprint-05-google-tasks-ux-visibility.md) — US-023–US-026 ✅; sprint review + retrospective 2026-03-22
+- [Product backlog](backlog/product-backlog.md) — **Active sprint**: [Sprint 7](sprints/sprint-07-google-tasks-polish-and-performance.md)
 - [README.md](README.md) — Overview for humans
 - [prompts.md](prompts.md) — Reusable AI prompts
 - [scripts/README.md](scripts/README.md) — Script usage (validate-backlog, check-links, lint-project-management, validate-backlog-integrity, validate-mermaid, visualize-dependencies, test-scripts)

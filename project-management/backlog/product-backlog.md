@@ -2,9 +2,11 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-23 (US-039 Done — mobile task row visual polish)
+**Last Updated**: 2026-03-24 (US-042 completed — dashboard visual improvements & lead time fix)
 
-**Active Sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **complete** ✅. All 12 stories (91 pts) done: US-027–US-038. **Next**: plan Sprint 7 or pick up [US-039](user-stories/US-039-mobile-task-row-visual-polish.md) from backlog.
+**Active Sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **active**. [US-041](user-stories/US-041-branded-landing-page.md) (landing page) + [US-040](user-stories/US-040-dashboard-precompute-cache.md) (dashboard cache) + [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) (dashboard enhancements) — 18 pts. Plus RI-004, RI-005, RI-006 carry-forward.
+
+**Previous sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **closed** 2026-03-23; 12/12 stories ✅ (91 pts). [US-039](user-stories/US-039-mobile-task-row-visual-polish.md) also completed from backlog.
 
 **Previous sprint**: [Sprint 5: Google Tasks — UX, Visibility, and Interaction](../sprints/sprint-05-google-tasks-ux-visibility.md) — **closed** 2026-03-22; [US-023](user-stories/US-023-all-tasks-all-lists.md)–[US-026](user-stories/US-026-double-click-edit-task.md) ✅. [Sprint 4](../sprints/sprint-04-google-tasks-quality-and-v2.md) **closed** 2026-03-21. [Sprint 3](../sprints/sprint-03-google-tasks-productivity.md) **closed** 2026-03-21. [Sprint 2](../sprints/sprint-02-google-tasks-mvp-foundation.md) and [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) completed.
 
@@ -14,6 +16,9 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) | Dashboard Visual and Insight Improvements | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-24 |
+| [US-041](user-stories/US-041-branded-landing-page.md) | Branded Landing Page | 🟠 High | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
+| [US-040](user-stories/US-040-dashboard-precompute-cache.md) | Dashboard Pre-Compute and Cache for Instant Load | 🟡 Medium | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
 | [US-039](user-stories/US-039-mobile-task-row-visual-polish.md) | Mobile Task Row Visual Polish and Swipe Direction Fix | 🟠 High | 5 | ✅ | Backlog | 2026-03-22 | 2026-03-23 |
 | [US-038](user-stories/US-038-due-date-timezone-display.md) | Due Date/Time Display and Timezone | 🟠 High | 5 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-23 |
 | [US-037](user-stories/US-037-instant-list-switch-cache-first-sync.md) | Instant List Switch (Cache-First, Background Sync) | 🟠 High | 8 | ✅ | [Sprint 6](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) | 2026-03-22 | 2026-03-23 |

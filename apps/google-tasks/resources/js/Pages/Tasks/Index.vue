@@ -186,6 +186,8 @@ const BOARD_GROUP_KEY = 'gt-board-group-mode';
 const filterCompletion = ref('needsAction');
 const filterDue = ref('any');
 const filterPriority = ref('all');
+const filterDate = ref(null); // 'YYYY-MM-DD'
+const filterWeekday = ref(null); // 'monday', etc.
 /** Empty string means all lists (Today view only). */
 const filterListId = ref('');
 
@@ -193,6 +195,8 @@ const filterState = computed(() => ({
     completion: filterCompletion.value,
     due: filterDue.value,
     priority: filterPriority.value,
+    date: filterDate.value,
+    weekday: filterWeekday.value,
     listId:
         (navMode.value === 'today' || navMode.value === 'all') &&
         filterListId.value
@@ -2070,7 +2074,22 @@ function viewModeToggleClass(active) {
 }
 
 function loadPersistedTaskUi() {
+    const params = new URLSearchParams(window.location.search);
+    const urlFilter = params.get('filter');
+    const urlDate = params.get('date');
+    const urlWeekday = params.get('weekday');
+    const urlStatus = params.get('status');
+
+    if (urlDate) filterDate.value = urlDate;
+    if (urlWeekday) filterWeekday.value = urlWeekday;
+    if (urlStatus === 'completed' || urlStatus === 'needsAction') {
+        filterCompletion.value = urlStatus;
+    }
+
     if (typeof localStorage === 'undefined') {
+        if (urlFilter === 'no-due') {
+            filterDue.value = 'noDue';
+        }
         return;
     }
     try {
@@ -2133,6 +2152,11 @@ function loadPersistedTaskUi() {
             if (typeof n.selectedListId === 'string' && n.selectedListId) {
                 selectedListId.value = n.selectedListId;
             }
+        }
+
+        // URL param overrides local storage
+        if (urlFilter === 'no-due') {
+            filterDue.value = 'noDue';
         }
     } catch {
         /* ignore */
