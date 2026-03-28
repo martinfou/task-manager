@@ -1,0 +1,40 @@
+# Hourly pre-computation of dashboard stats on DreamHost
+# Runs via GitHub Actions cron — no server-side crontab needed
+
+name: Google Tasks — Refresh dashboard cache
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour at :00
+  workflow_dispatch:        # manual trigger
+
+concurrency:
+  group: google-tasks-refresh-dashboard
+  cancel-in-progress: true
+
+env:
+  DREAMHOST_REMOTE_PATH: /home/martinfournier_tasks/tasks.martinfournier.com
+  DREAMHOST_PHP_BIN: ${{ vars.DREAMHOST_PHP_BIN || 'php-8.4' }}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DREAMHOST_SSH_KEY }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DREAMHOST_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Refresh dashboard stats
+        env:
+          REMOTE: ${{ secrets.DREAMHOST_SSH_USER }}@${{ secrets.DREAMHOST_SSH_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=yes "${REMOTE}" \
+            "cd '${{ env.DREAMHOST_REMOTE_PATH }}' && ${{ env.DREAMHOST_PHP_BIN }} artisan dashboard:refresh-stats"

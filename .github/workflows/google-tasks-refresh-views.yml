@@ -1,0 +1,39 @@
+# Pre-compute Today/Inbox/All Lists view caches on DreamHost every 15 minutes
+
+name: Google Tasks — Refresh view caches
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes
+  workflow_dispatch:          # manual trigger
+
+concurrency:
+  group: google-tasks-refresh-views
+  cancel-in-progress: true
+
+env:
+  DREAMHOST_REMOTE_PATH: /home/martinfournier_tasks/tasks.martinfournier.com
+  DREAMHOST_PHP_BIN: ${{ vars.DREAMHOST_PHP_BIN || 'php-8.4' }}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DREAMHOST_SSH_KEY }}
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DREAMHOST_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Refresh view caches
+        env:
+          REMOTE: ${{ secrets.DREAMHOST_SSH_USER }}@${{ secrets.DREAMHOST_SSH_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=yes "${REMOTE}" \
+            "cd '${{ env.DREAMHOST_REMOTE_PATH }}' && ${{ env.DREAMHOST_PHP_BIN }} artisan views:refresh-cache"
