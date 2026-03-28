@@ -105,6 +105,8 @@ class GoogleTasksClient
         $token = $this->tokens->getAccessToken($this->user);
 
         $pending = Http::withToken($token)
+            ->timeout(15)
+            ->connectTimeout(5)
             ->acceptJson()
             ->asJson();
 

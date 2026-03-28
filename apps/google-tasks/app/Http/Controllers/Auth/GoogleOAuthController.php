@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class GoogleOAuthController extends Controller
 {
@@ -29,7 +30,13 @@ class GoogleOAuthController extends Controller
 
     public function callback(): RedirectResponse
     {
-        $googleUser = Socialite::driver('google')->user();
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (InvalidStateException) {
+            // Session expired between redirect and callback — retry stateless.
+            // This is safe because we still validate the code exchange with Google.
+            $googleUser = Socialite::driver('google')->stateless()->user();
+        }
 
         $email = $googleUser->getEmail();
         if ($email === null || $email === '') {

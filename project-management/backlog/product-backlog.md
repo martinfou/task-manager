@@ -2,7 +2,7 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-24 (US-042 completed — dashboard visual improvements & lead time fix)
+**Last Updated**: 2026-03-28 (US-044 added — fast Today/Inbox/All views)
 
 **Active Sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **active**. [US-041](user-stories/US-041-branded-landing-page.md) (landing page) + [US-040](user-stories/US-040-dashboard-precompute-cache.md) (dashboard cache) + [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) (dashboard enhancements) — 18 pts. Plus RI-004, RI-005, RI-006 carry-forward.
 
@@ -16,6 +16,8 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-044](user-stories/US-044-fast-today-inbox-all-views.md) | Fast Today, Inbox, and All Tasks Views | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
+| [US-043](user-stories/US-043-scope-audit-tool.md) | Outil d'Audit des Scopes (Dev vs Prod) | 🔴 Critical | 5 | ⭕ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
 | [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) | Dashboard Visual and Insight Improvements | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-24 |
 | [US-041](user-stories/US-041-branded-landing-page.md) | Branded Landing Page | 🟠 High | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
 | [US-040](user-stories/US-040-dashboard-precompute-cache.md) | Dashboard Pre-Compute and Cache for Instant Load | 🟡 Medium | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
@@ -107,16 +109,16 @@ This is the main product backlog tracking all user stories and defects.
 
 *Run `./project-management/scripts/backlog-metrics.sh --stats` to generate this section.*
 
-**Total Items**: 39 (38 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
+**Total Items**: 40 (39 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
 **By Status**:
-- ⭕ To Do: 7
+- ⭕ To Do: 8
 - ⏳ In Progress: 2
 - ✅ Done: 29
 
 **By Priority**:
-- 🔴 Critical: 5
+- 🔴 Critical: 6
 - 🟠 High: 19
 - 🟡 Medium: 13
 - 🟢 Low: 3
 
-**Total Story Points**: 202 (sum of all backlog table rows above, including DEF-001)
+**Total Story Points**: 207 (sum of all backlog table rows above, including DEF-001)

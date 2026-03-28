@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
+import { usePullToRefresh } from '@/composables/usePullToRefresh';
 
 const props = defineProps({
     hasGoogleTasksConnection: { type: Boolean, default: false },
@@ -16,6 +17,15 @@ const rangeDays = ref(30);
 const loading = ref(false);
 const stats = ref(null);
 const error = ref(null);
+
+// --- Pull-to-refresh ---
+const dashboardAreaRef = ref(null);
+const {
+    pullIndicatorStyle: dashPullStyle,
+    pullProgress: dashPullProgress,
+    isPulling: dashPulling,
+    isRefreshing: dashRefreshing,
+} = usePullToRefresh(dashboardAreaRef, () => fetchStats({ forceRefresh: true }));
 const showHowMetrics = ref(false);
 const showDataTable = ref(false);
 const weekdayOpen = ref(false);
@@ -27,11 +37,13 @@ const tooltip = ref({ visible: false, x: 0, y: 0, title: '', body: '' });
 const RANGES = [7, 14, 30, 90];
 
 // --- Fetch ---
-async function fetchStats() {
+async function fetchStats({ forceRefresh = false } = {}) {
     loading.value = true;
     error.value = null;
     try {
-        const res = await fetch(route('dashboard.stats', { range: rangeDays.value }));
+        const params = new URLSearchParams({ range: rangeDays.value });
+        if (forceRefresh) params.set('forceRefresh', '1');
+        const res = await fetch(route('dashboard.stats') + '?' + params.toString());
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         stats.value = await res.json();
     } catch (e) {
@@ -182,7 +194,28 @@ const secondaryLinkClass =
             </div>
         </template>
 
-        <div class="py-4 sm:py-8">
+        <div ref="dashboardAreaRef" class="py-4 sm:py-8 relative">
+            <!-- Pull-to-refresh indicator -->
+            <Transition name="fade">
+                <div
+                    v-if="dashPulling || dashRefreshing"
+                    class="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-center"
+                    :style="{ height: '48px', opacity: dashPullProgress }"
+                >
+                    <svg
+                        class="h-6 w-6 text-gt-accent"
+                        :class="{ 'animate-spin': dashRefreshing }"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                </div>
+            </Transition>
+            <div :style="dashPullStyle">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
 
                 <!-- How metrics work (collapsible) -->
@@ -613,6 +646,7 @@ const secondaryLinkClass =
                     </div>
                 </template>
             </div>
+            </div><!-- /dashPullStyle -->
         </div>
 
         <!-- Custom Tooltip -->

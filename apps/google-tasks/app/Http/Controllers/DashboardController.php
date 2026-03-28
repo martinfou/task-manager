@@ -34,6 +34,7 @@ class DashboardController extends Controller
 
         $rangeDays = (int) ($validated['range'] ?? 30);
         $user = $request->user();
+        $forceRefresh = $request->boolean('forceRefresh', false);
 
         if (! $user->hasGoogleTasksConnection()) {
             $cached = $service->getCached($user, $rangeDays);
@@ -47,29 +48,31 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Cache-first: return cached stats immediately if fresh
-        $cached = $service->getCachedIfFresh($user, $rangeDays);
-        if ($cached && ! $cached['stale']) {
-            return response()->json($cached);
+        if (! $forceRefresh) {
+            // Cache-first: return cached stats immediately if fresh
+            $cached = $service->getCachedIfFresh($user, $rangeDays);
+            if ($cached && ! $cached['stale']) {
+                return response()->json($cached);
+            }
+
+            // Stale cache exists: return it immediately and refresh in the background
+            if ($cached && $cached['stale']) {
+                defer(function () use ($user, $service, $rangeDays) {
+                    try {
+                        $this->refreshStats($user, $service, $rangeDays);
+                    } catch (\Throwable $e) {
+                        Log::warning('dashboard_deferred_refresh_failed', [
+                            'user_id' => $user->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                });
+
+                return response()->json($cached);
+            }
         }
 
-        // Stale cache exists: return it immediately and refresh in the background
-        if ($cached && $cached['stale']) {
-            defer(function () use ($user, $service, $rangeDays) {
-                try {
-                    $this->refreshStats($user, $service, $rangeDays);
-                } catch (\Throwable $e) {
-                    Log::warning('dashboard_deferred_refresh_failed', [
-                        'user_id' => $user->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            });
-
-            return response()->json($cached);
-        }
-
-        // No cache: live computation (first visit or new range)
+        // No cache, force refresh, or first visit: live computation
         try {
             return $this->fetchStats($user, $service, $rangeDays);
         } catch (GoogleTasksRateLimitedException $e) {

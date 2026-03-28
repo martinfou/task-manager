@@ -39,7 +39,7 @@ class GoogleOAuthTokenService
 
     private function refreshAccessToken(User $user): string
     {
-        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+        $response = Http::timeout(10)->connectTimeout(5)->asForm()->post('https://oauth2.googleapis.com/token', [
             'client_id' => config('services.google.client_id'),
             'client_secret' => config('services.google.client_secret'),
             'refresh_token' => $user->google_refresh_token,

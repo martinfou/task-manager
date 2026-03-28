@@ -53,6 +53,7 @@ import {
 import { computeDeferDueIso } from '@/utils/deferPresets';
 import { useUndoToast } from '@/composables/useUndoToast';
 import { useTaskCache } from '@/composables/useTaskCache';
+import { usePullToRefresh } from '@/composables/usePullToRefresh';
 
 const VIEW_MODE_KEY = 'gt-task-view-mode';
 const FILTER_STATE_KEY = 'gt-task-filters';
@@ -173,6 +174,14 @@ let searchDebounce = null;
 let pollOnceInFlight = false;
 /** US-037: in-memory task cache for instant list switching. */
 const taskCache = useTaskCache();
+/** US-044: pull-to-refresh container ref and composable. */
+const taskAreaRef = ref(null);
+const {
+    pullIndicatorStyle,
+    pullProgress,
+    isPulling: pullRefreshActive,
+    isRefreshing: pullRefreshBusy,
+} = usePullToRefresh(taskAreaRef, forceRefreshCurrentView);
 /** Skip one-shot filter watcher while restoring localStorage (avoids racing pollOnce). */
 const suppressCompletionSyncFetch = ref(false);
 /** Google Tasks data API returned 403 (disconnected / stale Inertia props). */
@@ -296,6 +305,7 @@ async function confirmMerge() {
         // Remove the pair from the list
         duplicatePairs.value = duplicatePairs.value.filter((p) => p !== pair);
         // Refresh local task data
+        taskCache.invalidateForList(removeTask.taskListId);
         void pollOnce();
         void showUndoToast({
             message: t('tasks.undo.completed'),
@@ -845,6 +855,7 @@ async function runBulkComplete() {
     }
     bulkWorking.value = false;
     clearSelection();
+    taskCache.invalidateForList(selectedListId.value || '');
     await pollOnce();
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
@@ -882,6 +893,7 @@ async function executeBulkDelete() {
     }
     bulkWorking.value = false;
     clearSelection();
+    taskCache.invalidateForList(selectedListId.value || '');
     await pollOnce();
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
@@ -1004,6 +1016,8 @@ async function executeBulkMove() {
             }
         }
         bulkWorking.value = false;
+        taskCache.invalidateForList(sourceListId);
+        taskCache.invalidateForList(dest);
         await pollOnce();
         if (bulkFailureLines.value.length > 0) {
             showBulkResultModal.value = true;
@@ -1075,6 +1089,8 @@ async function executeBulkMove() {
     }
     bulkWorking.value = false;
     clearSelection();
+    taskCache.invalidateForList(selectedListId.value || '');
+    taskCache.invalidateForList(dest);
     await pollOnce();
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
@@ -1143,11 +1159,13 @@ async function fetchTasksForList() {
     taskCache.set('list', listId, result);
 }
 
-async function fetchToday() {
+async function fetchToday({ forceRefresh = false } = {}) {
     if (!tasksDataAvailable.value) {
         return;
     }
-    const { data } = await axios.get(route('tasks.data.views.today'));
+    const params = {};
+    if (forceRefresh) params.forceRefresh = 1;
+    const { data } = await axios.get(route('tasks.data.views.today'), { params });
     const result = (data.items ?? []).map((row) => ({
         ...row.task,
         _taskListId: row.taskListId,
@@ -1157,13 +1175,13 @@ async function fetchToday() {
     taskCache.set('today', null, result);
 }
 
-async function fetchInbox() {
+async function fetchInbox({ forceRefresh = false } = {}) {
     if (!tasksDataAvailable.value) {
         return;
     }
-    const { data } = await axios.get(route('tasks.data.views.inbox'), {
-        params: { showCompleted: wantsCompletedFromApi() },
-    });
+    const params = { showCompleted: wantsCompletedFromApi() };
+    if (forceRefresh) params.forceRefresh = 1;
+    const { data } = await axios.get(route('tasks.data.views.inbox'), { params });
     if (data.taskList?.id) {
         selectedListId.value = data.taskList.id;
     }
@@ -1175,13 +1193,13 @@ async function fetchInbox() {
     taskCache.set('inbox', null, result);
 }
 
-async function fetchAll() {
+async function fetchAll({ forceRefresh = false } = {}) {
     if (!tasksDataAvailable.value) {
         return;
     }
-    const { data } = await axios.get(route('tasks.data.views.all'), {
-        params: { showCompleted: wantsCompletedFromApi() },
-    });
+    const params = { showCompleted: wantsCompletedFromApi() };
+    if (forceRefresh) params.forceRefresh = 1;
+    const { data } = await axios.get(route('tasks.data.views.all'), { params });
     const result = (data.items ?? []).map((row) => ({
         ...row.task,
         _taskListId: row.taskListId,
@@ -1189,6 +1207,26 @@ async function fetchAll() {
     }));
     tasks.value = result;
     taskCache.set('all', null, result);
+}
+
+/** US-044: Force refresh the current view, bypassing server cache. Used by pull-to-refresh. */
+async function forceRefreshCurrentView() {
+    if (!tasksDataAvailable.value) return;
+    const mode = navMode.value;
+    taskCache.invalidate(mode, mode === 'list' ? selectedListId.value : null);
+    try {
+        await withReadRetry(async () => {
+            await fetchTaskLists();
+            if (mode === 'today') await fetchToday({ forceRefresh: true });
+            else if (mode === 'inbox') await fetchInbox({ forceRefresh: true });
+            else if (mode === 'all') await fetchAll({ forceRefresh: true });
+            else await fetchTasksForList();
+        });
+    } catch (e) {
+        if (!consumeGoogleTasksForbidden(e)) {
+            loadError.value = messageFromAxiosError(e, t, te);
+        }
+    }
 }
 
 async function pollOnce() {
@@ -1675,6 +1713,8 @@ async function saveEditedTask() {
             taskKey(current) === key ? merged : current,
         );
         closeDetailEdit();
+        taskCache.invalidateForList(destListId);
+        if (destListId !== sourceListId) taskCache.invalidateForList(sourceListId);
         void pollOnce();
     } catch (e) {
         loadError.value = messageFromAxiosError(
@@ -1799,6 +1839,7 @@ async function submitNewTask() {
         if (inspectorMode.value === 'new') {
             closeInspector();
         }
+        taskCache.invalidateForList(listId);
         void pollOnce();
     } catch (e) {
         tasks.value = tasks.value.filter((t) => t.id !== tempId);
@@ -1833,6 +1874,7 @@ async function updatePriority(task, priority) {
         tasks.value = tasks.value.map((current) =>
             current.id === task.id ? merged : current,
         );
+        taskCache.invalidateForList(listId);
         void pollOnce();
     } catch (e) {
         tasks.value = tasks.value.map((current) =>
@@ -1869,6 +1911,7 @@ async function toggleComplete(task) {
             merged._taskListTitle = task._taskListTitle;
         }
         tasks.value = tasks.value.map((t) => (t.id === task.id ? merged : t));
+        taskCache.invalidateForList(listId);
         void pollOnce();
         if (nextStatus === 'completed') {
             void showUndoToast({
@@ -1890,6 +1933,7 @@ async function toggleComplete(task) {
                         tasks.value = tasks.value.map((x) =>
                             x.id === merged.id ? restored : x,
                         );
+                        taskCache.invalidateForList(listId);
                         void pollOnce();
                     } catch (err) {
                         loadError.value = messageFromAxiosError(
@@ -1971,6 +2015,7 @@ async function applyDeferPreset(task, preset) {
             t.id === task.id ? merged : t,
         );
         syncInspectorDueIfOpen(editKey, merged.due);
+        taskCache.invalidateForList(listId);
         void pollOnce();
         if (prev.due) {
             const prevDue = prev.due;
@@ -1994,6 +2039,7 @@ async function applyDeferPreset(task, preset) {
                             x.id === merged.id ? restored : x,
                         );
                         syncInspectorDueIfOpen(editKey, restored.due);
+                        taskCache.invalidateForList(listId);
                         void pollOnce();
                     } catch (err) {
                         loadError.value = messageFromAxiosError(
@@ -2042,6 +2088,7 @@ async function removeTask(task) {
                         task: saved.id,
                     }),
                 );
+                taskCache.invalidateForList(listId);
                 void pollOnce();
             } catch (e) {
                 loadError.value = messageFromAxiosError(
@@ -2251,6 +2298,7 @@ async function onKanbanDropDue({ taskId, listId, newLane }) {
             t.id === task.id ? merged : t,
         );
         syncInspectorDueIfOpen(editKey, merged.due);
+        taskCache.invalidateForList(listId);
         void pollOnce();
         const prevDue = prev.due;
         void showUndoToast({
@@ -2273,6 +2321,7 @@ async function onKanbanDropDue({ taskId, listId, newLane }) {
                         x.id === merged.id ? restored : x,
                     );
                     syncInspectorDueIfOpen(editKey, restored.due);
+                    taskCache.invalidateForList(listId);
                     void pollOnce();
                 } catch (err) {
                     loadError.value = messageFromAxiosError(
@@ -3361,9 +3410,31 @@ onUnmounted(() => {
                                 </button>
                             </div>
                             <div
+                                ref="taskAreaRef"
                                 class="relative min-h-[8rem]"
                                 :aria-busy="tasksLoading ? 'true' : 'false'"
                             >
+                            <!-- US-044: pull-to-refresh indicator -->
+                            <Transition name="gt-tasks-loading">
+                                <div
+                                    v-if="pullRefreshActive || pullRefreshBusy"
+                                    class="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-center"
+                                    :style="{ height: '48px', opacity: pullProgress }"
+                                >
+                                    <svg
+                                        class="h-6 w-6 text-gt-accent"
+                                        :class="{ 'animate-spin': pullRefreshBusy }"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                </div>
+                            </Transition>
+                            <div :style="pullIndicatorStyle">
                             <Transition name="gt-tasks-loading">
                             <div
                                 v-if="tasksLoading"
@@ -3904,7 +3975,8 @@ onUnmounted(() => {
                                     </TasksKanbanBoard>
                                 </template>
                             </div>
-                            </div>
+                            </div><!-- /pullIndicatorStyle -->
+                            </div><!-- /taskAreaRef -->
                         </div>
 
                         <p class="text-center text-sm text-gt-muted">

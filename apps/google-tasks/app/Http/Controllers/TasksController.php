@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DashboardStatsCache;
+use App\Models\TaskViewCache;
 use App\Services\Google\GoogleOAuthTokenService;
 use App\Services\Google\GoogleTasksApiException;
 use App\Services\Google\GoogleTasksClient;
@@ -145,19 +146,21 @@ class TasksController extends Controller
 
     public function todayView(Request $request): JsonResponse
     {
-        return $this->run(function () use ($request) {
+        return $this->cachedView($request, 'today', [], function () use ($request) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $aggregator = new TaskViewAggregator;
 
-            return response()->json([
+            return [
                 'items' => $this->decodeTodayRows($aggregator->today($client)),
-            ]);
+            ];
         });
     }
 
     public function inboxView(Request $request): JsonResponse
     {
-        return $this->run(function () use ($request) {
+        $params = ['showCompleted' => $request->boolean('showCompleted', true)];
+
+        return $this->cachedView($request, 'inbox', $params, function () use ($request, $params) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $aggregator = new TaskViewAggregator;
 
@@ -165,40 +168,42 @@ class TasksController extends Controller
             $listItems = $lists['items'] ?? [];
             $default = $aggregator->resolveDefaultList($listItems);
             if ($default === null) {
-                return response()->json([
+                return [
                     'taskList' => null,
                     'items' => [],
-                ]);
+                ];
             }
 
             $taskListId = $default['id'] ?? '';
             $tasks = $client->listTasks($taskListId, [
-                'showCompleted' => $request->boolean('showCompleted', true),
+                'showCompleted' => $params['showCompleted'],
                 'showDeleted' => false,
                 'showHidden' => false,
             ]);
 
-            return response()->json([
+            return [
                 'taskList' => $default,
                 'items' => $this->decodeTasks($tasks['items'] ?? []),
-            ]);
+            ];
         });
     }
 
     public function allListsView(Request $request): JsonResponse
     {
-        return $this->run(function () use ($request) {
+        $params = ['showCompleted' => $request->boolean('showCompleted', false)];
+
+        return $this->cachedView($request, 'all', $params, function () use ($request, $params) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $aggregator = new TaskViewAggregator;
 
             $items = $aggregator->allListsTasks(
                 $client,
-                $request->boolean('showCompleted', false),
+                $params['showCompleted'],
             );
 
-            return response()->json([
+            return [
                 'items' => $this->decodeTodayRows($items),
-            ]);
+            ];
         });
     }
 
@@ -254,7 +259,7 @@ class TasksController extends Controller
             }
 
             $created = $client->insertTask($taskList, $body, []);
-            DashboardStatsCache::markStaleForUser($request->user()->id);
+            $this->markCachesStale($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($created));
         });
@@ -301,7 +306,7 @@ class TasksController extends Controller
             }
 
             $updated = $client->patchTask($taskList, $task, $body);
-            DashboardStatsCache::markStaleForUser($request->user()->id);
+            $this->markCachesStale($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($updated));
         });
@@ -319,7 +324,7 @@ class TasksController extends Controller
             $moved = $client->moveTask($taskList, $task, [
                 'destinationTasklist' => $validated['destinationTasklist'],
             ]);
-            DashboardStatsCache::markStaleForUser($request->user()->id);
+            $this->markCachesStale($request->user()->id);
 
             return response()->json($this->priorityCodec->decodeTask($moved));
         });
@@ -330,10 +335,74 @@ class TasksController extends Controller
         return $this->run(function () use ($request, $taskList, $task) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $client->deleteTask($taskList, $task);
-            DashboardStatsCache::markStaleForUser($request->user()->id);
+            $this->markCachesStale($request->user()->id);
 
             return response()->json(['ok' => true]);
         });
+    }
+
+    /**
+     * Cache-first view: return cached payload if fresh, stale cache + deferred refresh,
+     * or live computation on cold cache. Supports ?forceRefresh=1 for pull-to-refresh.
+     *
+     * @param  \Closure(): array  $computeFresh  Returns the payload array (not a JsonResponse)
+     */
+    private function cachedView(Request $request, string $viewName, array $params, \Closure $computeFresh): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $forceRefresh = $request->boolean('forceRefresh', false);
+
+        if (! $forceRefresh) {
+            $cached = TaskViewCache::getCached($userId, $viewName, $params);
+
+            if ($cached && $cached->isFresh()) {
+                return response()->json([
+                    ...$cached->payload,
+                    'cached' => true,
+                    'cachedAt' => $cached->computed_at->toIso8601String(),
+                ]);
+            }
+
+            if ($cached) {
+                // Stale cache: return immediately, refresh in background
+                defer(function () use ($userId, $viewName, $params, $computeFresh) {
+                    try {
+                        $payload = $computeFresh();
+                        TaskViewCache::putCache($userId, $viewName, $params, $payload);
+                    } catch (\Throwable $e) {
+                        Log::warning('task_view_cache_deferred_refresh_failed', [
+                            'user_id' => $userId,
+                            'view' => $viewName,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                });
+
+                return response()->json([
+                    ...$cached->payload,
+                    'cached' => true,
+                    'stale' => true,
+                    'cachedAt' => $cached->computed_at->toIso8601String(),
+                ]);
+            }
+        }
+
+        // Cold cache or force refresh: live computation
+        return $this->run(function () use ($userId, $viewName, $params, $computeFresh) {
+            $payload = $computeFresh();
+            TaskViewCache::putCache($userId, $viewName, $params, $payload);
+
+            return response()->json($payload);
+        });
+    }
+
+    /**
+     * Mark both dashboard and view caches as stale after a task mutation.
+     */
+    private function markCachesStale(int $userId): void
+    {
+        DashboardStatsCache::markStaleForUser($userId);
+        TaskViewCache::markStaleForUser($userId);
     }
 
     /**
