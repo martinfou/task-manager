@@ -407,20 +407,11 @@ class TasksController extends Controller
             }
 
             if ($cached) {
-                // Stale cache: return immediately, refresh in background
-                defer(function () use ($userId, $viewName, $params, $computeFresh) {
-                    try {
-                        $payload = $computeFresh();
-                        TaskViewCache::putCache($userId, $viewName, $params, $payload);
-                    } catch (\Throwable $e) {
-                        Log::warning('task_view_cache_deferred_refresh_failed', [
-                            'user_id' => $userId,
-                            'view' => $viewName,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                });
-
+                // Stale cache: return immediately.
+                // Background refresh is handled by the views:refresh-cache cron
+                // (GitHub Actions every 15 min). We avoid defer() here because
+                // Dreamhost shared hosting blocks the HTTP response until
+                // deferred closures complete.
                 return response()->json([
                     ...$cached->payload,
                     'cached' => true,

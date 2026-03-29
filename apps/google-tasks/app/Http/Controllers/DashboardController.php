@@ -55,19 +55,11 @@ class DashboardController extends Controller
                 return response()->json($cached);
             }
 
-            // Stale cache exists: return it immediately and refresh in the background
+            // Stale cache exists: return it immediately.
+            // Background refresh is handled by the dashboard:refresh-stats cron
+            // (GitHub Actions hourly). We avoid defer() because Dreamhost
+            // shared hosting blocks the HTTP response until deferred closures complete.
             if ($cached && $cached['stale']) {
-                defer(function () use ($user, $service, $rangeDays) {
-                    try {
-                        $this->refreshStats($user, $service, $rangeDays);
-                    } catch (\Throwable $e) {
-                        Log::warning('dashboard_deferred_refresh_failed', [
-                            'user_id' => $user->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                });
-
                 return response()->json($cached);
             }
         }
