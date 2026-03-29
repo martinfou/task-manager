@@ -25,6 +25,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard stats cache (US-040)
+    |--------------------------------------------------------------------------
+    |
+    | Rows in dashboard_stats_cache are "fresh" for this many minutes. Set
+    | higher than your refresh cadence (e.g. GitHub Actions hourly) so the
+    | pre-warm job keeps the fast path; stale rows are still served instantly
+    | while a background refresh runs.
+    |
+    */
+
+    'dashboard_stats_cache_ttl_minutes' => (int) env('DASHBOARD_STATS_CACHE_TTL_MINUTES', 90),
+
+    /*
+    |--------------------------------------------------------------------------
     | Undo toast (US-029) — deferred delete timer
     |--------------------------------------------------------------------------
     |

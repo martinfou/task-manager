@@ -25,13 +25,15 @@ class DashboardStatsCache extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function isFresh(int $ttlMinutes = 30): bool
+    public function isFresh(?int $ttlMinutes = null): bool
     {
         if ($this->stale_at !== null) {
             return false;
         }
 
-        return $this->computed_at && $this->computed_at->diffInMinutes(now()) < $ttlMinutes;
+        $ttl = $ttlMinutes ?? (int) config('google-tasks.dashboard_stats_cache_ttl_minutes', 90);
+
+        return $this->computed_at && $this->computed_at->diffInMinutes(now()) < $ttl;
     }
 
     /**

@@ -17,7 +17,7 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 
 ### Defect Fixes
 
-- (none this release)
+- **Dashboard felt slow on repeat mobile visits** — Default server cache “fresh” window extended to **90 minutes** (configurable via `DASHBOARD_STATS_CACHE_TTL_MINUTES`) so it stays aligned with hourly pre-warm; dashboard restores the last stats from **sessionStorage** and refetches in the background for instant paint. [US-040](project-management/backlog/user-stories/US-040-dashboard-precompute-cache.md)
 
 ### Technical Debt
 
@@ -30,6 +30,7 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 ### Migration Notes
 
 - Run **`php artisan migrate`** after deploy: `task_list_order` table and `users.task_list_auto_sort`.
+- Optional: set **`DASHBOARD_STATS_CACHE_TTL_MINUTES`** on the server if you change the refresh cron interval.
 
 ---
 

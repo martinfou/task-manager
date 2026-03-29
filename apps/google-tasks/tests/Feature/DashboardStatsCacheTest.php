@@ -136,7 +136,7 @@ class DashboardStatsCacheTest extends TestCase
             'user_id' => $user->id,
             'range_days' => 30,
             'stats' => ['daily' => [], 'insights' => [], 'rangeDays' => 30],
-            'computed_at' => now()->subMinutes(60),
+            'computed_at' => now()->subMinutes((int) config('google-tasks.dashboard_stats_cache_ttl_minutes', 90) + 5),
         ]);
 
         $service = new DashboardStatsService;

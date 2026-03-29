@@ -37,6 +37,67 @@ const tooltip = ref({ visible: false, x: 0, y: 0, title: '', body: '' });
 
 const RANGES = [7, 14, 30, 90];
 
+/** Stale-while-revalidate: show last dashboard JSON instantly on repeat visits (mobile). */
+const DASHBOARD_STATS_STORAGE_KEY = 'gt-dashboard-stats-v1';
+const DASHBOARD_STATS_STORAGE_MAX_AGE_MS = 60 * 60 * 1000;
+
+function dashboardStatsStorageKey(range) {
+    return `${DASHBOARD_STATS_STORAGE_KEY}:${range}`;
+}
+
+function readDashboardStatsFromStorage(range) {
+    if (typeof sessionStorage === 'undefined') {
+        return null;
+    }
+    try {
+        const raw = sessionStorage.getItem(dashboardStatsStorageKey(range));
+        if (!raw) {
+            return null;
+        }
+        const { ts, payload } = JSON.parse(raw);
+        if (!payload || typeof ts !== 'number') {
+            return null;
+        }
+        if (Date.now() - ts > DASHBOARD_STATS_STORAGE_MAX_AGE_MS) {
+            return null;
+        }
+        if (payload.reason === 'disconnected') {
+            return null;
+        }
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
+function writeDashboardStatsToStorage(range, payload) {
+    if (typeof sessionStorage === 'undefined' || !payload) {
+        return;
+    }
+    try {
+        sessionStorage.setItem(
+            dashboardStatsStorageKey(range),
+            JSON.stringify({ ts: Date.now(), payload }),
+        );
+    } catch {
+        /* quota or private mode */
+    }
+}
+
+function applyProvisionalStatsForRange(range) {
+    const provisional = readDashboardStatsFromStorage(range);
+    if (
+        provisional &&
+        provisional.empty !== true &&
+        provisional.reason !== 'disconnected'
+    ) {
+        stats.value = provisional;
+        loading.value = false;
+        return true;
+    }
+    return false;
+}
+
 // --- Fetch ---
 async function fetchStats({ forceRefresh = false, silent = false } = {}) {
     if (!silent) {
@@ -49,6 +110,7 @@ async function fetchStats({ forceRefresh = false, silent = false } = {}) {
         const res = await fetch(route('dashboard.stats') + '?' + params.toString());
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         stats.value = await res.json();
+        writeDashboardStatsToStorage(rangeDays.value, stats.value);
     } catch (e) {
         if (!silent) {
             error.value = e.message;
@@ -68,11 +130,13 @@ useVisibilitySoftRefresh(
 );
 
 onMounted(() => {
-    fetchStats();
+    const hadProvisional = applyProvisionalStatsForRange(rangeDays.value);
+    void fetchStats({ silent: hadProvisional });
 });
 
-watch(rangeDays, () => {
-    fetchStats();
+watch(rangeDays, (r) => {
+    const hadProvisional = applyProvisionalStatsForRange(r);
+    void fetchStats({ silent: hadProvisional });
 });
 
 // --- Computed ---

@@ -1,5 +1,6 @@
 # Hourly pre-computation of dashboard stats on DreamHost
 # Runs via GitHub Actions cron — no server-side crontab needed
+# Keep DASHBOARD_STATS_CACHE_TTL_MINUTES (default 90) ≥ cron interval so rows stay "fresh"
 
 name: Google Tasks — Refresh dashboard cache
 
