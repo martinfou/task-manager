@@ -97,17 +97,31 @@ class TaskViewAggregator
         }
 
         usort($out, function (array $a, array $b): int {
-            $cmp = strcasecmp((string) ($a['taskListTitle'] ?? ''), (string) ($b['taskListTitle'] ?? ''));
-            if ($cmp !== 0) {
-                return $cmp;
+            $pa = $this->priorityRank($a['task']['title'] ?? '');
+            $pb = $this->priorityRank($b['task']['title'] ?? '');
+            if ($pa !== $pb) {
+                return $pa - $pb;
             }
-            $ta = (string) ($a['task']['title'] ?? '');
-            $tb = (string) ($b['task']['title'] ?? '');
 
-            return strcasecmp($ta, $tb);
+            $da = (string) ($a['task']['due'] ?? 'zzz');
+            $db = (string) ($b['task']['due'] ?? 'zzz');
+
+            return strcmp($da, $db);
         });
 
         return $out;
+    }
+
+    /**
+     * Map a priority-encoded title to a sort rank (1 = highest).
+     */
+    private function priorityRank(string $title): int
+    {
+        if (preg_match('/^\[(P[1-4])\]/i', trim($title), $m) === 1) {
+            return (int) substr(strtolower($m[1]), 1);
+        }
+
+        return 4; // no priority = lowest
     }
 
     private function taskBelongsInTodayView(array $task, Carbon $endOfToday): bool

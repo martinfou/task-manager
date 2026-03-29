@@ -187,6 +187,16 @@ const kbdClass =
                             {{ t('shortcuts.actionHelp') }}
                         </td>
                     </tr>
+                    <tr>
+                        <td class="py-2.5 pe-4 align-top">
+                            <kbd :class="kbdClass">{{
+                                t('shortcuts.keysSyncGoogle')
+                            }}</kbd>
+                        </td>
+                        <td class="py-2.5 text-slate-800 dark:text-slate-200">
+                            {{ t('shortcuts.actionSyncGoogle') }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <p

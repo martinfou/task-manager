@@ -13,6 +13,7 @@ import TaskDeferMenu from '@/Components/TaskDeferMenu.vue';
 import TaskListRowSwipe from '@/Components/TaskListRowSwipe.vue';
 import TaskPriorityDueMeta from '@/Components/TaskPriorityDueMeta.vue';
 import TasksCommandPalette from '@/Components/TasksCommandPalette.vue';
+import TaskListOrganiseSheet from '@/Components/TaskListOrganiseSheet.vue';
 import UndoToast from '@/Components/UndoToast.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -23,6 +24,7 @@ import {
     unregisterTasksCommandPaletteOpener,
 } from '@/composables/commandPaletteBridge';
 import { useTasksKeyboardShortcuts } from '@/composables/useTasksKeyboardShortcuts';
+import { useVisibilitySoftRefresh } from '@/composables/useVisibilitySoftRefresh';
 import { Head, Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -53,6 +55,7 @@ import {
 import { computeDeferDueIso } from '@/utils/deferPresets';
 import { useUndoToast } from '@/composables/useUndoToast';
 import { useTaskCache } from '@/composables/useTaskCache';
+import { useListOrder } from '@/composables/useListOrder';
 import { usePullToRefresh } from '@/composables/usePullToRefresh';
 
 const VIEW_MODE_KEY = 'gt-task-view-mode';
@@ -65,7 +68,6 @@ const {
     toast: undoToastRef,
     show: showUndoToast,
     undo: runUndoFromToast,
-    holdPolling: undoHoldPolling,
 } = useUndoToast();
 
 /** Computed so the template always tracks the toast ref (avoids rare unwrap issues). */
@@ -87,6 +89,18 @@ const props = defineProps({
 /** @type {import('vue').Ref<'today'|'inbox'|'all'|'list'>} */
 const navMode = ref('today');
 const taskLists = ref([]);
+const {
+    autoSort: listAutoSort,
+    pinnedLists,
+    unpinnedLists,
+    showOrganiseSheet,
+    contextMenu: listContextMenu,
+    saveOrder: saveListOrder,
+    togglePin: toggleListPin,
+    showContextMenu: showListContextMenu,
+    hideContextMenu: hideListContextMenu,
+    setAutoSort: setListAutoSort,
+} = useListOrder(taskLists);
 const selectedListId = ref(null);
 const tasks = ref([]);
 const loadError = ref('');
@@ -107,6 +121,10 @@ const editPriority = ref('p3');
 const editListId = ref('');
 const editSaving = ref(false);
 const formError = ref('');
+/** ISO timestamp of when the current view was last cached on the server. */
+const viewCachedAt = ref(null);
+/** US-046: toolbar / keyboard / banner force-sync in flight. */
+const syncFromGoogleLoading = ref(false);
 const pollBackoffMs = ref(props.pollIntervalMs);
 const showListDrawer = ref(false);
 const searchQuery = ref('');
@@ -169,7 +187,6 @@ const showSwipeMoreModal = ref(false);
 const swipeMoreForTask = ref(null);
 /** @type {import('vue').Ref<object|null>} */
 const swipeMoveTask = ref(null);
-let pollTimer = null;
 let searchDebounce = null;
 let pollOnceInFlight = false;
 /** US-037: in-memory task cache for instant list switching. */
@@ -370,12 +387,6 @@ watch(
     },
 );
 
-function stopPollLoop() {
-    if (pollTimer != null) {
-        clearTimeout(pollTimer);
-        pollTimer = null;
-    }
-}
 
 /**
  * Any HTTP 403 from Tasks JSON routes stops polling and shows the connect / refresh UI.
@@ -408,7 +419,6 @@ function consumeGoogleTasksForbidden(e) {
         return false;
     }
     googleTasksForbidden.value = true;
-    stopPollLoop();
     taskCache.flush(); /* US-037: clear cache on disconnect */
     return true;
 }
@@ -682,6 +692,12 @@ const commandPaletteItems = computed(() => {
         'search find',
     );
     push(
+        'action-sync-google',
+        'actions',
+        'tasks.commandPalette.cmdSyncGoogle',
+        'refresh sync google reload',
+    );
+    push(
         'action-new-task',
         'actions',
         'tasks.commandPalette.cmdNewTask',
@@ -724,6 +740,10 @@ const commandPaletteItems = computed(() => {
 
 async function handleCommandPaletteSelect(id) {
     await nextTick();
+    if (id === 'action-sync-google') {
+        await userInitiatedSyncFromGoogle();
+        return;
+    }
     if (id === 'action-search') {
         openMobileSearchPanel();
         await nextTick();
@@ -1138,6 +1158,21 @@ async function fetchTaskLists() {
     }
 }
 
+async function onOrganiseListsSave(orderedLists, sortMode) {
+    taskLists.value = orderedLists;
+    setListAutoSort(sortMode);
+    await saveListOrder(orderedLists, sortMode);
+}
+
+async function onListContextMenuPin() {
+    const list = listContextMenu.value.list;
+    if (!list) return;
+    hideListContextMenu();
+    await toggleListPin(list.id);
+    // Re-fetch to get correct server order
+    await fetchTaskLists();
+}
+
 async function fetchTasksForList() {
     if (!tasksDataAvailable.value) {
         return;
@@ -1156,6 +1191,7 @@ async function fetchTasksForList() {
         return rest;
     });
     tasks.value = result;
+    viewCachedAt.value = null;
     taskCache.set('list', listId, result);
 }
 
@@ -1172,6 +1208,7 @@ async function fetchToday({ forceRefresh = false } = {}) {
         _taskListTitle: row.taskListTitle,
     }));
     tasks.value = result;
+    viewCachedAt.value = data.cachedAt ?? null;
     taskCache.set('today', null, result);
 }
 
@@ -1190,6 +1227,7 @@ async function fetchInbox({ forceRefresh = false } = {}) {
         _taskListId: data.taskList?.id,
     }));
     tasks.value = result;
+    viewCachedAt.value = data.cachedAt ?? null;
     taskCache.set('inbox', null, result);
 }
 
@@ -1206,6 +1244,7 @@ async function fetchAll({ forceRefresh = false } = {}) {
         _taskListTitle: row.taskListTitle,
     }));
     tasks.value = result;
+    viewCachedAt.value = data.cachedAt ?? null;
     taskCache.set('all', null, result);
 }
 
@@ -1228,6 +1267,53 @@ async function forceRefreshCurrentView() {
         }
     }
 }
+
+/** US-046: soft re-fetch when tab becomes visible (uses server cache when fresh). */
+async function softRefreshCurrentView() {
+    if (!tasksDataAvailable.value || googleTasksForbidden.value) {
+        return;
+    }
+    try {
+        await withReadRetry(async () => {
+            await fetchTaskLists();
+            if (!tasksDataAvailable.value) {
+                return;
+            }
+            const mode = navMode.value;
+            if (mode === 'today') await fetchToday();
+            else if (mode === 'inbox') await fetchInbox();
+            else if (mode === 'all') await fetchAll();
+            else await fetchTasksForList();
+        });
+    } catch {
+        /* background refresh — do not surface errors */
+    }
+}
+
+/** US-046: explicit sync from toolbar, banner, ⌘⌥R / Ctrl+Alt+R, command palette. */
+async function userInitiatedSyncFromGoogle() {
+    if (!tasksDataAvailable.value || syncFromGoogleLoading.value) {
+        return;
+    }
+    syncFromGoogleLoading.value = true;
+    loadError.value = '';
+    try {
+        await forceRefreshCurrentView();
+    } finally {
+        syncFromGoogleLoading.value = false;
+    }
+}
+
+useVisibilitySoftRefresh(
+    () =>
+        tasksDataAvailable.value &&
+        !googleTasksForbidden.value &&
+        !syncFromGoogleLoading.value &&
+        !pullRefreshBusy.value,
+    () => {
+        void softRefreshCurrentView();
+    },
+);
 
 async function pollOnce() {
     if (!props.connected || googleTasksForbidden.value) {
@@ -1279,36 +1365,6 @@ async function retryLoad() {
     });
 }
 
-async function pollLoop() {
-    if (googleTasksForbidden.value) {
-        return;
-    }
-    if (!undoHoldPolling.value) {
-        await pollOnce();
-    }
-    if (googleTasksForbidden.value) {
-        return;
-    }
-    const backoff = Number(pollBackoffMs.value);
-    const delay = Number.isFinite(backoff)
-        ? Math.min(
-              props.maxBackoffMs,
-              Math.max(props.pollIntervalMs, backoff),
-          )
-        : props.pollIntervalMs;
-    pollTimer = setTimeout(pollLoop, delay);
-}
-
-watch(undoHoldPolling, (held, wasHeld) => {
-    if (
-        held === false &&
-        wasHeld === true &&
-        props.connected &&
-        !googleTasksForbidden.value
-    ) {
-        void pollOnce();
-    }
-});
 
 async function setNav(mode) {
     showMobileSearch.value = false;
@@ -2403,6 +2459,9 @@ useTasksKeyboardShortcuts({
         }
         openEditInspector(list[idx]);
     },
+    onSyncFromGoogle: () => {
+        void userInitiatedSyncFromGoogle();
+    },
 });
 
 watch(
@@ -2558,7 +2617,8 @@ onMounted(async () => {
     if (!props.connected) {
         return;
     }
-    void pollLoop();
+    /* Initial data load (no recurring poll — cache + pull-to-refresh handles freshness) */
+    void pollOnce();
 });
 
 watch(
@@ -2590,7 +2650,6 @@ onUnmounted(() => {
     unregisterTasksCommandPaletteOpener();
     removeFiltersMqListener?.();
     removeSwipeMqListener?.();
-    stopPollLoop();
     window.removeEventListener('keydown', escCloseInspector);
 });
 </script>
@@ -2614,6 +2673,34 @@ onUnmounted(() => {
                         >
                             {{ pageTitle }}
                         </h2>
+                        <button
+                            v-if="tasksDataAvailable"
+                            type="button"
+                            class="hidden min-h-10 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field p-2 text-gt-ink shadow-sm touch-manipulation hover:bg-gt-field-muted focus:outline-none focus:ring-2 focus:ring-gt-accent-ring disabled:cursor-not-allowed disabled:opacity-60 lg:inline-flex"
+                            :aria-busy="syncFromGoogleLoading"
+                            :aria-label="t('tasks.syncFromGoogle')"
+                            :disabled="syncFromGoogleLoading"
+                            @click="userInitiatedSyncFromGoogle"
+                        >
+                            <svg
+                                class="h-5 w-5 text-gt-accent"
+                                :class="{
+                                    'motion-safe:animate-spin': syncFromGoogleLoading,
+                                }"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                                />
+                            </svg>
+                        </button>
                         <button
                             v-if="tasksDataAvailable"
                             type="button"
@@ -2894,13 +2981,41 @@ onUnmounted(() => {
                         >
                             {{ t('tasks.navAll') }}
                         </button>
+                        <!-- Pinned lists -->
+                        <template v-if="pinnedLists.length > 0">
+                            <div
+                                class="mt-4 border-t border-gt-border pt-3 text-xs font-semibold uppercase tracking-wide text-gt-subtle"
+                            >
+                                {{ t('tasks.pinnedLists') }}
+                            </div>
+                            <button
+                                v-for="list in pinnedLists"
+                                :key="`pin-${list.id}`"
+                                type="button"
+                                class="flex min-h-11 w-full touch-manipulation items-center gap-1.5 truncate rounded-md px-3 text-left text-sm font-medium"
+                                :class="
+                                    navButtonClass(
+                                        navMode === 'list' &&
+                                            selectedListId === list.id,
+                                    )
+                                "
+                                :title="list.title"
+                                @click="selectList(list)"
+                                @contextmenu="showListContextMenu($event, list)"
+                            >
+                                <svg class="h-3.5 w-3.5 shrink-0 text-gt-accent opacity-60" viewBox="0 0 16 16" fill="currentColor"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1-.707.708l-.812-.813-3.04 3.04a4 4 0 0 1-.79 5.088l-.353.353a.5.5 0 0 1-.707 0L6.17 11.64l-3.96 3.96a.5.5 0 1 1-.708-.707l3.96-3.96-2.554-2.554a.5.5 0 0 1 0-.707l.354-.354a4 4 0 0 1 5.087-.79l3.04-3.04-.812-.812a.5.5 0 0 1 .353-.854z"/></svg>
+                                <span class="truncate">{{ list.title }}</span>
+                            </button>
+                        </template>
+
+                        <!-- Unpinned lists -->
                         <div
                             class="mt-4 border-t border-gt-border pt-3 text-xs font-semibold uppercase tracking-wide text-gt-subtle"
                         >
-                            {{ t('tasks.listsHeading') }}
+                            {{ pinnedLists.length > 0 ? t('tasks.otherLists') : t('tasks.listsHeading') }}
                         </div>
                         <button
-                            v-for="list in taskLists"
+                            v-for="list in unpinnedLists"
                             :key="list.id"
                             type="button"
                             class="flex min-h-11 w-full touch-manipulation items-center truncate rounded-md px-3 text-left text-sm font-medium"
@@ -2912,10 +3027,43 @@ onUnmounted(() => {
                             "
                             :title="list.title"
                             @click="selectList(list)"
+                            @contextmenu="showListContextMenu($event, list)"
                         >
                             {{ list.title }}
                         </button>
+
+                        <!-- Organise lists button -->
+                        <button
+                            type="button"
+                            class="mt-2 w-full text-left text-xs text-gt-accent underline decoration-gt-accent/40 underline-offset-2 hover:text-gt-accent-hover"
+                            @click="showOrganiseSheet = true"
+                        >
+                            {{ t('tasks.organiseLists') }}
+                        </button>
                     </aside>
+
+                    <!-- Right-click context menu for list pin/unpin -->
+                    <Teleport to="body">
+                        <div
+                            v-if="listContextMenu.visible"
+                            class="fixed z-[100] rounded-md border border-gt-border bg-gt-raised py-1 shadow-lg"
+                            :style="{ left: listContextMenu.x + 'px', top: listContextMenu.y + 'px' }"
+                            @click.stop
+                        >
+                            <button
+                                type="button"
+                                class="w-full px-4 py-2 text-left text-sm text-gt-ink hover:bg-gt-field-muted"
+                                @click="onListContextMenuPin"
+                            >
+                                {{ listContextMenu.list?.pinned ? t('tasks.unpin') : t('tasks.pinToTop') }}
+                            </button>
+                        </div>
+                        <div
+                            v-if="listContextMenu.visible"
+                            class="fixed inset-0 z-[99]"
+                            @click="hideListContextMenu"
+                        />
+                    </Teleport>
 
                     <div class="flex min-w-0 flex-1 flex-col">
                         <div
@@ -2957,6 +3105,27 @@ onUnmounted(() => {
                             >
                                 {{ t('tasks.retry') }}
                             </SecondaryButton>
+                        </div>
+
+                        <div
+                            v-if="viewCachedAt && (navMode === 'today' || navMode === 'inbox' || navMode === 'all')"
+                            class="flex flex-col gap-2 rounded-lg border border-yellow-300 bg-yellow-50 p-2 text-xs text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                        >
+                            <p class="min-w-0 flex-1 leading-relaxed">
+                                {{ t('dashboard.staleDisclaimer', { date: new Date(viewCachedAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { timeZone: 'America/Toronto' }) }) }}
+                            </p>
+                            <button
+                                type="button"
+                                class="shrink-0 self-start rounded-md px-2 py-1 text-xs font-semibold text-yellow-900 underline decoration-yellow-700/50 underline-offset-2 hover:bg-yellow-100/80 dark:text-yellow-200 dark:decoration-yellow-400/50 dark:hover:bg-yellow-900/30 sm:self-center"
+                                :disabled="syncFromGoogleLoading"
+                                @click="userInitiatedSyncFromGoogle"
+                            >
+                                {{
+                                    syncFromGoogleLoading
+                                        ? t('tasks.syncRefreshing')
+                                        : t('tasks.syncRefreshLink')
+                                }}
+                            </button>
                         </div>
 
                         <div
@@ -4038,13 +4207,39 @@ onUnmounted(() => {
                         >
                             {{ t('tasks.navAll') }}
                         </button>
+                        <!-- Pinned lists in drawer -->
+                        <template v-if="pinnedLists.length > 0">
+                            <div
+                                class="border-t border-gt-border px-4 py-2 text-xs font-semibold uppercase text-gt-subtle"
+                            >
+                                {{ t('tasks.pinnedLists') }}
+                            </div>
+                            <button
+                                v-for="list in pinnedLists"
+                                :key="`drawer-pin-${list.id}`"
+                                type="button"
+                                class="flex min-h-12 w-full touch-manipulation items-center gap-2 truncate px-4 text-left text-sm"
+                                :class="
+                                    navButtonClass(
+                                        navMode === 'list' &&
+                                            selectedListId === list.id,
+                                    )
+                                "
+                                @click="selectList(list)"
+                            >
+                                <svg class="h-3.5 w-3.5 shrink-0 text-gt-accent opacity-60" viewBox="0 0 16 16" fill="currentColor"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1-.707.708l-.812-.813-3.04 3.04a4 4 0 0 1-.79 5.088l-.353.353a.5.5 0 0 1-.707 0L6.17 11.64l-3.96 3.96a.5.5 0 1 1-.708-.707l3.96-3.96-2.554-2.554a.5.5 0 0 1 0-.707l.354-.354a4 4 0 0 1 5.087-.79l3.04-3.04-.812-.812a.5.5 0 0 1 .353-.854z"/></svg>
+                                <span class="truncate">{{ list.title }}</span>
+                            </button>
+                        </template>
+
+                        <!-- Unpinned lists in drawer -->
                         <div
                             class="border-t border-gt-border px-4 py-2 text-xs font-semibold uppercase text-gt-subtle"
                         >
-                            {{ t('tasks.allLists') }}
+                            {{ pinnedLists.length > 0 ? t('tasks.otherLists') : t('tasks.allLists') }}
                         </div>
                         <button
-                            v-for="list in taskLists"
+                            v-for="list in unpinnedLists"
                             :key="`drawer-${list.id}`"
                             type="button"
                             class="flex min-h-12 w-full touch-manipulation items-center truncate px-4 text-left text-sm"
@@ -4057,6 +4252,15 @@ onUnmounted(() => {
                             @click="selectList(list)"
                         >
                             {{ list.title }}
+                        </button>
+
+                        <!-- Organise lists button (mobile) -->
+                        <button
+                            type="button"
+                            class="flex min-h-12 w-full items-center px-4 text-left text-xs text-gt-accent underline decoration-gt-accent/40 underline-offset-2"
+                            @click="showOrganiseSheet = true; showListDrawer = false"
+                        >
+                            {{ t('tasks.organiseLists') }}
                         </button>
                     </div>
 
@@ -4619,6 +4823,15 @@ onUnmounted(() => {
             />
         </div>
     </Teleport>
+
+    <!-- Organise Lists sheet -->
+    <TaskListOrganiseSheet
+        :show="showOrganiseSheet"
+        :lists="taskLists"
+        :auto-sort="listAutoSort"
+        @close="showOrganiseSheet = false"
+        @save="onOrganiseListsSave"
+    />
 </template>
 
 <style scoped>

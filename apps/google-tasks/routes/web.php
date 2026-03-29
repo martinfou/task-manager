@@ -47,6 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('google.tasks')->prefix('tasks/data')->group(function () {
         Route::get('/task-lists', [TasksController::class, 'taskLists'])->name('tasks.data.task-lists');
+        Route::get('/list-order', [TasksController::class, 'listOrder'])->name('tasks.data.list-order');
+        Route::put('/list-order', [TasksController::class, 'saveListOrder'])->name('tasks.data.list-order.save');
+        Route::patch('/list-order/{listId}/pin', [TasksController::class, 'toggleListPin'])->name('tasks.data.list-order.toggle-pin');
         Route::get('/search', [TasksController::class, 'search'])->name('tasks.data.search');
         Route::post('/search/reindex', [TasksController::class, 'reindexSearchEmbeddings'])->name('tasks.data.search.reindex');
         Route::get('/duplicates', [TasksController::class, 'duplicates'])->name('tasks.data.duplicates');

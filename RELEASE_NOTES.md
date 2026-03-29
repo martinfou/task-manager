@@ -8,6 +8,31 @@ Human-readable summary of what changed in each release. Add a new **dated sectio
 
 ---
 
+## 2026-03-28
+
+### New Features
+
+- **Custom task list ordering** — Pin lists to the top, drag to reorder (desktop sidebar + **Organise lists** sheet on mobile), optional A→Z / Z→A auto-sort for unpinned lists; order stored per user in the database and applied to sidebar, drawer, and composer. [US-045](project-management/backlog/user-stories/US-045-custom-task-list-ordering.md)
+- **Refresh from Google (desktop)** — Toolbar control on Tasks (`lg+`), **Refresh** on the cache disclaimer, command palette entry, and **⌘⌥R** / **Ctrl+Alt+R**; throttled soft refresh when returning to the tab. Dashboard gets the same pattern (header button, banner action, silent refetch on visibility). [US-046](project-management/backlog/user-stories/US-046-sync-from-google-refresh-ux.md)
+
+### Defect Fixes
+
+- (none this release)
+
+### Technical Debt
+
+- (none this release)
+
+### Breaking Changes
+
+- (none this release)
+
+### Migration Notes
+
+- Run **`php artisan migrate`** after deploy: `task_list_order` table and `users.task_list_auto_sort`.
+
+---
+
 ## 2026-03-22
 
 ### New Features

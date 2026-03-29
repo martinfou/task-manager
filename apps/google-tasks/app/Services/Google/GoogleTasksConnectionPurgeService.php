@@ -4,6 +4,7 @@ namespace App\Services\Google;
 
 use App\Models\DashboardStatsCache;
 use App\Models\TaskEmbedding;
+use App\Models\TaskListOrder;
 use App\Models\TaskViewCache;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,7 @@ class GoogleTasksConnectionPurgeService
         DB::transaction(function () use ($user): void {
             TaskEmbedding::query()->where('user_id', $user->id)->delete();
             TaskViewCache::purgeForUser($user->id);
+            TaskListOrder::purgeForUser($user->id);
             DashboardStatsCache::where('user_id', $user->id)->delete();
             $this->tokens->forgetCachedAccessToken($user);
             $user->forceFill([

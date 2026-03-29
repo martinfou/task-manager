@@ -21,6 +21,7 @@ import { onMounted, onUnmounted } from 'vue';
  * @param {() => void | Promise<void>} options.onGoList
  * @param {(task: object) => void | Promise<void>} options.onToggleComplete
  * @param {(() => void) | undefined} options.onInspectFocusedTask
+ * @param {(() => void | Promise<void>) | undefined} options.onSyncFromGoogle
  */
 export function useTasksKeyboardShortcuts(options) {
     const {
@@ -39,6 +40,7 @@ export function useTasksKeyboardShortcuts(options) {
         onGoList,
         onToggleComplete,
         onInspectFocusedTask,
+        onSyncFromGoogle,
     } = options;
 
     let gChordTimer = null;
@@ -125,6 +127,18 @@ export function useTasksKeyboardShortcuts(options) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             onOpenCommandPalette();
+            return;
+        }
+
+        if (
+            onSyncFromGoogle &&
+            !typing &&
+            (e.metaKey || e.ctrlKey) &&
+            e.altKey &&
+            (e.key === 'r' || e.key === 'R')
+        ) {
+            e.preventDefault();
+            void onSyncFromGoogle();
             return;
         }
 

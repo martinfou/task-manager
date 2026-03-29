@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DashboardStatsCache;
+use App\Models\TaskListOrder;
 use App\Models\TaskViewCache;
 use App\Services\Google\GoogleOAuthTokenService;
 use App\Services\Google\GoogleTasksApiException;
@@ -42,9 +43,51 @@ class TasksController extends Controller
     {
         return $this->run(function () use ($request) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
+            $lists = $client->listTaskLists();
 
-            return response()->json($client->listTaskLists());
+            $lists['items'] = TaskListOrder::applyOrder(
+                $request->user()->id,
+                $lists['items'] ?? [],
+                $request->user()->task_list_auto_sort,
+            );
+
+            return response()->json($lists);
         });
+    }
+
+    public function listOrder(Request $request): JsonResponse
+    {
+        $entries = TaskListOrder::getOrderedEntries($request->user()->id);
+
+        return response()->json([
+            'items' => $entries,
+            'autoSort' => $request->user()->task_list_auto_sort,
+        ]);
+    }
+
+    public function saveListOrder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id' => ['required', 'string', 'max:255'],
+            'items.*.pinned' => ['required', 'boolean'],
+            'autoSort' => ['sometimes', 'nullable', 'string', 'in:alpha_asc,alpha_desc'],
+        ]);
+
+        TaskListOrder::saveOrder(
+            $request->user()->id,
+            $validated['items'],
+            array_key_exists('autoSort', $validated) ? $validated['autoSort'] : null,
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function toggleListPin(Request $request, string $listId): JsonResponse
+    {
+        $newPinned = TaskListOrder::togglePin($request->user()->id, $listId);
+
+        return response()->json(['pinned' => $newPinned]);
     }
 
     public function search(Request $request, TaskSearcher $searcher): JsonResponse

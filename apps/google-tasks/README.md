@@ -30,6 +30,7 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 | Path | Purpose |
 |------|---------|
 | `app/Services/Google/` | OAuth token cache, `GoogleTasksClient` (Tasks API v1) |
+| `app/Models/TaskListOrder.php` | Per-user sidebar list order (pin, position; US-045) |
 | `docs/GOOGLE_OAUTH.md` | Google Cloud OAuth client, scopes, redirect URIs |
 | `resources/js/Pages/Tasks/` | Tasks list UI (polling + optimistic updates) |
 | `resources/js/` | Other Vue pages & components (Inertia) |
@@ -53,7 +54,7 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 
 - **Where**: Tasks page (`/tasks`) when Google is connected. Shortcuts are **disabled** while focus is in a text field (`input` / `textarea` / `select` / `contenteditable`) so typing is never hijacked—industry-standard “typing context” guard.
 - **Implementation**: [`resources/js/composables/useTasksKeyboardShortcuts.js`](resources/js/composables/useTasksKeyboardShortcuts.js) (global `keydown` listener, **capture** phase for Space/Enter on highlighted rows). Help overlay: [`TasksKeyboardShortcutsHelp.vue`](resources/js/Components/TasksKeyboardShortcutsHelp.vue) + Breeze [`Modal.vue`](resources/js/Components/Modal.vue).
-- **Bindings (summary)**: `/` — focus search · **Ctrl+K** / **⌘K** — command palette (navigate, search, quick add) · **n** — focus new task · **g** then **t** / **i** / **l** — Today / Inbox / list view · **↑**/**↓** — move row highlight · **Space** / **Enter** — toggle complete on highlighted row · **?** or **Ctrl+/** — help. Full table is localized (`shortcuts.*` in `locales/en.json` / `fr.json`).
+- **Bindings (summary)**: `/` — focus search · **Ctrl+K** / **⌘K** — command palette (navigate, search, quick add) · **n** — focus new task · **g** then **t** / **i** / **l** — Today / Inbox / list view · **Ctrl+Alt+R** / **⌘⌥R** — refresh current view from Google (US-046) · **↑**/**↓** — move row highlight · **Space** / **Enter** — toggle complete on highlighted row · **?** or **Ctrl+/** — help. Full table is localized (`shortcuts.*` in `locales/en.json` / `fr.json`).
 - **Accessibility**: Row highlight uses a **visual ring** (no roving `tabindex` on rows) so native checkbox/tab order stays intact; `aria-selected` reflects the highlighted row for assistive tech.
 - **Browser notes**: Documented in the help dialog—e.g. some browsers reserve keys; use **/** for search or open the command palette from the nav menu if needed.
 
@@ -96,12 +97,20 @@ Visit `http://127.0.0.1:8000`. Health: `GET /up` (Laravel), `GET /health` (JSON)
 - **Inbox**: tasks in the **default** Google list — we pick the list titled **“My Tasks”** when it exists, otherwise the **first** list returned by Google. New tasks from Today/Inbox are created in that default list.
 - **Lists**: per-list view unchanged from US-008; sidebar shows the active list; mobile uses a **Lists** drawer plus **Today** / **Inbox** in the bottom bar.
 
+## Task list order (US-045)
+
+- **What**: Pin one or more lists to the top, drag to reorder unpinned lists, and optionally **auto-sort** unpinned lists A→Z or Z→A. Order is stored in **`task_list_order`** (per user); Google’s list order is unchanged.
+- **Where**: Desktop sidebar (drag handles, right-click / context menu to pin); mobile **Organise lists** link opens a sheet with the same controls. Order applies to the sidebar, mobile drawer, and **Add to list** selector — not to the **All lists** task sort (that view sorts by priority and due date).
+- **Preferences**: `users.task_list_auto_sort` (`alpha_asc` / `alpha_desc` / null). Run migrations after deploy.
+
 ## Sync and performance (US-008)
 
 Google Tasks is the **source of truth**. This app refreshes OAuth access tokens server-side (cached), proxies list/task operations to the **Tasks API v1** REST surface, and keeps tokens out of the browser.
 
-- **Polling**: the Tasks page refetches task lists and tasks on an interval from `GOOGLE_TASKS_POLL_INTERVAL_MS` (default **5000** ms). On HTTP **429** from Google, the UI increases delay up to `GOOGLE_TASKS_MAX_BACKOFF_MS` (default **120000** ms).
-- **~5 seconds** “feels synced” after edits is a **design goal**, not an SLA: Google quotas, network latency, and the poll interval dominate.
+- **Freshness**: the Tasks page refetches after **navigation**, **mutations** (create/complete/move/etc.), relevant **filter** changes, and when the **tab becomes visible again** (throttled soft refresh, US-046). **Today**, **Inbox**, and **All lists** use **server-side view caching** (US-044) for fast loads; cached responses can show a short “last computed” notice.
+- **Manual refresh**: **Pull down** on the task list (touch) or use **Refresh from Google** on large screens, the link on that notice, **Ctrl+Alt+R** / **⌘⌥R**, or the command palette (**Refresh from Google**, US-046). Dashboard stats use the same idea (toolbar refresh + pull-to-refresh + soft refetch on visibility).
+- **Rate limits**: on HTTP **429** from Google, backoff still applies via `GOOGLE_TASKS_MAX_BACKOFF_MS` (default **120000** ms) on fetches that support it.
+- **~5 seconds** “feels synced” after your own edits is a **design goal**, not an SLA: Google quotas, network latency, and cache TTL dominate.
 - **Tests / CI**: feature tests render Inertia pages via Vite; run **`npm run build`** in `apps/google-tasks` so `public/build/manifest.json` includes new pages before `php artisan test`. Full pyramid and commands: [docs/TESTING.md](docs/TESTING.md).
 
 ## Testing (US-020)

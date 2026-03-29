@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GoogleTasksClient
 {
@@ -115,7 +116,7 @@ class GoogleTasksClient
         try {
             $response = match ($method) {
                 'get' => $pending->get($target),
-                'post' => $pending->post($target, $json),
+                'post' => $json === [] ? $pending->withBody('', '')->post($target) : $pending->post($target, $json),
                 'patch' => $pending->patch($target, $json),
                 'delete' => $pending->delete($target),
                 default => throw new GoogleTasksApiException(
@@ -150,9 +151,17 @@ class GoogleTasksClient
         if ($response->failed()) {
             $status = $response->status();
             $code = GoogleTasksErrorCode::fromHttpStatus($status);
+            $body = $response->json();
+            $googleMessage = $body['error']['message'] ?? null;
+
+            Log::warning('google_tasks_api_failed_response', [
+                'method' => $method,
+                'status' => $status,
+                'body' => $body,
+            ]);
 
             throw new GoogleTasksApiException(
-                $code->userMessage(),
+                $googleMessage ?? $code->userMessage(),
                 $status,
                 $code->value,
             );

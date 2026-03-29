@@ -4,13 +4,14 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePullToRefresh } from '@/composables/usePullToRefresh';
+import { useVisibilitySoftRefresh } from '@/composables/useVisibilitySoftRefresh';
 
 const props = defineProps({
     hasGoogleTasksConnection: { type: Boolean, default: false },
     userTimezone: { type: String, default: 'America/Toronto' },
 });
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // --- State ---
 const rangeDays = ref(30);
@@ -37,9 +38,11 @@ const tooltip = ref({ visible: false, x: 0, y: 0, title: '', body: '' });
 const RANGES = [7, 14, 30, 90];
 
 // --- Fetch ---
-async function fetchStats({ forceRefresh = false } = {}) {
-    loading.value = true;
-    error.value = null;
+async function fetchStats({ forceRefresh = false, silent = false } = {}) {
+    if (!silent) {
+        loading.value = true;
+        error.value = null;
+    }
     try {
         const params = new URLSearchParams({ range: rangeDays.value });
         if (forceRefresh) params.set('forceRefresh', '1');
@@ -47,11 +50,22 @@ async function fetchStats({ forceRefresh = false } = {}) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         stats.value = await res.json();
     } catch (e) {
-        error.value = e.message;
+        if (!silent) {
+            error.value = e.message;
+        }
     } finally {
-        loading.value = false;
+        if (!silent) {
+            loading.value = false;
+        }
     }
 }
+
+useVisibilitySoftRefresh(
+    () => props.hasGoogleTasksConnection && !loading.value,
+    () => {
+        void fetchStats({ silent: true });
+    },
+);
 
 onMounted(() => {
     fetchStats();
@@ -180,10 +194,38 @@ const secondaryLinkClass =
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="gt-page-title">
-                    {{ t('dashboard.title') }}
-                </h2>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex min-w-0 items-center gap-2">
+                    <h2 class="gt-page-title">
+                        {{ t('dashboard.title') }}
+                    </h2>
+                    <button
+                        v-if="hasGoogleTasksConnection"
+                        type="button"
+                        class="hidden min-h-10 shrink-0 items-center justify-center rounded-md border border-gt-border-strong bg-gt-field p-2 text-gt-ink shadow-sm hover:bg-gt-field-muted focus:outline-none focus:ring-2 focus:ring-gt-accent-ring disabled:cursor-not-allowed disabled:opacity-60 lg:inline-flex"
+                        :aria-busy="loading"
+                        :aria-label="t('dashboard.syncFromGoogle')"
+                        :disabled="loading"
+                        @click="fetchStats({ forceRefresh: true })"
+                    >
+                        <svg
+                            class="h-5 w-5 text-gt-accent"
+                            :class="{ 'motion-safe:animate-spin': loading }"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                            />
+                        </svg>
+                    </button>
+                </div>
                 <button
                     type="button"
                     class="text-xs text-gt-accent underline decoration-gt-accent/40 underline-offset-2 hover:text-gt-accent-hover"
@@ -291,8 +333,25 @@ const secondaryLinkClass =
                 <template v-else-if="stats && !isEmpty">
 
                     <!-- Stale disclaimer -->
-                    <div v-if="isCached" class="rounded-lg border border-yellow-300 bg-yellow-50 p-2 text-xs text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300">
-                        {{ t('dashboard.staleDisclaimer', { date: new Date(stats.cachedAt).toLocaleString() }) }}
+                    <div
+                        v-if="isCached"
+                        class="flex flex-col gap-2 rounded-lg border border-yellow-300 bg-yellow-50 p-2 text-xs text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                    >
+                        <p class="min-w-0 flex-1 leading-relaxed">
+                            {{ t('dashboard.staleDisclaimer', { date: new Date(stats.cachedAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { timeZone: 'America/Toronto' }) }) }}
+                        </p>
+                        <button
+                            type="button"
+                            class="shrink-0 self-start rounded-md px-2 py-1 text-xs font-semibold text-yellow-900 underline decoration-yellow-700/50 underline-offset-2 hover:bg-yellow-100/80 dark:text-yellow-200 dark:decoration-yellow-400/50 dark:hover:bg-yellow-900/30 sm:self-center"
+                            :disabled="loading"
+                            @click="fetchStats({ forceRefresh: true })"
+                        >
+                            {{
+                                loading
+                                    ? t('dashboard.syncRefreshing')
+                                    : t('tasks.syncRefreshLink')
+                            }}
+                        </button>
                     </div>
 
                     <!-- Insight cards -->

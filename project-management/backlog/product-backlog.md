@@ -2,7 +2,7 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-28 (US-044 added — fast Today/Inbox/All views)
+**Last Updated**: 2026-03-28 (US-045 done — custom task list ordering)
 
 **Active Sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **active**. [US-041](user-stories/US-041-branded-landing-page.md) (landing page) + [US-040](user-stories/US-040-dashboard-precompute-cache.md) (dashboard cache) + [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) (dashboard enhancements) — 18 pts. Plus RI-004, RI-005, RI-006 carry-forward.
 
@@ -16,6 +16,8 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-046](user-stories/US-046-sync-from-google-refresh-ux.md) | Sync / Refresh from Google (Desktop Parity & Smart Refresh) | 🟠 High | 8 | ✅ | Backlog | 2026-03-28 | 2026-03-28 |
+| [US-045](user-stories/US-045-custom-task-list-ordering.md) | Custom Task List Ordering (Pin, Reorder, Auto-Sort) | 🟠 High | 8 | ✅ | Backlog | 2026-03-28 | 2026-03-28 |
 | [US-044](user-stories/US-044-fast-today-inbox-all-views.md) | Fast Today, Inbox, and All Tasks Views | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
 | [US-043](user-stories/US-043-scope-audit-tool.md) | Outil d'Audit des Scopes (Dev vs Prod) | 🔴 Critical | 5 | ⭕ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
 | [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) | Dashboard Visual and Insight Improvements | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-24 |
