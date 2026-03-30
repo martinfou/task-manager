@@ -72,6 +72,37 @@ export function useTaskCache() {
     }
 
     /**
+     * DEF-002: After a mutation, save the current tasks array into the cache
+     * for the active view. This keeps the client-side cache in sync with the
+     * optimistic UI without re-fetching from the server.
+     *
+     * Also invalidates other views that may be affected (aggregate views
+     * and the specific list cache) so they are re-fetched fresh on next visit.
+     *
+     * @param {'today'|'inbox'|'all'|'list'} navMode - current navigation mode
+     * @param {string|null} listId - current list ID (for list mode)
+     * @param {Array} tasks - current tasks array (already reflects the mutation)
+     * @param {string|null} affectedListId - list ID affected by the mutation (for cross-list invalidation)
+     */
+    function syncAfterMutation(navMode, listId, tasks, affectedListId = null) {
+        // Save the current (correct) state for the active view
+        set(navMode, listId, tasks);
+
+        // Invalidate other views that might contain stale data.
+        // The active view was just set above, so re-deleting it is harmless
+        // (set() already overwrote it). We invalidate aggregates so the next
+        // navigation triggers a fresh server fetch.
+        const currentKey = cacheKey(navMode, listId);
+        for (const key of ['today', 'inbox', 'all']) {
+            if (key !== currentKey) store.delete(key);
+        }
+        if (affectedListId && `list:${affectedListId}` !== currentKey) {
+            store.delete(`list:${affectedListId}`);
+        }
+        version.value++;
+    }
+
+    /**
      * Clear the entire cache (disconnect, logout, etc.).
      */
     function flush() {
@@ -92,6 +123,7 @@ export function useTaskCache() {
         has,
         invalidate,
         invalidateForList,
+        syncAfterMutation,
         flush,
         version: readonly(version),
     };

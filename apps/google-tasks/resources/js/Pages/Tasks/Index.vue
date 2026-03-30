@@ -322,8 +322,7 @@ async function confirmMerge() {
         // Remove the pair from the list
         duplicatePairs.value = duplicatePairs.value.filter((p) => p !== pair);
         // Refresh local task data
-        taskCache.invalidateForList(removeTask.taskListId);
-        void pollOnce();
+        syncCacheAfterMutation(removeTask.taskListId);
         void showUndoToast({
             message: t('tasks.undo.completed'),
             onUndo: async () => {
@@ -335,7 +334,7 @@ async function confirmMerge() {
                         }),
                         { status: 'needsAction' },
                     );
-                    void pollOnce();
+                    syncCacheAfterMutation(removeTask.taskListId);
                 } catch (err) {
                     loadError.value = messageFromAxiosError(
                         err,
@@ -875,8 +874,7 @@ async function runBulkComplete() {
     }
     bulkWorking.value = false;
     clearSelection();
-    taskCache.invalidateForList(selectedListId.value || '');
-    await pollOnce();
+    syncCacheAfterMutation(selectedListId.value || '');
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
     }
@@ -913,8 +911,7 @@ async function executeBulkDelete() {
     }
     bulkWorking.value = false;
     clearSelection();
-    taskCache.invalidateForList(selectedListId.value || '');
-    await pollOnce();
+    syncCacheAfterMutation(selectedListId.value || '');
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
     }
@@ -1036,9 +1033,7 @@ async function executeBulkMove() {
             }
         }
         bulkWorking.value = false;
-        taskCache.invalidateForList(sourceListId);
-        taskCache.invalidateForList(dest);
-        await pollOnce();
+        syncCacheAfterMutation(sourceListId);
         if (bulkFailureLines.value.length > 0) {
             showBulkResultModal.value = true;
         } else if (movedOk.length === 1) {
@@ -1054,7 +1049,7 @@ async function executeBulkMove() {
                             }),
                             { destinationTasklist: m.sourceListId },
                         );
-                        void pollOnce();
+                        syncCacheAfterMutation(m.sourceListId);
                     } catch (e) {
                         loadError.value = messageFromAxiosError(
                             e,
@@ -1109,9 +1104,7 @@ async function executeBulkMove() {
     }
     bulkWorking.value = false;
     clearSelection();
-    taskCache.invalidateForList(selectedListId.value || '');
-    taskCache.invalidateForList(dest);
-    await pollOnce();
+    syncCacheAfterMutation(selectedListId.value || '');
     if (bulkFailureLines.value.length > 0) {
         showBulkResultModal.value = true;
     } else if (movedOk.length === 1) {
@@ -1127,7 +1120,7 @@ async function executeBulkMove() {
                         }),
                         { destinationTasklist: m.sourceListId },
                     );
-                    void pollOnce();
+                    syncCacheAfterMutation(m.sourceListId);
                 } catch (e) {
                     loadError.value = messageFromAxiosError(
                         e,
@@ -1363,6 +1356,22 @@ async function retryLoad() {
     await withTasksLoad(async () => {
         await pollOnce();
     });
+}
+
+/**
+ * DEF-002: After a mutation, sync the current tasks.value into the client-side
+ * cache for the active view. This replaces the old pollOnce() pattern which
+ * re-fetched from the server and could return stale cached data.
+ *
+ * @param {string|null} affectedListId - list ID affected by the mutation
+ */
+function syncCacheAfterMutation(affectedListId = null) {
+    taskCache.syncAfterMutation(
+        navMode.value,
+        selectedListId.value,
+        tasks.value,
+        affectedListId,
+    );
 }
 
 
@@ -1769,9 +1778,8 @@ async function saveEditedTask() {
             taskKey(current) === key ? merged : current,
         );
         closeDetailEdit();
-        taskCache.invalidateForList(destListId);
-        if (destListId !== sourceListId) taskCache.invalidateForList(sourceListId);
-        void pollOnce();
+        syncCacheAfterMutation(destListId);
+        if (destListId !== sourceListId) taskCache.invalidate('list', sourceListId);
     } catch (e) {
         loadError.value = messageFromAxiosError(
             e,
@@ -1895,8 +1903,7 @@ async function submitNewTask() {
         if (inspectorMode.value === 'new') {
             closeInspector();
         }
-        taskCache.invalidateForList(listId);
-        void pollOnce();
+        syncCacheAfterMutation(listId);
     } catch (e) {
         tasks.value = tasks.value.filter((t) => t.id !== tempId);
         formError.value = messageFromAxiosError(
@@ -1930,8 +1937,7 @@ async function updatePriority(task, priority) {
         tasks.value = tasks.value.map((current) =>
             current.id === task.id ? merged : current,
         );
-        taskCache.invalidateForList(listId);
-        void pollOnce();
+        syncCacheAfterMutation(listId);
     } catch (e) {
         tasks.value = tasks.value.map((current) =>
             current.id === task.id ? previousTask : current,
@@ -1967,8 +1973,7 @@ async function toggleComplete(task) {
             merged._taskListTitle = task._taskListTitle;
         }
         tasks.value = tasks.value.map((t) => (t.id === task.id ? merged : t));
-        taskCache.invalidateForList(listId);
-        void pollOnce();
+        syncCacheAfterMutation(listId);
         if (nextStatus === 'completed') {
             void showUndoToast({
                 message: t('tasks.undo.completed'),
@@ -1989,8 +1994,7 @@ async function toggleComplete(task) {
                         tasks.value = tasks.value.map((x) =>
                             x.id === merged.id ? restored : x,
                         );
-                        taskCache.invalidateForList(listId);
-                        void pollOnce();
+                        syncCacheAfterMutation(listId);
                     } catch (err) {
                         loadError.value = messageFromAxiosError(
                             err,
@@ -2071,8 +2075,7 @@ async function applyDeferPreset(task, preset) {
             t.id === task.id ? merged : t,
         );
         syncInspectorDueIfOpen(editKey, merged.due);
-        taskCache.invalidateForList(listId);
-        void pollOnce();
+        syncCacheAfterMutation(listId);
         if (prev.due) {
             const prevDue = prev.due;
             void showUndoToast({
@@ -2095,8 +2098,7 @@ async function applyDeferPreset(task, preset) {
                             x.id === merged.id ? restored : x,
                         );
                         syncInspectorDueIfOpen(editKey, restored.due);
-                        taskCache.invalidateForList(listId);
-                        void pollOnce();
+                        syncCacheAfterMutation(listId);
                     } catch (err) {
                         loadError.value = messageFromAxiosError(
                             err,
@@ -2134,7 +2136,7 @@ async function removeTask(task) {
         message: t('tasks.undo.deleted', { title: titleSnippet }),
         onUndo: () => {
             tasks.value = [...tasks.value, saved];
-            void pollOnce();
+            syncCacheAfterMutation(listId);
         },
         onCommit: async () => {
             try {
@@ -2144,8 +2146,7 @@ async function removeTask(task) {
                         task: saved.id,
                     }),
                 );
-                taskCache.invalidateForList(listId);
-                void pollOnce();
+                syncCacheAfterMutation(listId);
             } catch (e) {
                 loadError.value = messageFromAxiosError(
                     e,
@@ -2354,8 +2355,7 @@ async function onKanbanDropDue({ taskId, listId, newLane }) {
             t.id === task.id ? merged : t,
         );
         syncInspectorDueIfOpen(editKey, merged.due);
-        taskCache.invalidateForList(listId);
-        void pollOnce();
+        syncCacheAfterMutation(listId);
         const prevDue = prev.due;
         void showUndoToast({
             message: t('tasks.undo.dueUpdated'),
@@ -2377,8 +2377,7 @@ async function onKanbanDropDue({ taskId, listId, newLane }) {
                         x.id === merged.id ? restored : x,
                     );
                     syncInspectorDueIfOpen(editKey, restored.due);
-                    taskCache.invalidateForList(listId);
-                    void pollOnce();
+                    syncCacheAfterMutation(listId);
                 } catch (err) {
                     loadError.value = messageFromAxiosError(
                         err,

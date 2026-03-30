@@ -2,9 +2,11 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-28 (US-045 done — custom task list ordering)
+**Last Updated**: 2026-03-30 (Sprint 8 — DEF-002 implemented, pending manual QA)
 
-**Active Sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **active**. [US-041](user-stories/US-041-branded-landing-page.md) (landing page) + [US-040](user-stories/US-040-dashboard-precompute-cache.md) (dashboard cache) + [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) (dashboard enhancements) — 18 pts. Plus RI-004, RI-005, RI-006 carry-forward.
+**Active Sprint**: [Sprint 8: Cache Integrity](../sprints/sprint-08-google-tasks-cache-integrity.md) — **active**. [DEF-002](defects/DEF-002-deleted-task-reappears-from-stale-cache.md) ✅ implemented (surgical cache patching). RI-007 ✅. Manual QA pending.
+
+**Previous sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **closed** 2026-03-29; US-040–042 + US-044–046 ✅ (42 pts). US-043 dropped. RI-004/005/006 dropped.
 
 **Previous sprint**: [Sprint 6: Trust, Commands, and Mobile Actions](../sprints/sprint-06-google-tasks-trust-commands-mobile.md) — **closed** 2026-03-23; 12/12 stories ✅ (91 pts). [US-039](user-stories/US-039-mobile-task-row-visual-polish.md) also completed from backlog.
 
@@ -16,10 +18,10 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
-| [US-046](user-stories/US-046-sync-from-google-refresh-ux.md) | Sync / Refresh from Google (Desktop Parity & Smart Refresh) | 🟠 High | 8 | ✅ | Backlog | 2026-03-28 | 2026-03-28 |
-| [US-045](user-stories/US-045-custom-task-list-ordering.md) | Custom Task List Ordering (Pin, Reorder, Auto-Sort) | 🟠 High | 8 | ✅ | Backlog | 2026-03-28 | 2026-03-28 |
+| [US-046](user-stories/US-046-sync-from-google-refresh-ux.md) | Sync / Refresh from Google (Desktop Parity & Smart Refresh) | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
+| [US-045](user-stories/US-045-custom-task-list-ordering.md) | Custom Task List Ordering (Pin, Reorder, Auto-Sort) | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
 | [US-044](user-stories/US-044-fast-today-inbox-all-views.md) | Fast Today, Inbox, and All Tasks Views | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
-| [US-043](user-stories/US-043-scope-audit-tool.md) | Outil d'Audit des Scopes (Dev vs Prod) | 🔴 Critical | 5 | ⭕ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
+| ~~US-043~~ | ~~Outil d'Audit des Scopes (Dev vs Prod)~~ | — | — | 🗑️ Dropped | — | 2026-03-23 | 2026-03-29 |
 | [US-042](user-stories/US-042-dashboard-visual-and-insight-improvements.md) | Dashboard Visual and Insight Improvements | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-24 |
 | [US-041](user-stories/US-041-branded-landing-page.md) | Branded Landing Page | 🟠 High | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
 | [US-040](user-stories/US-040-dashboard-precompute-cache.md) | Dashboard Pre-Compute and Cache for Instant Load | 🟡 Medium | 5 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-23 | 2026-03-23 |
@@ -67,6 +69,7 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [DEF-002](defects/DEF-002-deleted-task-reappears-from-stale-cache.md) | Deleted/Modified Task Reappears from Stale Cache | 🟠 High | 3 | ✅ | [Sprint 8](../sprints/sprint-08-google-tasks-cache-integrity.md) | 2026-03-29 | 2026-03-30 |
 | [DEF-001](defects/DEF-001-ui-glitch-fix.md) | Example Defect for Demo | 🟢 Low | 1 | ✅ | [Sprint 1](../sprints/sprint-01-ai-workflow-foundation.md) | 2026-02-14 | 2026-03-21 |
 
 ## Technical Debt
@@ -78,8 +81,10 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Description | Owner | Due Sprint | Status |
 |----|-------------|-------|------------|--------|
-| [RI-005](retrospective-improvements/RI-005-all-tasks-aggregate-429-runbook.md) | All-tasks aggregate: operator runbook for 429 / partial list failure | Developer | Sprint 6 | ⭕ |
-| [RI-004](retrospective-improvements/RI-004-tasks-index-vue-integration-playbook.md) | Tasks `Index.vue` integration order + merge checklist (docs) | Developer | Sprint 6 | ⭕ |
+| [RI-007](retrospective-improvements/RI-007-infrastructure-removal-impact-analysis.md) | Infrastructure removal: end-to-end impact analysis before removing defer/cron/cache | Developer | Sprint 8 | ✅ |
+| ~~RI-006~~ | ~~Playwright E2E for swipe, command palette, dashboard~~ | — | — | 🗑️ Dropped |
+| ~~RI-005~~ | ~~All-tasks aggregate 429 runbook~~ | — | — | 🗑️ Dropped |
+| ~~RI-004~~ | ~~Index.vue integration playbook~~ | — | — | 🗑️ Dropped |
 | [RI-003](retrospective-improvements/RI-003-semantic-search-ops-runbook.md) | Semantic search operations runbook in `apps/google-tasks/docs/DEPLOY.md` | Developer | Sprint 4 retro | ✅ |
 | [RI-001](retrospective-improvements/RI-001-google-cloud-oauth-checklist.md) | Google Cloud OAuth + Tasks API checklist in `docs/` | Developer | Sprint 3 | ✅ |
 | [RI-002](retrospective-improvements/RI-002-ci-workflow-google-tasks.md) | CI workflow for `apps/google-tasks` (Composer, Vite, tests) | Developer | Sprint 3 | ✅ |
@@ -111,16 +116,17 @@ This is the main product backlog tracking all user stories and defects.
 
 *Run `./project-management/scripts/backlog-metrics.sh --stats` to generate this section.*
 
-**Total Items**: 40 (39 user stories + [DEF-001](defects/DEF-001-ui-glitch-fix.md); technical-debt table empty)  
+**Total Items**: 49 (46 user stories + 2 defects + 1 empty tech-debt table)
 **By Status**:
-- ⭕ To Do: 8
-- ⏳ In Progress: 2
-- ✅ Done: 29
+- ⭕ To Do: 0
+- ⏳ In Progress: 0
+- ✅ Done: 47
+- 🗑️ Dropped: 1 (US-043)
 
 **By Priority**:
 - 🔴 Critical: 6
-- 🟠 High: 19
+- 🟠 High: 20
 - 🟡 Medium: 13
 - 🟢 Low: 3
 
-**Total Story Points**: 207 (sum of all backlog table rows above, including DEF-001)
+**Total Story Points**: 257 (252 completed, 5 remaining — US-043 dropped)

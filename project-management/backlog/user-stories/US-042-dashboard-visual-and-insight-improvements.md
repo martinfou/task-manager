@@ -60,8 +60,8 @@ As a user reviewing my productivity dashboard, I want **charts that render corre
 - [x] "No due date" count includes a **subtle CTA or link** to filter open tasks without a due date (e.g., "19 tasks — add dates?")
 
 ### G. General polish
-- [ ] **No regression** to existing dashboard functionality (time-window selector, data table toggle, i18n EN/FR, accessibility)
-- [ ] Responsive: KPI cards reflow to **2x2 grid** on narrow/mobile viewports instead of a broken single row
+- [x] **No regression** to existing dashboard functionality (time-window selector, data table toggle, i18n EN/FR, accessibility)
+- [x] Responsive: KPI cards reflow to **2x2 grid** on narrow/mobile viewports instead of a broken single row
 
 ## Business Value
 

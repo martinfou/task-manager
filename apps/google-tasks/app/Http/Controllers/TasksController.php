@@ -302,9 +302,12 @@ class TasksController extends Controller
             }
 
             $created = $client->insertTask($taskList, $body, []);
-            $this->markCachesStale($request->user()->id);
+            $decoded = $this->priorityCodec->decodeTask($created);
+            // New tasks: mark stale so cron refreshes (don't surgically add —
+            // too complex to determine which aggregate views the task belongs in).
+            $this->markViewCachesStale($request->user()->id);
 
-            return response()->json($this->priorityCodec->decodeTask($created));
+            return response()->json($decoded);
         });
     }
 
@@ -349,9 +352,12 @@ class TasksController extends Controller
             }
 
             $updated = $client->patchTask($taskList, $task, $body);
-            $this->markCachesStale($request->user()->id);
+            $decoded = $this->priorityCodec->decodeTask($updated);
+            $userId = $request->user()->id;
+            TaskViewCache::upsertTaskInCaches($userId, $task, $decoded, $taskList);
+            DashboardStatsCache::markStaleForUser($userId);
 
-            return response()->json($this->priorityCodec->decodeTask($updated));
+            return response()->json($decoded);
         });
     }
 
@@ -367,7 +373,11 @@ class TasksController extends Controller
             $moved = $client->moveTask($taskList, $task, [
                 'destinationTasklist' => $validated['destinationTasklist'],
             ]);
-            $this->markCachesStale($request->user()->id);
+            $userId = $request->user()->id;
+            // Move = remove from all cached views (task changes list, may change ID).
+            // The task will reappear in correct caches on next cron refresh.
+            TaskViewCache::removeTaskFromCaches($userId, $task);
+            DashboardStatsCache::markStaleForUser($userId);
 
             return response()->json($this->priorityCodec->decodeTask($moved));
         });
@@ -378,7 +388,9 @@ class TasksController extends Controller
         return $this->run(function () use ($request, $taskList, $task) {
             $client = new GoogleTasksClient($request->user(), app(GoogleOAuthTokenService::class));
             $client->deleteTask($taskList, $task);
-            $this->markCachesStale($request->user()->id);
+            $userId = $request->user()->id;
+            TaskViewCache::removeTaskFromCaches($userId, $task);
+            DashboardStatsCache::markStaleForUser($userId);
 
             return response()->json(['ok' => true]);
         });
@@ -433,7 +445,11 @@ class TasksController extends Controller
     /**
      * Mark both dashboard and view caches as stale after a task mutation.
      */
-    private function markCachesStale(int $userId): void
+    /**
+     * Mark view caches stale (used for creates where surgical patching is too complex).
+     * Dashboard stats are always marked stale separately in each mutation endpoint.
+     */
+    private function markViewCachesStale(int $userId): void
     {
         DashboardStatsCache::markStaleForUser($userId);
         TaskViewCache::markStaleForUser($userId);
