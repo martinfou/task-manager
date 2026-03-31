@@ -6,6 +6,10 @@ Priority levels, Kanban boards, smart search, productivity insights, and mobile 
 
 **[Open the app](https://tasks.martinfournier.com)**
 
+<p align="center">
+  <img src="apps/google-tasks/demo.gif" alt="Google Tasks Client demo" width="800">
+</p>
+
 ---
 
 ## Why use this over the default Google Tasks?
