@@ -380,13 +380,13 @@ const secondaryLinkClass =
                         {{ !hasGoogleTasksConnection ? t('dashboard.emptyNoConnection') : t('dashboard.emptyNoData') }}
                     </p>
                     <div class="flex flex-wrap justify-center gap-3">
-                        <Link
+                        <a
                             v-if="!hasGoogleTasksConnection"
                             :href="route('google.redirect')"
                             :class="primaryLinkClass"
                         >
                             {{ t('tasks.connectGoogle') }}
-                        </Link>
+                        </a>
                         <Link :href="route('tasks.index')" :class="secondaryLinkClass">
                             {{ t('dashboard.openTasks') }}
                         </Link>

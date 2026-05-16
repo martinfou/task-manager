@@ -2935,12 +2935,12 @@ onUnmounted(() => {
                             >
                                 {{ t('tasks.reloadPage') }}
                             </button>
-                            <Link
+                            <a
                                 :href="route('google.redirect')"
                                 class="inline-flex items-center rounded-md border border-transparent bg-gt-accent-strong px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-strong-hover focus:outline-none focus:ring-2 focus:ring-gt-accent-ring focus:ring-offset-2 focus:ring-offset-gt-raised active:opacity-90"
                             >
                                 {{ t('tasks.connectGoogle') }}
-                            </Link>
+                            </a>
                             <Link
                                 :href="route('profile.edit')"
                                 class="text-sm font-medium text-gt-accent underline decoration-gt-accent/40 underline-offset-2 hover:text-gt-accent-hover"
