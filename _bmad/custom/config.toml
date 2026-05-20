@@ -1,0 +1,9 @@
+# Team / enterprise overrides for _bmad/config.toml.
+
+[core]
+project_name = "task-manager"
+
+[modules.bmm]
+planning_artifacts = "{project-root}/_bmad-output/planning-artifacts"
+implementation_artifacts = "{project-root}/_bmad-output/implementation-artifacts"
+project_knowledge = "{project-root}/docs"
