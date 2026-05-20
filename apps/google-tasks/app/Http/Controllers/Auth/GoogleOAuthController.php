@@ -23,7 +23,6 @@ class GoogleOAuthController extends Controller
             ->scopes(['openid', 'profile', 'email', self::TASKS_SCOPE])
             ->with([
                 'access_type' => 'offline',
-                'prompt' => 'consent',
             ])
             ->redirect();
     }
