@@ -2,9 +2,9 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-03-30 (Sprint 8 — DEF-002 implemented, pending manual QA)
+**Last Updated**: 2026-06-21 (Phase 2 Planning — US-047 to US-051 created)
 
-**Active Sprint**: [Sprint 8: Cache Integrity](../sprints/sprint-08-google-tasks-cache-integrity.md) — **active**. [DEF-002](defects/DEF-002-deleted-task-reappears-from-stale-cache.md) ✅ implemented (surgical cache patching). RI-007 ✅. Manual QA pending.
+**Active Sprint**: None (US-047 to US-051 in Backlog — ready for sprint planning)
 
 **Previous sprint**: [Sprint 7: Polish and Performance](../sprints/sprint-07-google-tasks-polish-and-performance.md) — **closed** 2026-03-29; US-040–042 + US-044–046 ✅ (42 pts). US-043 dropped. RI-004/005/006 dropped.
 
@@ -18,6 +18,11 @@ This is the main product backlog tracking all user stories and defects.
 
 | ID | Title | Priority | Points | Status | Sprint | Created | Updated |
 |----|-------|----------|--------|--------|--------|---------|---------|
+| [US-051](user-stories/US-051-recurring-tasks-notes-encoding.md) | Recurring Tasks via Notes Encoding | 🟠 High | 5 | ⭕ | Backlog | 2026-06-21 | 2026-06-21 |
+| [US-050](user-stories/US-050-task-health-scores.md) | Task Health Scores | 🟡 Medium | 3 | ⭕ | Backlog | 2026-06-21 | 2026-06-21 |
+| [US-049](user-stories/US-049-joplin-task-context-bridge.md) | Joplin Task Context Bridge | 🟠 High | 8 | ⭕ | Backlog | 2026-06-21 | 2026-06-21 |
+| [US-048](user-stories/US-048-saved-perspectives.md) | Saved Perspectives (Filtered Views) | 🟠 High | 5 | ⭕ | Backlog | 2026-06-21 | 2026-06-21 |
+| [US-047](user-stories/US-047-unified-command-bar.md) | Unified Command Bar (Ctrl+K Quick Capture) | 🟠 High | 8 | ⭕ | Backlog | 2026-06-21 | 2026-06-21 |
 | [US-046](user-stories/US-046-sync-from-google-refresh-ux.md) | Sync / Refresh from Google (Desktop Parity & Smart Refresh) | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
 | [US-045](user-stories/US-045-custom-task-list-ordering.md) | Custom Task List Ordering (Pin, Reorder, Auto-Sort) | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
 | [US-044](user-stories/US-044-fast-today-inbox-all-views.md) | Fast Today, Inbox, and All Tasks Views | 🟠 High | 8 | ✅ | [Sprint 7](../sprints/sprint-07-google-tasks-polish-and-performance.md) | 2026-03-28 | 2026-03-28 |
