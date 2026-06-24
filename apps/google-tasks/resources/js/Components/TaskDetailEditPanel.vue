@@ -12,6 +12,7 @@ const props = defineProps({
     recurrence: { type: String, required: true },
     priority: { type: String, required: true },
     notes: { type: String, required: true },
+    links: { type: Array, default: () => [] },
     saving: { type: Boolean, default: false },
     /** When non-empty, show list selector (task edit — move to another list). */
     lists: { type: Array, default: () => [] },
@@ -155,6 +156,38 @@ function onNotesKeydown(e) {
                     {{ t('tasks.priorityP4') }}
                 </option>
             </select>
+        </div>
+        <div v-if="links && links.length > 0" class="flex flex-col gap-2">
+            <a
+                v-for="link in links"
+                :key="link.link"
+                :href="link.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex w-fit items-center gap-2 rounded-md border border-gt-border px-3 py-2 text-sm text-gt-ink transition-colors hover:bg-gt-field hover:text-gt-accent focus:outline-none focus:ring-2 focus:ring-gt-accent focus:ring-offset-2"
+            >
+                <svg
+                    v-if="link.type === 'email'"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                <svg
+                    v-else
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                </svg>
+                <span class="truncate">{{ link.description || link.type || 'View link' }}</span>
+            </a>
         </div>
         <div>
             <InputLabel

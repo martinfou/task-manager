@@ -114,6 +114,7 @@ const inspectorMode = ref(null);
 const inspectorEditTaskKey = ref('');
 const editTitle = ref('');
 const editNotes = ref('');
+const editLinks = ref([]);
 const editDue = ref('');
 const editRecurrence = ref('');
 const editPriority = ref('p3');
@@ -1714,6 +1715,7 @@ function openEditInspector(task, e, opts = {}) {
     inspectorEditTaskKey.value = k;
     editTitle.value = task.title ?? '';
     editNotes.value = task.notes ?? '';
+    editLinks.value = task.links ?? [];
     editDue.value = toDatetimeLocalValue(task.due);
     const rec = task.recurrence;
     editRecurrence.value = Array.isArray(rec)
@@ -3097,13 +3099,22 @@ onUnmounted(() => {
                             <p class="min-w-0 flex-1">
                                 {{ loadError }}
                             </p>
-                            <SecondaryButton
-                                type="button"
-                                class="shrink-0 self-start sm:self-center"
-                                @click="retryLoad"
-                            >
-                                {{ t('tasks.retry') }}
-                            </SecondaryButton>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a
+                                    v-if="loadError === t('tasks.errors.codes.auth_expired')"
+                                    :href="route('google.redirect')"
+                                    class="inline-flex items-center justify-center rounded-md border border-transparent bg-gt-accent-strong px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gt-accent-strong-hover"
+                                >
+                                    {{ t('tasks.reconnectGoogle') }}
+                                </a>
+                                <SecondaryButton
+                                    type="button"
+                                    class="shrink-0"
+                                    @click="retryLoad"
+                                >
+                                    {{ t('tasks.retry') }}
+                                </SecondaryButton>
+                            </div>
                         </div>
 
                         <div
@@ -3934,6 +3945,7 @@ onUnmounted(() => {
                                             :recurrence="editRecurrence"
                                             :priority="editPriority"
                                             :notes="editNotes"
+                                            :links="editLinks"
                                             :saving="editSaving"
                                             :lists="taskLists"
                                             :target-list-id="editListId"
@@ -4105,6 +4117,7 @@ onUnmounted(() => {
                                                     "
                                                     :priority="editPriority"
                                                     :notes="editNotes"
+                                                    :links="editLinks"
                                                     :saving="editSaving"
                                                     :lists="taskLists"
                                                     :target-list-id="editListId"
