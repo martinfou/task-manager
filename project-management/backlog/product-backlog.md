@@ -2,7 +2,11 @@
 
 This is the main product backlog tracking all user stories and defects.
 
-**Last Updated**: 2026-06-21 (Phase 2 Planning — US-047 to US-051 created)
+**Last Updated**: 2026-07-24 (Phase 3 — Feature: Hermes Webhook Task Categorization & Prioritization)
+
+**Phase 3 — Hermes Task Butler**: See [FEATURE-hermes-webhook-task-categorization-prioritization.md](FEATURE-hermes-webhook-task-categorization-prioritization.md) — 11 user stories (HW-01 to HW-11), 17 coding stories, MVP in 3 sprints (~3 days). **Go** pour implémentation (date: 2026-07-24).
+
+**Phase 2 — Backlog (US-047 to US-051)**: Ready for sprint planning.
 
 **Active Sprint**: None (US-047 to US-051 in Backlog — ready for sprint planning)
 
