@@ -33,7 +33,39 @@ class GoogleTasksClient
     {
         $base = rtrim(config('google-tasks.api_base'), '/');
 
-        return $this->json('get', "{$base}/lists/{$taskListId}/tasks", $query);
+        // Google Tasks returns only 20 items per page by default when maxResults
+        // is omitted, and callers must follow nextPageToken to see the rest.
+        // Paginate here so every consumer (list view, today, all lists, search,
+        // dashboard) gets the FULL task set instead of a silently truncated one.
+        // Real bug 2026-08-05: 🏠 Home had 82 items; tasks beyond the 20-item
+        // default page (e.g. "Tester batterie 12V Spark + Bolt", "Tester eau
+        // piscine + spa") never appeared in the app even though they existed in
+        // Google Tasks.
+        $query['maxResults'] = $query['maxResults'] ?? 100;
+
+        $items = [];
+        $pageToken = $query['pageToken'] ?? null;
+        $payload = [];
+        $pages = 0;
+
+        do {
+            $pageQuery = $query;
+            if ($pageToken !== null) {
+                $pageQuery['pageToken'] = $pageToken;
+            }
+
+            $payload = $this->json('get', "{$base}/lists/{$taskListId}/tasks", $pageQuery);
+            $items = array_merge($items, $payload['items'] ?? []);
+            $pageToken = $payload['nextPageToken'] ?? null;
+            $pages++;
+
+            // Safety valve: never loop more than 50 pages (5000 tasks).
+        } while ($pageToken !== null && $pages < 50);
+
+        $payload['items'] = $items;
+        unset($payload['nextPageToken']);
+
+        return $payload;
     }
 
     /**
